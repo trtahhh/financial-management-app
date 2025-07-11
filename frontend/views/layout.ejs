@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+  <!-- ===== Header / Navbar ===== -->
+  <header>
+    <nav class="nav-bar">
+      <a class="brand" href="/">Finance App</a>
+      <ul class="nav-links">
+        <li><a href="/">Dashboard</a></li>
+        <li><a href="/login">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ===== Main content injected from child views ===== -->
+  <main class="container">
+    <%- body %>
+  </main>
+
+  <!-- ===== Footer (optional) ===== -->
+  <footer>
+    <p>&copy; <%= new Date().getFullYear() %> Financial Management</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/main.js"></script>
+</body>
+</html>
