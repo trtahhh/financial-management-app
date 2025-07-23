@@ -1,0 +1,122 @@
+<div class="register-container">
+  <h2>Đăng ký tài khoản</h2>
+  <% if (error && error.length) { %>
+    <div class="error-message"><%= error %></div>
+  <% } %>
+  <form method="post" action="/register">
+    <div class="form-group">
+      <label for="username">Tên đăng nhập</label>
+      <input type="text" id="username" name="username" placeholder="Tên đăng nhập" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="Email" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Mật khẩu</label>
+      <input type="password" id="password" name="password" placeholder="Mật khẩu" required>
+      <label style="font-weight:400; font-size:0.95rem; margin-top:4px; display:block;"><input type="checkbox" onclick="togglePassword('password')"> Hiện mật khẩu</label>
+    </div>
+    <div class="form-group">
+      <label for="role">Vai trò</label>
+      <select id="role" name="role" required>
+        <option value="user">Người dùng</option>
+        <option value="admin">Quản trị viên</option>
+      </select>
+    </div>
+    <button class="register-btn" type="submit">Đăng ký</button>
+  </form>
+  <div class="login-link">
+    Đã có tài khoản? <a href="/login">Đăng nhập</a>
+  </div>
+</div>
+<style>
+  body {
+    background: #f5f6fa;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .register-container {
+    max-width: 400px;
+    margin: 60px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 28px 24px 28px;
+  }
+  .register-container h2 {
+    text-align: center;
+    color: #2d3436;
+    margin-bottom: 24px;
+    font-size: 2rem;
+    letter-spacing: 1px;
+  }
+  .form-group {
+    margin-bottom: 18px;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #636e72;
+    font-weight: 500;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dfe6e9;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: #f9f9f9;
+    transition: border 0.2s;
+  }
+  .form-group input:focus {
+    border: 1.5px solid #0984e3;
+    outline: none;
+    background: #fff;
+  }
+  .error-message {
+    color: #d63031;
+    background: #ffeaea;
+    border: 1px solid #fab1a0;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .register-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #0984e3, #00b894);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .register-btn:hover {
+    background: linear-gradient(90deg, #00b894, #0984e3);
+  }
+  .login-link {
+    text-align: center;
+    margin-top: 18px;
+    color: #636e72;
+    font-size: 1rem;
+  }
+  .login-link a {
+    color: #0984e3;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 500px) {
+    .register-container {
+      padding: 18px 8px 14px 8px;
+    }
+  }
+</style>

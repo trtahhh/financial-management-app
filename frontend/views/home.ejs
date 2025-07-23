@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý tài chính cá nhân</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f6fa;
+      color: #222;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 18px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #0984e3;
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+    .header-buttons a {
+      margin-left: 18px;
+      padding: 8px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .header-buttons .login {
+      background: #fff;
+      color: #0984e3;
+      border: 1.5px solid #0984e3;
+    }
+    .header-buttons .login:hover {
+      background: #0984e3;
+      color: #fff;
+    }
+    .header-buttons .register {
+      background: linear-gradient(90deg, #0984e3, #00b894);
+      color: #fff;
+      border: none;
+    }
+    .header-buttons .register:hover {
+      background: linear-gradient(90deg, #00b894, #0984e3);
+    }
+    .carousel-container {
+      max-width: 900px;
+      margin: 36px auto 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      background: #fff;
+      position: relative;
+    }
+    .carousel-slide {
+      display: none;
+      padding: 48px 32px 32px 32px;
+      text-align: center;
+      min-height: 260px;
+      transition: opacity 0.6s;
+    }
+    .carousel-slide.active {
+      display: block;
+      animation: fadeIn 1s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .carousel-dots {
+      text-align: center;
+      margin-bottom: 16px;
+      margin-top: -18px;
+    }
+    .carousel-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin: 0 4px;
+      background: #dfe6e9;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .carousel-dot.active {
+      background: #0984e3;
+    }
+    .main-content {
+      max-width: 900px;
+      margin: 32px auto 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      padding: 40px 32px 32px 32px;
+    }
+    .main-content h1 {
+      color: #0984e3;
+      font-size: 2.2rem;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .main-content p {
+      font-size: 1.15rem;
+      color: #444;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+    .feature-box {
+      background: #f5f6fa;
+      border-radius: 8px;
+      padding: 28px 22px;
+      width: 260px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+      text-align: center;
+      transition: box-shadow 0.2s;
+    }
+    .feature-box:hover {
+      box-shadow: 0 4px 18px rgba(9,132,227,0.10);
+    }
+    .feature-box h3 {
+      color: #00b894;
+      margin-bottom: 10px;
+      font-size: 1.15rem;
+    }
+    .feature-box p {
+      color: #555;
+      font-size: 1rem;
+      margin: 0;
+    }
+    .about-section, .contact-section {
+      max-width: 900px;
+      margin: 32px auto 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      padding: 32px 32px 24px 32px;
+    }
+    .about-section h2, .contact-section h2 {
+      color: #0984e3;
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 1.5rem;
+    }
+    .about-team {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .team-member {
+      text-align: center;
+      background: #f5f6fa;
+      border-radius: 8px;
+      padding: 18px 14px;
+      width: 180px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    .team-member img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      margin-bottom: 8px;
+      object-fit: cover;
+      background: #dfe6e9;
+    }
+    .team-member h4 {
+      margin: 8px 0 4px 0;
+      color: #00b894;
+      font-size: 1.08rem;
+    }
+    .team-member p {
+      margin: 0;
+      color: #636e72;
+      font-size: 0.98rem;
+    }
+    .contact-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 auto;
+      max-width: 400px;
+    }
+    .contact-section li {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .contact-section li i {
+      color: #0984e3;
+      font-size: 1.2rem;
+    }
+    @media (max-width: 700px) {
+      .main-content, .about-section, .contact-section, .carousel-container { padding: 18px 4px; }
+      .features { flex-direction: column; align-items: center; }
+      .feature-box { width: 95%; }
+      .header { flex-direction: column; gap: 10px; padding: 12px 8px; }
+      .about-team { flex-direction: column; gap: 18px; }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+</head>
+<body>
+  <!-- Carousel/Slide -->
+  <div class="carousel-container">
+    <div class="carousel-slide active">
+      <h1>Chào mừng đến với Finance App!</h1>
+      <p>Giải pháp quản lý tài chính cá nhân hiện đại, bảo mật và dễ sử dụng.<br>
+      Theo dõi thu chi, lập kế hoạch, báo cáo trực quan và nhiều hơn thế nữa!</p>
+      <img src="https://img.freepik.com/free-vector/finance-app-concept-illustration_114360-7962.jpg" alt="Finance App" style="max-width: 320px; width: 100%; margin: 18px auto 0 auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(9,132,227,0.10);">
+    </div>
+    <div class="carousel-slide">
+      <h1>Phân tích chi tiêu thông minh</h1>
+      <p>Biểu đồ, thống kê giúp bạn kiểm soát tài chính hiệu quả.<br>
+      Đặt mục tiêu tiết kiệm, cảnh báo vượt hạn mức chi tiêu.</p>
+      <img src="https://img.freepik.com/free-vector/financial-data-analysis-concept-illustration_114360-1002.jpg" alt="Analytics" style="max-width: 320px; width: 100%; margin: 18px auto 0 auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,184,148,0.10);">
+    </div>
+    <div class="carousel-slide">
+      <h1>Bảo mật & Phân quyền</h1>
+      <p>Dữ liệu được mã hóa, xác thực tài khoản an toàn.<br>
+      Hỗ trợ nhiều vai trò: Người dùng, Quản trị viên.</p>
+      <img src="https://img.freepik.com/free-vector/secure-login-concept-illustration_114360-4582.jpg" alt="Security" style="max-width: 320px; width: 100%; margin: 18px auto 0 auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(9,132,227,0.10);">
+    </div>
+    <div class="carousel-dots">
+      <span class="carousel-dot active"></span>
+      <span class="carousel-dot"></span>
+      <span class="carousel-dot"></span>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <h1>Quản lý tài chính cá nhân thông minh</h1>
+    <p>
+      Ứng dụng giúp bạn kiểm soát thu chi, lập kế hoạch tài chính, theo dõi mục tiêu tiết kiệm và phân tích chi tiêu hiệu quả.<br>
+      Đơn giản, bảo mật, dễ sử dụng cho mọi đối tượng!
+    </p>
+    <div class="features">
+      <div class="feature-box">
+        <h3>Quản lý thu chi</h3>
+        <p>Ghi chép, phân loại các khoản thu nhập và chi tiêu hàng ngày.</p>
+      </div>
+      <div class="feature-box">
+        <h3>Báo cáo & Thống kê</h3>
+        <p>Biểu đồ trực quan giúp bạn nắm bắt tình hình tài chính cá nhân.</p>
+      </div>
+      <div class="feature-box">
+        <h3>Lập kế hoạch tài chính</h3>
+        <p>Đặt mục tiêu tiết kiệm, kiểm soát ngân sách theo từng tháng.</p>
+      </div>
+      <div class="feature-box">
+        <h3>Phân quyền tài khoản</h3>
+        <p>Hỗ trợ nhiều vai trò: Người dùng, Quản trị viên.</p>
+      </div>
+      <div class="feature-box">
+        <h3>Bảo mật thông tin</h3>
+        <p>Mã hóa dữ liệu, xác thực tài khoản an toàn.</p>
+      </div>
+      <div class="feature-box">
+        <h3>Nhắc nhở giao dịch</h3>
+        <p>Nhận thông báo khi đến hạn thanh toán hóa đơn, tiết kiệm thời gian.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>Về chúng tôi</h2>
+    <p style="text-align:center;">
+      Finance App được phát triển bởi nhóm sinh viên đam mê công nghệ và tài chính.<br>
+      Sứ mệnh của chúng tôi là giúp mọi người quản lý tài chính cá nhân hiệu quả, hướng tới cuộc sống chủ động và an toàn tài chính.
+    </p>
+    <div class="about-team">
+      <div class="team-member">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Thành viên 1">
+        <h4>Nguyễn Văn A</h4>
+        <p>Trưởng nhóm<br>Lập trình backend</p>
+      </div>
+      <div class="team-member">
+        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Thành viên 2">
+        <h4>Trần Thị B</h4>
+        <p>Thiết kế UI/UX<br>Lập trình frontend</p>
+      </div>
+      <div class="team-member">
+        <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Thành viên 3">
+        <h4>Lê Văn C</h4>
+        <p>Phân tích dữ liệu<br>Kiểm thử hệ thống</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-section">
+    <h2>Liên hệ</h2>
+    <ul>
+      <li><i class="fa-solid fa-envelope"></i> Email: <a href="mailto:financeapp@gmail.com">financeapp@gmail.com</a></li>
+      <li><i class="fa-solid fa-phone"></i> Hotline: 0123 456 789</li>
+      <li><i class="fa-brands fa-facebook"></i> Facebook: <a href="https://facebook.com/financeapp" target="_blank">facebook.com/financeapp</a></li>
+      <li><i class="fa-solid fa-location-dot"></i> Địa chỉ: Đại học Công nghệ Thông tin, TP.HCM</li>
+    </ul>
+  </div>
+
+  <script>
+    // Simple JS carousel
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    let current = 0;
+    function showSlide(idx) {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === idx);
+        dots[i].classList.toggle('active', i === idx);
+      });
+      current = idx;
+    }
+    dots.forEach((dot, i) => {
+      dot.onclick = () => showSlide(i);
+    });
+    setInterval(() => {
+      let next = (current + 1) % slides.length;
+      showSlide(next);
+    }, 4000);
+  </script>
+</body>
+</html>

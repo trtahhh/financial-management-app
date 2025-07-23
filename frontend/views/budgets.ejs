@@ -1,0 +1,486 @@
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+  <h1 style="text-align: center; color: #2d6cdf; margin-bottom: 30px; font-size: 2rem;">Quản lý ngân sách</h1>
+  
+  <% if (error) { %>
+    <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
+      <%= error %>
+    </div>
+<% } %>
+
+  <!-- Tổng quan ngân sách -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Tổng ngân sách</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalBudget">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Đã chi tiêu</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalSpent">₫0</p>
+      <small style="opacity: 0.8;" id="spentPercentage">0% ngân sách</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Còn lại</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalRemaining">₫0</p>
+      <small style="opacity: 0.8;" id="remainingPercentage">0% ngân sách</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Ngày còn lại</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="daysRemaining">0</p>
+      <small style="opacity: 0.8;">ngày trong tháng</small>
+    </div>
+  </div>
+
+  <!-- Thanh tiến độ tổng thể -->
+  <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <h3 style="margin: 0 0 15px 0; color: #333;">Tiến độ chi tiêu tháng này</h3>
+    <div style="background: #f0f0f0; height: 20px; border-radius: 10px; overflow: hidden; position: relative;">
+      <div id="progressBar" style="background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+      <div id="progressHandle" style="position: absolute; top: 50%; left: 0%; transform: translateY(-50%); background: #fff; border: 2px solid #4facfe; width: 12px; height: 12px; border-radius: 50%;"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
+      <span>₫0</span>
+      <span id="progressText">₫0 / ₫0</span>
+      <span id="totalBudgetText">₫0</span>
+    </div>
+  </div>
+
+  <!-- Danh sách ngân sách theo danh mục -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
+    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 20px 0; color: #333;">Ngân sách theo danh mục</h3>
+      <div id="budgetCategories">
+        <div style="text-align: center; color: #666; padding: 20px;">
+          Đang tải dữ liệu...
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cảnh báo và mẹo -->
+    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 20px 0; color: #333;">Cảnh báo & Mẹo</h3>
+      <div id="budgetWarnings">
+        <div style="text-align: center; color: #666; padding: 20px;">
+          Đang tải dữ liệu...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Biểu đồ chi tiêu -->
+  <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <h3 style="margin: 0 0 20px 0; color: #333;">Biểu đồ chi tiêu theo thời gian</h3>
+    <div style="position: relative; height: 300px;">
+      <canvas id="budgetChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Nút thêm ngân sách -->
+  <div style="text-align: center;">
+    <button onclick="showAddBudgetModal()" 
+            style="background: #2d6cdf; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+      + Thêm ngân sách mới
+    </button>
+    <button onclick="showEditBudgetModal()" 
+            style="background: #27ae60; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">
+      ✏️ Chỉnh sửa ngân sách
+    </button>
+  </div>
+</div>
+
+<!-- Modal thêm ngân sách -->
+<div id="budgetModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+    <h3 style="margin: 0 0 20px 0; color: #333;">Thêm ngân sách mới</h3>
+    
+  <form id="budgetForm">
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Tên ngân sách:</label>
+        <input type="text" id="budgetName" placeholder="Nhập tên ngân sách" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Số tiền ngân sách:</label>
+        <input type="number" id="budgetAmount" placeholder="Nhập số tiền" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ngày bắt đầu:</label>
+        <input type="date" id="budgetStartDate" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ngày kết thúc:</label>
+        <input type="date" id="budgetEndDate" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ghi chú:</label>
+        <textarea id="budgetNote" placeholder="Ghi chú (tùy chọn)" 
+                  style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; height: 80px; resize: vertical;"></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="closeBudgetModal()" 
+                style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Hủy
+        </button>
+        <button type="submit" 
+                style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Thêm ngân sách
+        </button>
+      </div>
+  </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let budgetChart = null;
+
+// Format currency
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount);
+}
+
+// Calculate days remaining in month
+function getDaysRemaining() {
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return lastDay.getDate() - now.getDate();
+}
+
+// Load budget data
+async function loadBudgetData() {
+  try {
+    const response = await fetch('/api/budgets', {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to load budget data');
+    }
+    
+    const budgets = await response.json();
+    updateBudgetDashboard(budgets);
+  } catch (error) {
+    console.error('Error loading budget data:', error);
+    document.querySelector('.container').innerHTML += `
+      <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin: 20px 0; text-align: center;">
+        Không tải được ngân sách: ${error.message}
+      </div>
+    `;
+  }
+}
+
+// Update budget dashboard
+function updateBudgetDashboard(budgets) {
+  if (!budgets || budgets.length === 0) {
+    // No budgets found
+    document.getElementById('totalBudget').textContent = formatCurrency(0);
+    document.getElementById('totalSpent').textContent = formatCurrency(0);
+    document.getElementById('totalRemaining').textContent = formatCurrency(0);
+    document.getElementById('spentPercentage').textContent = '0% ngân sách';
+    document.getElementById('remainingPercentage').textContent = '0% ngân sách';
+    document.getElementById('daysRemaining').textContent = getDaysRemaining();
+    
+    document.getElementById('budgetCategories').innerHTML = `
+      <div style="text-align: center; color: #666; padding: 20px;">
+        Chưa có ngân sách nào. Hãy tạo ngân sách đầu tiên!
+      </div>
+    `;
+    
+    document.getElementById('budgetWarnings').innerHTML = `
+      <div style="text-align: center; color: #666; padding: 20px;">
+        Chưa có dữ liệu ngân sách
+      </div>
+    `;
+    
+    updateBudgetChart([]);
+    return;
+  }
+  
+  // Calculate totals
+  const totalBudget = budgets.reduce((sum, budget) => sum + parseFloat(budget.total), 0);
+  const totalSpent = budgets.reduce((sum, budget) => sum + (parseFloat(budget.spent) || 0), 0);
+  const totalRemaining = totalBudget - totalSpent;
+  const spentPercentage = totalBudget > 0 ? (totalSpent / totalBudget * 100).toFixed(1) : 0;
+  const remainingPercentage = totalBudget > 0 ? (totalRemaining / totalBudget * 100).toFixed(1) : 0;
+  
+  // Update summary cards
+  document.getElementById('totalBudget').textContent = formatCurrency(totalBudget);
+  document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+  document.getElementById('totalRemaining').textContent = formatCurrency(totalRemaining);
+  document.getElementById('spentPercentage').textContent = `${spentPercentage}% ngân sách`;
+  document.getElementById('remainingPercentage').textContent = `${remainingPercentage}% ngân sách`;
+  document.getElementById('daysRemaining').textContent = getDaysRemaining();
+  
+  // Update progress bar
+  const progressPercent = Math.min(spentPercentage, 100);
+  document.getElementById('progressBar').style.width = `${progressPercent}%`;
+  document.getElementById('progressHandle').style.left = `${progressPercent}%`;
+  document.getElementById('progressText').textContent = `${formatCurrency(totalSpent)} / ${formatCurrency(totalBudget)}`;
+  document.getElementById('totalBudgetText').textContent = formatCurrency(totalBudget);
+  
+  // Update budget categories
+  updateBudgetCategories(budgets);
+  
+  // Update warnings
+  updateBudgetWarnings(budgets);
+  
+  // Update chart
+  updateBudgetChart(budgets);
+}
+
+// Update budget categories
+function updateBudgetCategories(budgets) {
+  const container = document.getElementById('budgetCategories');
+  
+  if (budgets.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: #666; padding: 20px;">
+        Chưa có ngân sách nào
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = budgets.map(budget => {
+    const spent = parseFloat(budget.spent) || 0;
+    const total = parseFloat(budget.total);
+    const percentage = total > 0 ? (spent / total * 100).toFixed(1) : 0;
+    const remaining = total - spent;
+    const color = percentage > 80 ? '#e74c3c' : percentage > 60 ? '#f39c12' : '#27ae60';
+    
+    return `
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-weight: 600;">${budget.name}</span>
+          <span>${formatCurrency(spent)} / ${formatCurrency(total)}</span>
+        </div>
+        <div style="background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
+          <div style="background: ${color}; height: 100%; width: ${Math.min(percentage, 100)}%;"></div>
+        </div>
+        <small style="color: #666;">${percentage}% - Còn ${formatCurrency(remaining)}</small>
+      </div>
+    `;
+  }).join('');
+}
+
+// Update budget warnings
+function updateBudgetWarnings(budgets) {
+  const container = document.getElementById('budgetWarnings');
+  const warnings = [];
+  const tips = [];
+  const good = [];
+  
+  budgets.forEach(budget => {
+    const spent = parseFloat(budget.spent) || 0;
+    const total = parseFloat(budget.total);
+    const percentage = total > 0 ? (spent / total * 100) : 0;
+    
+    if (percentage > 90) {
+      warnings.push(`${budget.name} đã sử dụng ${percentage.toFixed(1)}% ngân sách. Hãy cẩn thận!`);
+    } else if (percentage > 70) {
+      tips.push(`Hãy kiểm soát chi tiêu ${budget.name} - đã sử dụng ${percentage.toFixed(1)}% ngân sách`);
+    } else if (percentage < 50) {
+      good.push(`Bạn đang kiểm soát tốt chi tiêu ${budget.name}!`);
+    }
+  });
+  
+  let html = '';
+  
+  if (warnings.length > 0) {
+    warnings.forEach(warning => {
+      html += `
+        <div style="margin-bottom: 15px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+          <div style="font-weight: 600; color: #856404; margin-bottom: 5px;">⚠️ Cảnh báo</div>
+          <div style="font-size: 14px; color: #856404;">${warning}</div>
+        </div>
+      `;
+    });
+  }
+  
+  if (tips.length > 0) {
+    tips.forEach(tip => {
+      html += `
+        <div style="margin-bottom: 15px; padding: 15px; background: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px;">
+          <div style="font-weight: 600; color: #0c5460; margin-bottom: 5px;">💡 Mẹo tiết kiệm</div>
+          <div style="font-size: 14px; color: #0c5460;">${tip}</div>
+        </div>
+      `;
+    });
+  }
+  
+  if (good.length > 0) {
+    good.forEach(goodMsg => {
+      html += `
+        <div style="padding: 15px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+          <div style="font-weight: 600; color: #155724; margin-bottom: 5px;">✅ Tốt</div>
+          <div style="font-size: 14px; color: #155724;">${goodMsg}</div>
+        </div>
+      `;
+    });
+  }
+  
+  if (html === '') {
+    html = `
+      <div style="text-align: center; color: #666; padding: 20px;">
+        Không có cảnh báo nào
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
+}
+
+// Update budget chart
+function updateBudgetChart(budgets) {
+  const ctx = document.getElementById('budgetChart');
+  
+  // Destroy existing chart if it exists
+  if (budgetChart) {
+    budgetChart.destroy();
+  }
+  
+  if (budgets.length === 0) {
+    ctx.style.display = 'none';
+    ctx.parentElement.innerHTML += '<div style="text-align: center; color: #666; padding: 20px;">Chưa có dữ liệu ngân sách</div>';
+    return;
+  }
+  
+  ctx.style.display = 'block';
+  
+  // Prepare chart data
+  const labels = budgets.map(budget => budget.name);
+  const spentData = budgets.map(budget => parseFloat(budget.spent) || 0);
+  const totalData = budgets.map(budget => parseFloat(budget.total));
+  
+  budgetChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Đã chi tiêu',
+        data: spentData,
+        backgroundColor: '#FF6384',
+        borderColor: '#FF6384',
+        borderWidth: 1
+      }, {
+        label: 'Tổng ngân sách',
+        data: totalData,
+        backgroundColor: '#36A2EB',
+        borderColor: '#36A2EB',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.dataset.label || '';
+              const value = context.parsed.y;
+              return `${label}: ${formatCurrency(value)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return formatCurrency(value);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// Modal functions
+function showAddBudgetModal() {
+  document.getElementById('budgetModal').style.display = 'flex';
+  
+  // Set default dates
+  const today = new Date();
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  
+  document.getElementById('budgetStartDate').value = today.toISOString().split('T')[0];
+  document.getElementById('budgetEndDate').value = endOfMonth.toISOString().split('T')[0];
+}
+
+function showEditBudgetModal() {
+  alert('Tính năng chỉnh sửa ngân sách sẽ được phát triển sau!');
+}
+
+function closeBudgetModal() {
+  document.getElementById('budgetModal').style.display = 'none';
+  document.getElementById('budgetForm').reset();
+}
+
+// Handle form submission
+document.getElementById('budgetForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = {
+    name: document.getElementById('budgetName').value,
+    total: parseFloat(document.getElementById('budgetAmount').value),
+    startDate: document.getElementById('budgetStartDate').value,
+    endDate: document.getElementById('budgetEndDate').value,
+    description: document.getElementById('budgetNote').value
+  };
+  
+  try {
+    const response = await fetch('/api/budgets', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create budget');
+    }
+    
+    closeBudgetModal();
+    loadBudgetData(); // Reload budget data
+    alert('Thêm ngân sách thành công!');
+  } catch (error) {
+    console.error('Error creating budget:', error);
+    alert('Lỗi khi thêm ngân sách: ' + error.message);
+  }
+});
+
+// Close modal when clicking outside
+document.getElementById('budgetModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeBudgetModal();
+  }
+});
+
+// Load budget data when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  loadBudgetData();
+});
+</script>

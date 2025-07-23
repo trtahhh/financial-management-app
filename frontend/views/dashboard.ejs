@@ -1,1 +1,495 @@
-<h2>Dashboard</h2>
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+  <h1 style="text-align: center; color: #2d6cdf; margin-bottom: 30px; font-size: 2rem;">Dashboard</h1>
+  
+<% if (error) { %>
+    <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
+      <%= error %>
+    </div>
+<% } %>
+
+  <!-- Thống kê tổng quan -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Tổng thu nhập</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalIncome">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Tổng chi tiêu</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalExpense">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Tiết kiệm</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalBalance">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Tỷ lệ tiết kiệm</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="savingsRate">0%</p>
+      <small style="opacity: 0.8;">Mục tiêu: 50%</small>
+    </div>
+  </div>
+
+  <!-- Biểu đồ và bảng -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
+    <!-- Biểu đồ chi tiêu -->
+    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 20px 0; color: #333;">Biểu đồ chi tiêu theo danh mục</h3>
+      <div style="position: relative; height: 300px;">
+        <canvas id="expenseChart"></canvas>
+      </div>
+    </div>
+    
+    <!-- Danh sách giao dịch gần đây -->
+    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 20px 0; color: #333;">Giao dịch gần đây</h3>
+      <div id="recentTransactions" style="max-height: 300px; overflow-y: auto;">
+        <div style="text-align: center; color: #666; padding: 20px;">
+          Đang tải dữ liệu...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mục tiêu tài chính -->
+  <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <h3 style="margin: 0 0 20px 0; color: #333;">Mục tiêu tài chính</h3>
+    <div id="financialGoals" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+      <div style="text-align: center; color: #666; padding: 20px;">
+        Chưa có mục tiêu tài chính
+      </div>
+    </div>
+  </div>
+
+  <!-- Nút thêm giao dịch -->
+  <div style="text-align: center; margin-bottom: 20px;">
+    <button onclick="showAddTransactionModal()" 
+            style="background: #2d6cdf; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+      + Thêm giao dịch mới
+    </button>
+    <button onclick="addSampleData()" 
+            style="background: #27ae60; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+      📊 Tạo dữ liệu mẫu
+    </button>
+    <button onclick="checkCurrentUser()" 
+            style="background: #f39c12; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+      👤 Kiểm tra user
+    </button>
+    <button onclick="testSession()" 
+            style="background: #9b59b6; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+      🔐 Test Session
+    </button>
+    <button onclick="testProxy()" 
+            style="background: #e67e22; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">
+      🔗 Test Proxy
+    </button>
+  </div>
+</div>
+
+<!-- Modal thêm giao dịch -->
+<div id="transactionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+    <h3 style="margin: 0 0 20px 0; color: #333;">Thêm giao dịch mới</h3>
+    
+    <form id="transactionForm">
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ví:</label>
+        <select id="transactionWallet" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+          <option value="">Chọn ví</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Loại giao dịch:</label>
+        <select id="transactionType" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+          <option value="income">Thu nhập</option>
+          <option value="expense">Chi tiêu</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Danh mục:</label>
+        <select id="transactionCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+          <option value="">Chọn danh mục</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Số tiền:</label>
+        <input type="number" id="transactionAmount" placeholder="Nhập số tiền" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ngày giao dịch:</label>
+        <input type="date" id="transactionDate" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ghi chú:</label>
+        <textarea id="transactionNote" placeholder="Ghi chú (tùy chọn)" 
+                  style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; height: 80px; resize: vertical;"></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="closeTransactionModal()" 
+                style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Hủy
+        </button>
+        <button type="submit" 
+                style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Thêm giao dịch
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let expenseChart = null;
+
+// Format currency
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount);
+}
+
+// Format date
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 1) return 'Hôm nay';
+  if (diffDays === 2) return 'Hôm qua';
+  if (diffDays <= 7) return `${diffDays - 1} ngày trước`;
+  return date.toLocaleDateString('vi-VN');
+}
+
+// Load dashboard data
+async function loadDashboardData() {
+  try {
+    console.log('Loading dashboard data...');
+    const response = await fetch('/api/dashboard', {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Dashboard response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Dashboard error response:', errorText);
+      throw new Error('Failed to load dashboard data');
+    }
+    
+    const data = await response.json();
+    console.log('Dashboard data received:', data);
+    updateDashboard(data);
+  } catch (error) {
+    console.error('Error loading dashboard:', error);
+    document.querySelector('.container').innerHTML += `
+      <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin: 20px 0; text-align: center;">
+        Không tải được dữ liệu: ${error.message}
+      </div>
+    `;
+  }
+}
+
+// Update dashboard with real data
+function updateDashboard(data) {
+  // Update summary cards
+  document.getElementById('totalIncome').textContent = formatCurrency(data.monthlyIncome || 0);
+  document.getElementById('totalExpense').textContent = formatCurrency(data.monthlyExpense || 0);
+  document.getElementById('totalBalance').textContent = formatCurrency(data.monthlyBalance || 0);
+  
+  // Calculate savings rate
+  const income = data.monthlyIncome || 0;
+  const expense = data.monthlyExpense || 0;
+  const savingsRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
+  document.getElementById('savingsRate').textContent = `${savingsRate}%`;
+  
+  // Update expense chart
+  updateExpenseChart(data.categoryTotals || []);
+  
+  // Update recent transactions
+  updateRecentTransactions(data.recentTransactions || []);
+}
+
+// Update expense chart
+function updateExpenseChart(categoryTotals) {
+  const ctx = document.getElementById('expenseChart');
+  
+  // Destroy existing chart if it exists
+  if (expenseChart) {
+    expenseChart.destroy();
+  }
+  
+  if (categoryTotals.length === 0) {
+    ctx.style.display = 'none';
+    ctx.parentElement.innerHTML += '<div style="text-align: center; color: #666; padding: 20px;">Chưa có dữ liệu chi tiêu</div>';
+    return;
+  }
+  
+  ctx.style.display = 'block';
+  
+  const labels = categoryTotals.map(item => item[0] || 'Khác');
+  const data = categoryTotals.map(item => item[1] || 0);
+  const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384'];
+  
+  expenseChart = new Chart(ctx, {
+    type: 'doughnut',
+  data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors.slice(0, labels.length),
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed;
+              return `${label}: ${formatCurrency(value)}`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// Update recent transactions
+function updateRecentTransactions(transactions) {
+  const container = document.getElementById('recentTransactions');
+  
+  if (transactions.length === 0) {
+    container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Chưa có giao dịch nào</div>';
+    return;
+  }
+  
+  container.innerHTML = transactions.map(transaction => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+      <div>
+        <div style="font-weight: 600; color: #333;">${transaction[4] || 'Giao dịch'}</div>
+        <small style="color: #666;">${formatDate(transaction[3])}</small>
+      </div>
+      <div style="color: ${transaction[1] === 'income' ? '#27ae60' : '#e74c3c'}; font-weight: 600;">
+        ${transaction[1] === 'income' ? '+' : '-'}${formatCurrency(transaction[2])}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Load wallets and categories for transaction form
+async function loadFormData() {
+  try {
+    // Load wallets
+    const walletsResponse = await fetch('/api/wallets');
+    const wallets = await walletsResponse.json();
+    
+    const walletSelect = document.getElementById('transactionWallet');
+    walletSelect.innerHTML = '<option value="">Chọn ví</option>';
+    wallets.forEach(wallet => {
+      walletSelect.innerHTML += `<option value="${wallet.id}">${wallet.name}</option>`;
+    });
+    
+    // Load categories
+    const categoriesResponse = await fetch('/api/categories');
+    const categories = await categoriesResponse.json();
+    
+    const categorySelect = document.getElementById('transactionCategory');
+    categorySelect.innerHTML = '<option value="">Chọn danh mục</option>';
+    categories.forEach(category => {
+      categorySelect.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+    });
+  } catch (error) {
+    console.error('Error loading form data:', error);
+  }
+}
+
+// Modal functions
+function showAddTransactionModal() {
+  document.getElementById('transactionModal').style.display = 'flex';
+  loadFormData();
+  document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+}
+
+function closeTransactionModal() {
+  document.getElementById('transactionModal').style.display = 'none';
+  document.getElementById('transactionForm').reset();
+}
+
+// Handle form submission
+document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = {
+    walletId: parseInt(document.getElementById('transactionWallet').value),
+    transType: document.getElementById('transactionType').value,
+    categoryId: parseInt(document.getElementById('transactionCategory').value),
+    amount: parseFloat(document.getElementById('transactionAmount').value),
+    transactionDate: document.getElementById('transactionDate').value,
+    description: document.getElementById('transactionNote').value
+  };
+  
+  try {
+    const response = await fetch('/api/transactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create transaction');
+    }
+    
+    closeTransactionModal();
+    loadDashboardData(); // Reload dashboard data
+    alert('Thêm giao dịch thành công!');
+  } catch (error) {
+    console.error('Error creating transaction:', error);
+    alert('Lỗi khi thêm giao dịch: ' + error.message);
+  }
+});
+
+// Close modal when clicking outside
+document.getElementById('transactionModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeTransactionModal();
+  }
+});
+
+// Load dashboard data when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  loadDashboardData();
+});
+
+// Add sample data function
+async function addSampleData() {
+  try {
+    console.log('Creating sample data...');
+    const response = await fetch('/api/test/sample-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Sample data response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Sample data error response:', errorText);
+      throw new Error('Failed to add sample data');
+    }
+    
+    const result = await response.json();
+    console.log('Sample data result:', result);
+    alert('Đã tạo dữ liệu mẫu thành công!');
+    loadDashboardData(); // Reload dashboard data
+  } catch (error) {
+    console.error('Error adding sample data:', error);
+    alert('Lỗi khi tạo dữ liệu mẫu: ' + error.message);
+  }
+}
+
+// Check current user function
+async function checkCurrentUser() {
+  try {
+    console.log('Checking current user...');
+    const response = await fetch('/api/test/current-user');
+    
+    console.log('Current user response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Current user error response:', errorText);
+      throw new Error('Failed to get current user');
+    }
+    
+    const user = await response.json();
+    console.log('Current user data:', user);
+    alert(`Thông tin user hiện tại:\nEmail: ${user.email}\nUsername: ${user.username}\nFull Name: ${user.fullName}\nRole: ${user.role}`);
+  } catch (error) {
+    console.error('Error checking current user:', error);
+    alert('Lỗi khi kiểm tra user hiện tại: ' + error.message);
+  }
+}
+
+// Test session function
+async function testSession() {
+  try {
+    console.log('Testing session...');
+    const response = await fetch('/api/test/session');
+    
+    console.log('Session test response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Session test error response:', errorText);
+      throw new Error('Failed to test session');
+    }
+    
+    const result = await response.json();
+    console.log('Session test result:', result);
+    alert(`Session test result:\nHas Token: ${result.hasToken}\nToken Length: ${result.tokenLength}`);
+  } catch (error) {
+    console.error('Error testing session:', error);
+    alert('Lỗi khi kiểm tra session: ' + error.message);
+  }
+}
+
+// Test proxy function
+async function testProxy() {
+  try {
+    console.log('Testing proxy...');
+    const response = await fetch('/api/test/proxy');
+    
+    console.log('Proxy test response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Proxy test error response:', errorText);
+      throw new Error('Failed to test proxy');
+    }
+    
+    const result = await response.json();
+    console.log('Proxy test result:', result);
+    if (result.success) {
+      alert(`Proxy test successful!\nUser: ${result.data.email}\nUsername: ${result.data.username}`);
+    } else {
+      alert(`Proxy test failed:\nError: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('Error testing proxy:', error);
+    alert('Lỗi khi kiểm tra proxy: ' + error.message);
+  }
+}
+</script>

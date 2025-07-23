@@ -1,0 +1,359 @@
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1 style="text-align: center; color: #2d6cdf; margin-bottom: 30px; font-size: 2rem;">Hồ sơ cá nhân</h1>
+
+  <!-- Ảnh đại diện ở giữa -->
+  <div style="text-align: center; margin: 40px 0; min-height: 140px; position: relative;">
+    <div id="avatarContainer" class="avatar-container">
+      <div id="avatarLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #2d6cdf; font-size: 12px;">Đang tải...</div>
+      <img id="avatarImage" class="avatar-image" 
+           src="<%= user.imageUrl && user.imageUrl.trim() !== '' ? user.imageUrl : '/images/default-avatar.svg' %>" 
+           alt="Ảnh đại diện" 
+           onerror="this.src='/images/default-avatar.svg'; this.onerror=null;" />
+      <div id="avatarOverlay" class="avatar-overlay">
+        <span>Click để mở menu</span>
+      </div>
+    </div>
+    <input type="file" id="avatarFile" accept="image/*" style="display: none;" />
+    
+    <!-- Avatar Menu Dropdown -->
+    <div id="avatarMenu" class="avatar-menu" style="display: none;">
+      <div class="avatar-menu-item" onclick="viewAvatar()">
+        Xem ảnh đại diện
+      </div>
+      <div class="avatar-menu-item" onclick="uploadNewAvatar()">
+        Tải ảnh đại diện mới
+      </div>
+      <div class="avatar-menu-item delete" onclick="deleteAvatar()">
+        Xóa ảnh đại diện
+      </div>
+    </div>
+  </div>
+
+  <form id="profileForm" action="/profile" method="POST">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <div>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Email:</label>
+        <input type="email" name="email" value="<%= user.email %>" readonly 
+               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9;" />
+      </div>
+      
+      <div>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Username:</label>
+        <input type="text" name="username" value="<%= user.username %>" readonly 
+               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9;" />
+      </div>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Họ tên:</label>
+      <input type="text" name="fullName" value="<%= user.fullName || '' %>" readonly 
+             style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9;" />
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <div>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Ngày sinh:</label>
+        <input type="date" name="birthday" value="<%= user.birthday || '' %>" readonly 
+               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9;" />
+      </div>
+      
+      <div>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Giới tính:</label>
+        <select name="gender" readonly 
+                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9;" disabled>
+          <option value="">Chọn giới tính</option>
+          <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Nam</option>
+          <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Nữ</option>
+          <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>Khác</option>
+        </select>
+      </div>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Địa chỉ:</label>
+      <textarea name="address" readonly 
+                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9; height: 80px; resize: vertical; font-family: inherit;"><%= user.address || '' %></textarea>
+    </div>
+    
+    <div style="margin-bottom: 30px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Vai trò:</label>
+      <input type="text" name="role" value="<%= user.role %>" readonly 
+             style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background-color: #f5f5f5; color: #666;" />
+    </div>
+    
+    <div style="text-align: center;">
+      <button type="button" id="editBtn" 
+              style="background: #2d6cdf; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+        Chỉnh sửa thông tin
+      </button>
+      <button type="submit" id="saveBtn" 
+              style="display:none; background: #27ae60; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">
+        Cập nhật
+      </button>
+      <button type="button" id="cancelBtn" 
+              style="display:none; background: #e74c3c; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">
+        Hủy
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Modal xem ảnh -->
+<div id="imageModal" class="image-modal">
+  <div class="modal-content">
+    <img id="modalImage" class="modal-image" src="" alt="Ảnh đại diện" />
+    <div style="margin-top: 15px;">
+      <button type="button" onclick="closeImageModal()" 
+              style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+        Đóng
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const editBtn = document.getElementById('editBtn');
+const saveBtn = document.getElementById('saveBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const form = document.getElementById('profileForm');
+const inputs = form.querySelectorAll('input[name="fullName"], input[name="username"], input[name="birthday"], select[name="gender"], textarea[name="address"]');
+const avatarContainer = document.getElementById('avatarContainer');
+const avatarImage = document.getElementById('avatarImage');
+const avatarOverlay = document.getElementById('avatarOverlay');
+const avatarFile = document.getElementById('avatarFile');
+const imageModal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const avatarLoading = document.getElementById('avatarLoading');
+const avatarMenu = document.getElementById('avatarMenu');
+
+// Preload default avatar
+const defaultAvatar = new Image();
+defaultAvatar.src = '/images/default-avatar.svg';
+
+// Xử lý ảnh load
+avatarImage.onload = function() {
+  console.log('Avatar loaded successfully');
+  this.style.opacity = '1';
+  avatarLoading.style.display = 'none';
+};
+
+avatarImage.onerror = function() {
+  console.log('Avatar failed to load, using default');
+  this.src = '/images/default-avatar.svg';
+  this.onerror = null; // Prevent infinite loop
+  avatarLoading.style.display = 'none';
+};
+
+// Set initial opacity to 0 and fade in when loaded
+avatarImage.style.opacity = '0';
+avatarImage.style.transition = 'opacity 0.3s ease';
+
+// Lưu giá trị ban đầu để có thể khôi phục
+const originalValues = {};
+inputs.forEach(input => {
+  originalValues[input.name] = input.value;
+});
+
+// Avatar hover effect
+avatarContainer.onmouseenter = function() {
+  avatarOverlay.style.display = 'flex';
+};
+
+avatarContainer.onmouseleave = function() {
+  avatarOverlay.style.display = 'none';
+};
+
+// Click avatar để mở menu
+avatarContainer.onclick = function() {
+  if (!document.querySelector('input[name="fullName"]').readOnly) {
+    toggleAvatarMenu();
+  }
+};
+
+// Menu functions
+function toggleAvatarMenu() {
+  if (avatarMenu.style.display === 'none' || avatarMenu.style.display === '') {
+    avatarMenu.style.display = 'block';
+  } else {
+    avatarMenu.style.display = 'none';
+  }
+}
+
+function viewAvatar() {
+  const currentImageUrl = avatarImage.src;
+  if (currentImageUrl && !currentImageUrl.includes('default-avatar.svg')) {
+    modalImage.src = currentImageUrl;
+    imageModal.style.display = 'flex';
+  } else {
+    alert('Chưa có ảnh đại diện để xem');
+  }
+  avatarMenu.style.display = 'none';
+}
+
+function uploadNewAvatar() {
+  avatarFile.click();
+  avatarMenu.style.display = 'none';
+}
+
+function deleteAvatar() {
+  if (confirm('Bạn có chắc muốn xóa ảnh đại diện?')) {
+    // Reset về default avatar
+    avatarImage.src = '/images/default-avatar.svg';
+    
+    // Gửi request xóa avatar
+    fetch('/delete-avatar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        alert('Đã xóa ảnh đại diện!');
+      } else {
+        alert('Lỗi: ' + result.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Có lỗi xảy ra khi xóa ảnh');
+    });
+  }
+  avatarMenu.style.display = 'none';
+}
+
+function closeImageModal() {
+  imageModal.style.display = 'none';
+}
+
+// Handle file upload
+avatarFile.onchange = function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    // Tạo URL tạm thời để hiển thị
+    const tempUrl = URL.createObjectURL(file);
+    avatarImage.src = tempUrl;
+    
+    // Upload file lên server
+    uploadImage(file);
+  }
+};
+
+function uploadImage(file) {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  
+  fetch('/upload-avatar', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      alert('Tải ảnh thành công!');
+    } else {
+      alert('Lỗi: ' + result.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi tải ảnh');
+  });
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+  if (!avatarContainer.contains(e.target) && !avatarMenu.contains(e.target)) {
+    avatarMenu.style.display = 'none';
+  }
+});
+
+// Close modal when clicking outside
+imageModal.addEventListener('click', function(e) {
+  if (e.target === imageModal) {
+    closeImageModal();
+  }
+});
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && imageModal.style.display === 'flex') {
+    closeImageModal();
+  }
+});
+
+editBtn.onclick = function() {
+  // Bật chế độ chỉnh sửa
+  inputs.forEach(input => {
+    input.readOnly = false;
+    input.disabled = false;
+    input.style.backgroundColor = '#fff';
+    input.style.borderColor = '#2d6cdf';
+  });
+  editBtn.style.display = 'none';
+  saveBtn.style.display = 'inline-block';
+  cancelBtn.style.display = 'inline-block';
+};
+
+cancelBtn.onclick = function() {
+  // Khôi phục giá trị ban đầu
+  inputs.forEach(input => {
+    input.value = originalValues[input.name];
+    input.readOnly = true;
+    input.disabled = true;
+    input.style.backgroundColor = '#f9f9f9';
+    input.style.borderColor = '#ddd';
+  });
+  editBtn.style.display = 'inline-block';
+  saveBtn.style.display = 'none';
+  cancelBtn.style.display = 'none';
+};
+
+form.onsubmit = function(e) {
+  e.preventDefault();
+  
+  // Tạo object data để gửi
+  const formData = new FormData(form);
+  const data = {};
+  for (let [key, value] of formData.entries()) {
+    if (value.trim() !== '') {
+      data[key] = value;
+    }
+  }
+  
+  // Gửi request cập nhật
+  fetch('/profile', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.message) {
+      alert(result.message);
+      // Reload trang để hiển thị dữ liệu mới
+      window.location.reload();
+    } else if (result.error) {
+      alert('Lỗi: ' + result.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Có lỗi xảy ra khi cập nhật');
+  });
+  
+  // Trở lại chế độ readonly
+  inputs.forEach(input => {
+    input.readOnly = true;
+    input.disabled = true;
+    input.style.backgroundColor = '#f9f9f9';
+    input.style.borderColor = '#ddd';
+  });
+  editBtn.style.display = 'inline-block';
+  saveBtn.style.display = 'none';
+  cancelBtn.style.display = 'none';
+};
+</script> 

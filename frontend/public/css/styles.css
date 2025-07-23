@@ -4,3 +4,56 @@ body{font-family:sans-serif;margin:0;line-height:1.5}
 .nav-links a{color:#fff;text-decoration:none}
 .container{padding:2rem}
 footer{text-align:center;padding:1rem 0;background:#f1f1f1;font-size:0.9rem}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 18px 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #3986e3;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+.header-buttons a, .header-buttons button {
+  margin-left: 18px;
+  padding: 8px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background 0.2s;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+}
+.header-buttons .login {
+  background: #fff;
+  color: #3986e3;
+  border: 1.5px solid #3986e3;
+}
+.header-buttons .login:hover {
+  background: #3986e3;
+  color: #fff;
+}
+.header-buttons .register {
+  background: linear-gradient(90deg, #3986e3, #00b894);
+  color: #fff;
+  border: none;
+}
+.header-buttons .register:hover {
+  background: linear-gradient(90deg, #00b894, #3986e3);
+}
+@media (max-width: 700px) {
+  .header { flex-direction: column; gap: 10px; padding: 12px 8px; }
+  .header-buttons a, .header-buttons button { margin-left: 0; margin-top: 8px; width: 100%; }
+}

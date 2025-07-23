@@ -1,0 +1,483 @@
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+  <h1 style="text-align: center; color: #2d6cdf; margin-bottom: 30px; font-size: 2rem;">Quản lý giao dịch</h1>
+  
+  <% if (error) { %>
+    <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 20px; text-align: center;">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <!-- Bộ lọc và tìm kiếm -->
+  <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <h3 style="margin: 0 0 20px 0; color: #333;">Bộ lọc giao dịch</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+      <div>
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Loại giao dịch:</label>
+        <select id="filterType" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="">Tất cả</option>
+          <option value="income">Thu nhập</option>
+          <option value="expense">Chi tiêu</option>
+        </select>
+      </div>
+      
+      <div>
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Danh mục:</label>
+        <select id="filterCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="">Tất cả</option>
+          <option value="salary">Lương</option>
+          <option value="food">Ăn uống</option>
+          <option value="transport">Giao thông</option>
+          <option value="shopping">Mua sắm</option>
+          <option value="entertainment">Giải trí</option>
+          <option value="utilities">Tiện ích</option>
+          <option value="other">Khác</option>
+        </select>
+      </div>
+      
+      <div>
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Từ ngày:</label>
+        <input type="date" id="filterFromDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div>
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Đến ngày:</label>
+        <input type="date" id="filterToDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center;">
+      <div style="display: flex; gap: 10px;">
+        <button onclick="applyFilters()" 
+                style="background: #2d6cdf; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Áp dụng bộ lọc
+        </button>
+        <button onclick="clearFilters()" 
+                style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Xóa bộ lọc
+        </button>
+      </div>
+      
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="searchTransaction" placeholder="Tìm kiếm giao dịch..." 
+               style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 250px;">
+        <button onclick="searchTransactions()" 
+                style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          🔍 Tìm kiếm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thống kê giao dịch -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Tổng giao dịch</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalTransactions">0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Thu nhập</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalIncome">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Chi tiêu</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalExpense">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Số dư</h3>
+      <p style="margin: 0; font-size: 2rem; font-weight: bold;" id="totalBalance">₫0</p>
+      <small style="opacity: 0.8;">Tháng này</small>
+    </div>
+  </div>
+
+  <!-- Bảng giao dịch -->
+  <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="margin: 0; color: #333;">Danh sách giao dịch</h3>
+      <button onclick="showAddTransactionModal()" 
+              style="background: #2d6cdf; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+        + Thêm giao dịch
+      </button>
+    </div>
+    
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+            <th style="padding: 12px; text-align: left; font-weight: 600;">Ngày</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600;">Mô tả</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600;">Danh mục</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600;">Số tiền</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600;">Loại</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="transactionsTable">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+              Đang tải dữ liệu...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Phân trang -->
+    <div style="display: flex; justify-content: center; margin-top: 20px; gap: 10px;">
+      <button style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">←</button>
+      <button style="background: #2d6cdf; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">1</button>
+      <button style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">2</button>
+      <button style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">3</button>
+      <button style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal thêm/sửa giao dịch -->
+<div id="transactionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+    <h3 id="modalTitle" style="margin: 0 0 20px 0; color: #333;">Thêm giao dịch mới</h3>
+    
+    <form id="transactionForm">
+      <input type="hidden" id="transactionId">
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Loại giao dịch:</label>
+        <select id="transactionType" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="income">Thu nhập</option>
+          <option value="expense">Chi tiêu</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Danh mục:</label>
+        <select id="transactionCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="salary">Lương</option>
+          <option value="food">Ăn uống</option>
+          <option value="transport">Giao thông</option>
+          <option value="shopping">Mua sắm</option>
+          <option value="entertainment">Giải trí</option>
+          <option value="utilities">Tiện ích</option>
+          <option value="other">Khác</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Số tiền:</label>
+        <input type="number" id="transactionAmount" placeholder="Nhập số tiền" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ngày giao dịch:</label>
+        <input type="date" id="transactionDate" 
+               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Mô tả:</label>
+        <textarea id="transactionDescription" placeholder="Mô tả giao dịch" 
+                  style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; height: 80px; resize: vertical;"></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="closeTransactionModal()" 
+                style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Hủy
+        </button>
+        <button type="submit" 
+                style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+          Lưu giao dịch
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Format currency
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount);
+}
+
+// Format date
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN');
+}
+
+// Load transactions data
+async function loadTransactionsData() {
+  try {
+    console.log('Loading transactions data...');
+    const response = await fetch('/api/transactions');
+    console.log('Transactions response status:', response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Transactions error response:', errorData);
+      throw new Error(errorData.error || 'Failed to load transactions');
+    }
+    
+    const transactions = await response.json();
+    console.log('Transactions data received:', transactions);
+    updateTransactionsTable(transactions);
+    updateTransactionStats(transactions);
+  } catch (error) {
+    console.error('Error loading transactions:', error);
+    document.getElementById('transactionsTable').innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 20px; color: #e74c3c;">
+          Lỗi tải dữ liệu: ${error.message}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Update transactions table
+function updateTransactionsTable(transactions) {
+  const tbody = document.getElementById('transactionsTable');
+  
+  if (!transactions || transactions.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+          Chưa có giao dịch nào
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  tbody.innerHTML = transactions.map(transaction => `
+    <tr style="border-bottom: 1px solid #dee2e6;">
+      <td style="padding: 12px;">${formatDate(transaction.transactionDate)}</td>
+      <td style="padding: 12px;">${transaction.description || 'Giao dịch'}</td>
+      <td style="padding: 12px;">${transaction.category?.name || 'Khác'}</td>
+      <td style="padding: 12px; text-align: right; color: ${transaction.transType === 'income' ? '#27ae60' : '#e74c3c'}; font-weight: 600;">
+        ${transaction.transType === 'income' ? '+' : '-'}${formatCurrency(transaction.amount)}
+      </td>
+      <td style="padding: 12px; text-align: center;">
+        <span style="background: ${transaction.transType === 'income' ? '#27ae60' : '#e74c3c'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+          ${transaction.transType === 'income' ? 'Thu nhập' : 'Chi tiêu'}
+        </span>
+      </td>
+      <td style="padding: 12px; text-align: center;">
+        <button onclick="editTransaction(${transaction.id})" style="background: #ffc107; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">✏️</button>
+        <button onclick="deleteTransaction(${transaction.id})" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Update transaction statistics
+function updateTransactionStats(transactions) {
+  const totalTransactions = transactions.length;
+  const totalIncome = transactions
+    .filter(t => t.transType === 'income')
+    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+  const totalExpense = transactions
+    .filter(t => t.transType === 'expense')
+    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+  const totalBalance = totalIncome - totalExpense;
+  
+  document.getElementById('totalTransactions').textContent = totalTransactions;
+  document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+  document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
+  document.getElementById('totalBalance').textContent = formatCurrency(totalBalance);
+}
+
+// Modal functions
+function showAddTransactionModal() {
+  document.getElementById('modalTitle').textContent = 'Thêm giao dịch mới';
+  document.getElementById('transactionId').value = '';
+  document.getElementById('transactionForm').reset();
+  document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('transactionModal').style.display = 'flex';
+  loadFormData();
+}
+
+async function editTransaction(id) {
+  try {
+    const response = await fetch(`/api/transactions/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to load transaction');
+    }
+    
+    const transaction = await response.json();
+    
+    document.getElementById('modalTitle').textContent = 'Chỉnh sửa giao dịch';
+    document.getElementById('transactionId').value = transaction.id;
+    document.getElementById('transactionType').value = transaction.transType;
+    document.getElementById('transactionCategory').value = transaction.category?.id || '';
+    document.getElementById('transactionAmount').value = transaction.amount;
+    document.getElementById('transactionDate').value = transaction.transactionDate;
+    document.getElementById('transactionDescription').value = transaction.description || '';
+    
+    document.getElementById('transactionModal').style.display = 'flex';
+    loadFormData();
+  } catch (error) {
+    console.error('Error loading transaction:', error);
+    alert('Lỗi khi tải dữ liệu giao dịch: ' + error.message);
+  }
+}
+
+async function deleteTransaction(id) {
+  if (confirm('Bạn có chắc muốn xóa giao dịch này?')) {
+    try {
+      const response = await fetch(`/api/transactions/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete transaction');
+      }
+      
+      alert('Đã xóa giao dịch thành công!');
+      loadTransactionsData(); // Reload data
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      alert('Lỗi khi xóa giao dịch: ' + error.message);
+    }
+  }
+}
+
+function closeTransactionModal() {
+  document.getElementById('transactionModal').style.display = 'none';
+}
+
+// Load form data (wallets and categories)
+async function loadFormData() {
+  try {
+    // Load wallets
+    const walletsResponse = await fetch('/api/wallets');
+    const wallets = await walletsResponse.json();
+    
+    // Load categories
+    const categoriesResponse = await fetch('/api/categories');
+    const categories = await categoriesResponse.json();
+    
+    // Update category select
+    const categorySelect = document.getElementById('transactionCategory');
+    categorySelect.innerHTML = '<option value="">Chọn danh mục</option>';
+    categories.forEach(category => {
+      categorySelect.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+    });
+  } catch (error) {
+    console.error('Error loading form data:', error);
+  }
+}
+
+// Filter functions
+function applyFilters() {
+  const type = document.getElementById('filterType').value;
+  const category = document.getElementById('filterCategory').value;
+  const fromDate = document.getElementById('filterFromDate').value;
+  const toDate = document.getElementById('filterToDate').value;
+  
+  // Build query string
+  const params = new URLSearchParams();
+  if (type) params.append('transType', type);
+  if (category) params.append('categoryId', category);
+  if (fromDate) params.append('fromDate', fromDate);
+  if (toDate) params.append('toDate', toDate);
+  
+  // Reload data with filters
+  loadTransactionsDataWithFilters(params.toString());
+}
+
+async function loadTransactionsDataWithFilters(queryString) {
+  try {
+    const response = await fetch(`/api/transactions?${queryString}`);
+    if (!response.ok) {
+      throw new Error('Failed to load filtered transactions');
+    }
+    
+    const transactions = await response.json();
+    updateTransactionsTable(transactions);
+    updateTransactionStats(transactions);
+  } catch (error) {
+    console.error('Error loading filtered transactions:', error);
+  }
+}
+
+function clearFilters() {
+  document.getElementById('filterType').value = '';
+  document.getElementById('filterCategory').value = '';
+  document.getElementById('filterFromDate').value = '';
+  document.getElementById('filterToDate').value = '';
+  document.getElementById('searchTransaction').value = '';
+  
+  // Reload all transactions
+  loadTransactionsData();
+}
+
+function searchTransactions() {
+  const searchTerm = document.getElementById('searchTransaction').value;
+  if (searchTerm.trim()) {
+    loadTransactionsDataWithFilters(`search=${encodeURIComponent(searchTerm)}`);
+  } else {
+    loadTransactionsData();
+  }
+}
+
+// Handle form submission
+document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const id = document.getElementById('transactionId').value;
+  const formData = {
+    transType: document.getElementById('transactionType').value,
+    categoryId: parseInt(document.getElementById('transactionCategory').value),
+    amount: parseFloat(document.getElementById('transactionAmount').value),
+    transactionDate: document.getElementById('transactionDate').value,
+    description: document.getElementById('transactionDescription').value
+  };
+  
+  try {
+    const url = id ? `/api/transactions/${id}` : '/api/transactions';
+    const method = id ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to save transaction');
+    }
+    
+    closeTransactionModal();
+    loadTransactionsData(); // Reload data
+    alert(id ? 'Cập nhật giao dịch thành công!' : 'Thêm giao dịch thành công!');
+  } catch (error) {
+    console.error('Error saving transaction:', error);
+    alert('Lỗi khi lưu giao dịch: ' + error.message);
+  }
+});
+
+// Close modal when clicking outside
+document.getElementById('transactionModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeTransactionModal();
+  }
+});
+
+// Load data when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  loadTransactionsData();
+});
+</script> 
