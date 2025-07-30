@@ -1,0 +1,38 @@
+<main class="container py-4">
+  <h2 class="mb-4">Mục tiêu tài chính</h2>
+  <div id="goal-list"></div>
+  <button id="goal-add-btn" class="btn btn-success mt-3">+ Thêm mục tiêu</button>
+  <div class="alert alert-info mt-4" id="predict"></div>
+</main>
+<div id="goal-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="goal-form">
+        <div class="modal-header">
+          <h5 id="goal-modal-title" class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id">
+          <div class="mb-3">
+            <label class="form-label">Tên mục tiêu</label>
+            <input class="form-control" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Số tiền cần đạt</label>
+            <input type="number" class="form-control" name="target_amount" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ngày hoàn thành dự kiến</label>
+            <input type="date" class="form-control" name="due_date" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+          <button class="btn btn-success" type="submit">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="/js/goals.js"></script>

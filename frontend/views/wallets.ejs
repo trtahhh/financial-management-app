@@ -1,0 +1,33 @@
+<main class="container py-4">
+  <h2 class="mb-4">Danh sách ví</h2>
+  <table id="wallet-table" class="table table-striped mb-3"></table>
+  <button id="wallet-add-btn" class="btn btn-success">+ Thêm ví</button>
+</main>
+<div id="wallet-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="wallet-form">
+        <div class="modal-header">
+          <h5 id="wallet-modal-title" class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id">
+          <div class="mb-3">
+            <label class="form-label">Tên ví</label>
+            <input class="form-control" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Số dư</label>
+            <input type="number" class="form-control" name="balance" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+          <button class="btn btn-success" type="submit">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="/js/wallets.js"></script>

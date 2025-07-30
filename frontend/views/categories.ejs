@@ -1,0 +1,29 @@
+<main class="container py-4">
+  <h2 class="mb-4">Danh sách danh mục</h2>
+  <table id="cat-table" class="table table-striped mb-3"></table>
+  <button id="cat-add-btn" class="btn btn-success">+ Thêm danh mục</button>
+</main>
+<div id="cat-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="cat-form">
+        <div class="modal-header">
+          <h5 id="cat-modal-title" class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id">
+          <div class="mb-3">
+            <label class="form-label">Tên danh mục</label>
+            <input class="form-control" name="name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+          <button class="btn btn-success" type="submit">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="/js/categories.js"></script>

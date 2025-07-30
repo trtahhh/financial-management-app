@@ -1,0 +1,41 @@
+<main class="container py-4">
+  <h2 class="mb-4">Ngân sách</h2>
+  <table id="budget-table" class="table table-striped mb-3"></table>
+  <button id="budget-add-btn" class="btn btn-success">+ Thêm ngân sách</button>
+</main>
+<div id="budget-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="budget-form">
+        <div class="modal-header">
+          <h5 id="budget-modal-title" class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id">
+          <div class="mb-3">
+            <label class="form-label">Tháng</label>
+            <input type="number" class="form-control" name="month" min="1" max="12" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Năm</label>
+            <input type="number" class="form-control" name="year" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Danh mục</label>
+            <input class="form-control" name="category_id" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Số tiền</label>
+            <input type="number" class="form-control" name="amount" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+          <button class="btn btn-success" type="submit">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="/js/budgets.js"></script>

@@ -4,3 +4,7 @@
 /frontend/node_modules/
 .DS_Store
 .vscode/
+.env
+/backend/.env
+/frontend/.env
+backend/src/main/resources/application-secret.properties
