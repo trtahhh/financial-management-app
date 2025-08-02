@@ -3,7 +3,6 @@ package com.example.finance.controller;
 import com.example.finance.dto.LoginRequest;
 import com.example.finance.dto.RegisterRequest;
 import com.example.finance.dto.AuthResponse;
-import com.example.finance.dto.ApiResponse;
 import com.example.finance.entity.User;
 import com.example.finance.entity.UserProfile;
 import com.example.finance.service.UserService;
