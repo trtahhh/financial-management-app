@@ -42,15 +42,21 @@ app.use(
 );
 
 // 🌐 Các routes render view
-app.get('/', (req, res) => res.redirect('/dashboard'));
+// Trang public (không cần đăng nhập)
+app.get('/', (req, res) => res.render('home', { layout: false }));
+app.get('/home', (req, res) => res.render('home', { layout: false }));
+app.get('/login', (req, res) => res.render('login', { layout: false }));
+app.get('/register', (req, res) => res.render('register', { layout: false }));
+
+// Trang cần đăng nhập (sử dụng layout có sidebar)
 app.get('/dashboard', (req, res) => res.render('dashboard', { title: 'Thống kê tài chính' }));
+app.get('/profile', (req, res) => res.render('profile', { title: 'Hồ sơ cá nhân' }));
 app.get('/wallets', (req, res) => res.render('wallets'));
 app.get('/categories', (req, res) => res.render('categories'));
 app.get('/transactions', (req, res) => res.render('transactions'));
-app.get('/chat', (req, res) => res.render('chat'));
-app.get('/goals', (req, res) => res.render('goals'));
 app.get('/budgets', (req, res) => res.render('budgets'));
-app.get('/login', (req, res) => res.render('login', { title: 'Đăng nhập' }));
+app.get('/goals', (req, res) => res.render('goals'));
+app.get('/chat', (req, res) => res.render('chat'));
 
 // 🚀 Start server
 app.listen(PORT, () => console.log(`✅ Frontend running: http://localhost:${PORT}`));
