@@ -1,6 +1,60 @@
-body{font-family:sans-serif;margin:0;line-height:1.5}
-.nav-bar{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 1rem;background:#222;color:#fff}
-.nav-links{list-style:none;margin:0;display:flex;gap:1rem}
-.nav-links a{color:#fff;text-decoration:none}
-.container{padding:2rem}
-footer{text-align:center;padding:1rem 0;background:#f1f1f1;font-size:0.9rem}
+body {
+  background: #f5f6fa;
+  font-family: 'Inter', 'Roboto', Arial, sans-serif;
+}
+
+h2 {
+  font-weight: 700;
+  color: #16883e;
+  margin-bottom: 1.2rem;
+}
+
+.table thead th, .table-striped > tbody > tr:nth-of-type(odd) {
+  background: #e8f5e9;
+}
+
+.btn-success, .bg-success {
+  background-color: #16883e !important;
+  border-color: #16883e !important;
+}
+
+.btn-success:active, .btn-success:focus, .btn-success:hover {
+  background-color: #126c30 !important;
+  border-color: #126c30 !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #b0edc1;
+}
+
+.bubble.me {
+  align-self: flex-end;
+  background: #DCF8C6;
+  color: #222;
+  border-radius: 14px 14px 0 14px;
+}
+.bubble.bot {
+  align-self: flex-start;
+  background: #fff;
+  color: #16883e;
+  border-radius: 14px 14px 14px 0;
+}
+#chat-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+footer {
+  font-size: 0.95em;
+  background: #e8f5e9;
+}
+
+.modal-content {
+  border-radius: 18px;
+}
+
+.progress-bar {
+  font-weight: 500;
+}

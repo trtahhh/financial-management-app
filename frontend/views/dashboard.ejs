@@ -1,1 +1,31 @@
-<h2>Dashboard</h2>
+<main class="container py-4">
+  <h2 class="mb-4">Thống kê tài chính</h2>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <label for="dash-month">Chọn tháng</label>
+      <input type="month" id="dash-month" class="form-control"
+             value="<%= new Date().toISOString().slice(0,7) %>">
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col">
+      <b>Tổng thu:</b> <span id="totalIncome"></span>
+       | 
+      <b>Tổng chi:</b> <span id="totalExpense"></span>
+       | 
+      <b>Số dư:</b> <span id="balance"></span>
+    </div>
+  </div>
+
+  <!-- 3 chart sau này nếu có dữ liệu thì bỏ comment -->
+  <!--
+  <div class="row">
+    <div class="col-md-6 mb-4"><canvas id="chart-pie"></canvas></div>
+    <div class="col-md-6 mb-4"><canvas id="chart-bar"></canvas></div>
+    <div class="col-md-12 mb-4"><canvas id="chart-line"></canvas></div>
+  </div>
+  -->
+</main>
+<script src="/js/dashboard.js"></script>
