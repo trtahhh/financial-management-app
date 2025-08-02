@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-07-30T19:03:33+0700",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.42.50.v20250628-1110, environment: Java 21.0.7 (Eclipse Adoptium)"
+    date = "2025-08-01T02:48:51+0700",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.15 (Eclipse Adoptium)"
 )
 @Component
 public class TransactionMapperImpl implements TransactionMapper {
@@ -54,10 +54,10 @@ public class TransactionMapperImpl implements TransactionMapper {
         transactionDTO.setDeletedAt( xmlGregorianCalendarToLocalDate( localDateTimeToXmlGregorianCalendar( entity.getDeletedAt() ) ) );
         transactionDTO.setCreatedAt( xmlGregorianCalendarToLocalDate( localDateTimeToXmlGregorianCalendar( entity.getCreatedAt() ) ) );
         transactionDTO.setUpdatedAt( xmlGregorianCalendarToLocalDate( localDateTimeToXmlGregorianCalendar( entity.getUpdatedAt() ) ) );
-        transactionDTO.setAmount( entity.getAmount() );
         transactionDTO.setId( entity.getId() );
-        transactionDTO.setNote( entity.getNote() );
+        transactionDTO.setAmount( entity.getAmount() );
         transactionDTO.setType( entity.getType() );
+        transactionDTO.setNote( entity.getNote() );
 
         return transactionDTO;
     }
@@ -70,16 +70,16 @@ public class TransactionMapperImpl implements TransactionMapper {
 
         Transaction transaction = new Transaction();
 
-        transaction.setAmount( dto.getAmount() );
-        transaction.setCreatedAt( xmlGregorianCalendarToLocalDateTime( localDateToXmlGregorianCalendar( dto.getCreatedAt() ) ) );
-        transaction.setDate( dto.getDate() );
-        transaction.setDeletedAt( xmlGregorianCalendarToLocalDateTime( localDateToXmlGregorianCalendar( dto.getDeletedAt() ) ) );
-        transaction.setFilePath( dto.getFilePath() );
         transaction.setId( dto.getId() );
+        transaction.setAmount( dto.getAmount() );
+        transaction.setType( dto.getType() );
         transaction.setNote( dto.getNote() );
+        transaction.setDate( dto.getDate() );
+        transaction.setFilePath( dto.getFilePath() );
         transaction.setStatus( dto.getStatus() );
         transaction.setTags( dto.getTags() );
-        transaction.setType( dto.getType() );
+        transaction.setDeletedAt( xmlGregorianCalendarToLocalDateTime( localDateToXmlGregorianCalendar( dto.getDeletedAt() ) ) );
+        transaction.setCreatedAt( xmlGregorianCalendarToLocalDateTime( localDateToXmlGregorianCalendar( dto.getCreatedAt() ) ) );
         transaction.setUpdatedAt( xmlGregorianCalendarToLocalDateTime( localDateToXmlGregorianCalendar( dto.getUpdatedAt() ) ) );
 
         return transaction;

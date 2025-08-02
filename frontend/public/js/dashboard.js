@@ -7,9 +7,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function fetchStats(month) {
     const [year, monthNum] = month.split('-').map(Number);
-    const url = `http://localhost:3000/api/statistics/summary?userId=${userId}&month=${monthNum}&year=${year}`;
+    const url = `/api/statistics/summary?userId=${userId}&month=${monthNum}&year=${year}`;
     console.log("📡 Fetching URL:", url);   // ✅ in URL để debug
-    return fetch(url)
+    
+    const token = localStorage.getItem('authToken');
+    console.log("🔑 Token:", token ? "Token exists (length: " + token.length + ")" : "No token found");
+    console.log("🔑 Token value:", token); // Debug full token
+    
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    
+    return fetch(url, { headers })
       .then(res => {
         console.log("🔍 Response status:", res.status); // ✅ in mã status HTTP
         if (!res.ok) return res.text().then(text => { 
