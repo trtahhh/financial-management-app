@@ -1,10 +1,36 @@
+# Build output
 /target/
+/backend/target/
+/frontend/build/
+/frontend/dist/
+
+# IDE files
 /backend/.idea/
+/.idea/
+.vscode/
+
+# Dependencies
 /node_modules/
 /frontend/node_modules/
+/backend/.mvn/
+
+# OS files
 .DS_Store
-.vscode/
+Thumbs.db
+
+# Environment and secrets
 .env
 /backend/.env
 /frontend/.env
 backend/src/main/resources/application-secret.properties
+
+# Temporary files
+/uploads/
+/backend/uploads/
+*.log
+*.tmp
+
+# Test coverage
+/coverage/
+/backend/coverage/
+/frontend/coverage/
