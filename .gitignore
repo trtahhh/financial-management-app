@@ -34,3 +34,5 @@ backend/src/main/resources/application-secret.properties
 /coverage/
 /backend/coverage/
 /frontend/coverage/
+/backend/target/
+
