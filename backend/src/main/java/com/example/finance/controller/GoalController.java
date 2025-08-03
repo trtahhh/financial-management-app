@@ -17,15 +17,24 @@ public class GoalController {
     private final GoalService service;
 
     @GetMapping
-    public List<GoalDTO> list() { return service.findAll(); }
+    public List<GoalDTO> list() { 
+        // Tạm thời lấy goals của user ID = 1
+        return service.findByUserId(1L); 
+    }
 
     @GetMapping("/predict")
-    public Map<String, BigDecimal> predict() {
-        return Map.of("nextMonth", service.predictNextMonth());
+    public Map<String, String> predict() {
+        BigDecimal predicted = service.predictNextMonth();
+        String message = String.format("Dự đoán thu nhập tháng tới: %,d VND", predicted.longValue());
+        return Map.of("message", message);
     }
 
     @PostMapping
     public GoalDTO create(@RequestBody GoalDTO dto) {
+        // Tạm thời set userId = 1 (user mặc định)
+        if (dto.getUserId() == null) {
+            dto.setUserId(1L);
+        }
         return service.save(dto);
     }
 
@@ -37,6 +46,10 @@ public class GoalController {
     @PutMapping("/{id}")
     public GoalDTO update(@PathVariable("id") Long id, @RequestBody GoalDTO dto) {
         dto.setId(id);
+        // Tạm thời set userId = 1 (user mặc định) nếu chưa có
+        if (dto.getUserId() == null) {
+            dto.setUserId(1L);
+        }
         return service.update(dto);
     }
 

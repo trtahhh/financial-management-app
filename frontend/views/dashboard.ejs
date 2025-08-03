@@ -1,31 +1,72 @@
-<main class="container py-4">
-  <h2 class="mb-4">Thống kê tài chính</h2>
+<main class="container-fluid py-4">
+  <!-- Header Section -->
+  <div class="mb-4">
+    <h3 class="text-success fw-bold">Thống kê tài chính</h3>
+    <p class="text-muted">Tổng quan về tình hình thu chi và phân tích tài chính</p>
+  </div>
 
-  <div class="row mb-4">
-    <div class="col-md-4">
-      <label for="dash-month">Chọn tháng</label>
-      <input type="month" id="dash-month" class="form-control"
-             value="<%= new Date().toISOString().slice(0,7) %>">
+  <!-- Month Filter -->
+  <div class="card border-0 shadow mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-3">
+          <label class="form-label text-muted fw-bold">Chọn tháng</label>
+          <input type="month" id="dash-month" class="form-control border-0 bg-light"
+                 value="<%= new Date().toISOString().slice(0,7) %>">
+        </div>
+        <div class="col-md-9">
+          <div class="row text-center">
+            <div class="col-md-4">
+              <div class="border-end">
+                <h6 class="text-muted mb-1">Tổng thu</h6>
+                <h4 class="text-success mb-0" id="totalIncome">0 đ</h4>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border-end">
+                <h6 class="text-muted mb-1">Tổng chi</h6>
+                <h4 class="text-danger mb-0" id="totalExpense">0 đ</h4>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-muted mb-1">Số dư</h6>
+              <h4 class="text-primary mb-0" id="balance">0 đ</h4>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row mb-3">
-    <div class="col">
-      <b>Tổng thu:</b> <span id="totalIncome"></span>
-       | 
-      <b>Tổng chi:</b> <span id="totalExpense"></span>
-       | 
-      <b>Số dư:</b> <span id="balance"></span>
-    </div>
-  </div>
-
-  <!-- 3 chart sau này nếu có dữ liệu thì bỏ comment -->
-  <!--
+  <!-- Charts Section -->
   <div class="row">
-    <div class="col-md-6 mb-4"><canvas id="chart-pie"></canvas></div>
-    <div class="col-md-6 mb-4"><canvas id="chart-bar"></canvas></div>
-    <div class="col-md-12 mb-4"><canvas id="chart-line"></canvas></div>
+    <div class="col-lg-6 mb-4">
+      <div class="card border-0 shadow h-100">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 text-success">Phân bổ chi tiêu theo danh mục</h5>
+          <small class="text-muted">Phân tích chi tiết các khoản chi tiêu</small>
+        </div>
+        <div class="card-body">
+          <div style="height: 300px; position: relative;">
+            <canvas id="chart-pie"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+      <div class="card border-0 shadow h-100">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 text-success">Thu chi theo tuần</h5>
+          <small class="text-muted">So sánh thu nhập và chi tiêu hàng tuần</small>
+        </div>
+        <div class="card-body">
+          <div style="height: 300px; position: relative;">
+            <canvas id="chart-bar"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  -->
-</main>
+</main><!-- Add Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/js/dashboard.js"></script>

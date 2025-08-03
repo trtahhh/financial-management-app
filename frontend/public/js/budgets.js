@@ -3,38 +3,67 @@ document.addEventListener('DOMContentLoaded', function () {
   const m = new bootstrap.Modal(document.getElementById('budget-modal'));
   const f = document.getElementById('budget-form');
   const title = document.getElementById('budget-modal-title');
+  const categorySelect = f.querySelector('select[name="category_id"]');
   let editing = null;
+  let categories = [];
+
+  // Load categories first
+  function loadCategories() {
+    return fetch('/api/categories')
+      .then(r => r.json())
+      .then(cats => {
+        categories = cats;
+        categorySelect.innerHTML = '<option value="">Chọn danh mục</option>';
+        cats.forEach(cat => {
+          categorySelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+        });
+      });
+  }
 
   function load() {
-    fetch('/api/budgets')
-      .then(r => r.json())
-      .then(d => {
-        t.innerHTML =
-          '<thead><tr><th>Tháng</th><th>Năm</th><th>Danh mục</th><th>Số tiền</th><th>Đã dùng</th><th></th></tr></thead><tbody>' +
-          d.map(b =>
-            `<tr data-id="${b.id}">
-              <td>${b.month}</td>
-              <td>${b.year}</td>
-              <td>${b.category_id}</td>
-              <td>${b.amount}</td>
-              <td>
-                <div class="progress">
-                  <div class="progress-bar bg-success" role="progressbar" style="width:${b.progress||0}%">${b.progress||0}%</div>
+    Promise.all([
+      fetch('/api/budgets').then(r => r.json()),
+      fetch('/api/categories').then(r => r.json())
+    ]).then(([budgets, categories]) => {
+      const categoryMap = {};
+      categories.forEach(cat => categoryMap[cat.id] = cat.name);
+      
+      t.innerHTML =
+        '<thead><tr><th>Tháng</th><th>Năm</th><th>Danh mục</th><th>Số tiền</th><th>Đã dùng</th><th></th></tr></thead><tbody>' +
+        budgets.map(b =>
+          `<tr data-id="${b.id}">
+            <td>${b.month}</td>
+            <td>${b.year}</td>
+            <td>${categoryMap[b.categoryId] || 'Không xác định'}</td>
+            <td>${b.amount?.toLocaleString('vi-VN')} VND</td>
+            <td>
+              <div class="d-flex flex-column">
+                <span class="fw-bold">${(b.usedAmount || 0).toLocaleString('vi-VN')} VND</span>
+                <div class="progress mt-1" style="height: 8px;">
+                  <div class="progress-bar ${(b.progress||0) > 100 ? 'bg-danger' : (b.progress||0) > 80 ? 'bg-warning' : 'bg-success'}" 
+                       role="progressbar" 
+                       style="width:${Math.min(b.progress||0, 100)}%"
+                       title="${b.progress||0}% đã sử dụng">
+                  </div>
                 </div>
-              </td>
-              <td>
-                <button class="btn btn-sm btn-outline-primary edit">Sửa</button>
-                <button class="btn btn-sm btn-outline-danger ms-2 del">Xoá</button>
-              </td>
-            </tr>`
-          ).join('') + '</tbody>';
-      }).catch(e => alert(e.message));
+                <small class="text-muted">${b.progress||0}% đã sử dụng</small>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary edit">Sửa</button>
+              <button class="btn btn-sm btn-outline-danger ms-2 del">Xoá</button>
+            </td>
+          </tr>`
+        ).join('') + '</tbody>';
+    }).catch(e => alert(e.message));
   }
 
   document.getElementById('budget-add-btn').addEventListener('click', function () {
     editing = null;
     f.reset();
     title.textContent = 'Thêm ngân sách';
+    f.year.value = new Date().getFullYear(); // Set default year
+    f.month.value = new Date().getMonth() + 1; // Set default month
     m.show();
   });
 
@@ -47,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
           editing = id;
           f.month.value = b.month;
           f.year.value = b.year;
-          f.category_id.value = b.category_id;
+          f.category_id.value = b.categoryId;
           f.amount.value = b.amount;
           title.textContent = 'Sửa ngân sách';
           m.show();
@@ -67,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const data = {
       month: +f.month.value,
       year: +f.year.value,
-      category_id: f.category_id.value,
+      categoryId: +f.category_id.value,
       amount: +f.amount.value
     };
     const method = editing ? 'PUT' : 'POST';
@@ -82,5 +111,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }).catch(e => alert(e.message));
   });
 
-  load();
+  // Initialize
+  loadCategories().then(() => {
+    load();
+  });
 });

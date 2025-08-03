@@ -152,6 +152,16 @@ public class TransactionService {
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public BigDecimal sumByCategoryAndMonth(Long categoryId, int month, int year) {
+        YearMonth ym = YearMonth.of(year, month);
+        var list = repo.findAllByDateBetween(ym.atDay(1), ym.atEndOfMonth());
+        return list.stream()
+                   .filter(t -> t.getCategory() != null && t.getCategory().getId().equals(categoryId))
+                   .filter(t -> "CHI".equals(t.getType())) // Only count expenses
+                   .map(Transaction::getAmount)
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     private void checkOverBudget(Transaction transaction) {
         if (transaction == null || transaction.getUser() == null || transaction.getCategory() == null) return;
         Long userId = transaction.getUser().getId();

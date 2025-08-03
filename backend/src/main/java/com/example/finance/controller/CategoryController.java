@@ -3,36 +3,97 @@ package com.example.finance.controller;
 import com.example.finance.dto.CategoryDTO;
 import com.example.finance.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@Slf4j
+@CrossOrigin(origins = "*")
 public class CategoryController {
 
     private final CategoryService service;
 
     @GetMapping
-    public List<CategoryDTO> list() { return service.findAll(); }
+    public ResponseEntity<?> list() {
+        try {
+            List<CategoryDTO> categories = service.findAll();
+            log.info("Retrieved {} categories", categories.size());
+            return ResponseEntity.ok(categories);
+        } catch (Exception e) {
+            log.error("Error getting categories", e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Lỗi lấy danh sách danh mục: " + e.getMessage()));
+        }
+    }
 
     @PostMapping
-    public CategoryDTO create(@RequestBody CategoryDTO dto) { return service.save(dto); }
+    public ResponseEntity<?> create(@RequestBody CategoryDTO dto) {
+        try {
+            log.info("Creating category with data: {}", dto);
+            CategoryDTO result = service.save(dto);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Tạo danh mục thành công",
+                "data", result
+            ));
+        } catch (Exception e) {
+            log.error("Error creating category", e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Lỗi tạo danh mục: " + e.getMessage()));
+        }
+    }
 
     @GetMapping("/{id}")
-    public CategoryDTO getById(@PathVariable("id") Long id) {
-        return service.findById(id);
+    public ResponseEntity<?> getById(@PathVariable("id") Long id) {
+        try {
+            CategoryDTO category = service.findById(id);
+            if (category == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "Không tìm thấy danh mục"));
+            }
+            return ResponseEntity.ok(category);
+        } catch (Exception e) {
+            log.error("Error getting category by id: {}", id, e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Lỗi lấy thông tin danh mục: " + e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
-    public CategoryDTO update(@PathVariable("id") Long id, @RequestBody CategoryDTO dto) {
-        dto.setId(id);
-        return service.update(dto);
+    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody CategoryDTO dto) {
+        try {
+            dto.setId(id);
+            CategoryDTO result = service.update(dto);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Cập nhật danh mục thành công",
+                "data", result
+            ));
+        } catch (Exception e) {
+            log.error("Error updating category: {}", id, e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Lỗi cập nhật danh mục: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Long id) {
-        service.deleteById(id);
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+        try {
+            service.deleteById(id);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Xóa danh mục thành công"
+            ));
+        } catch (Exception e) {
+            log.error("Error deleting category: {}", id, e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Lỗi xóa danh mục: " + e.getMessage()));
+        }
     }
 }

@@ -1,10 +1,184 @@
-<main class="container py-4">
-  <h2 class="mb-4">Trợ lý AI</h2>
-  <div id="chat-pane" class="border rounded p-3 mb-3" style="height:400px;overflow-y:auto;background:#f8f9fa"></div>
-  <div class="input-group">
-    <textarea id="chat-input" class="form-control" rows="1" placeholder="Nhập nội dung..."></textarea>
-    <button id="chat-send" class="btn btn-success">Gửi</button>
+<main class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Header Section -->
+      <div class="mb-4">
+        <h3 class="text-success fw-bold">Trợ lý AI</h3>
+        <p class="text-muted">Hỗ trợ tư vấn tài chính và trả lời các câu hỏi 24/7</p>
+      </div>
+
+      <div class="card shadow border-0">
+        <div class="card-body p-0">
+          <div id="chat-pane" class="p-4" style="height:500px;overflow-y:auto;background: #f8f9fa;">
+            <div class="welcome-message text-center py-4">
+              <h5 class="text-success mb-3">Xin chào! Tôi là trợ lý AI của bạn</h5>
+              <p class="text-muted mb-4">Hãy hỏi tôi bất cứ điều gì về:</p>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <div class="card border-0 bg-white shadow-sm h-100">
+                    <div class="card-body text-center py-3">
+                      <h6 class="text-success mb-2">Tài chính cá nhân</h6>
+                      <small class="text-muted">Phân tích chi tiêu, tiết kiệm, ngân sách</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div class="card border-0 bg-white shadow-sm h-100">
+                    <div class="card-body text-center py-3">
+                      <h6 class="text-success mb-2">Tư vấn đầu tư</h6>
+                      <small class="text-muted">Kế hoạch đầu tư, quản lý rủi ro</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div class="card border-0 bg-white shadow-sm h-100">
+                    <div class="card-body text-center py-3">
+                      <h6 class="text-success mb-2">Kiến thức tổng quát</h6>
+                      <small class="text-muted">Công nghệ, giáo dục, sức khỏe</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <div class="card border-0 bg-white shadow-sm h-100">
+                    <div class="card-body text-center py-3">
+                      <h6 class="text-success mb-2">Hỗ trợ 24/7</h6>
+                      <small class="text-muted">Tư vấn mọi lúc, mọi nơi</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer bg-white border-top">
+            <div class="row g-3">
+              <div class="col">
+                <textarea id="chat-input" class="form-control border-0 bg-light" rows="2" 
+                          placeholder="Ví dụ: Tôi nên tiết kiệm bao nhiều mỗi tháng?"
+                          style="resize: none;"></textarea>
+              </div>
+              <div class="col-auto d-flex align-items-end">
+                <button id="chat-send" class="btn btn-success px-4">
+                  Gửi
+                </button>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Xin chào')">Xin chào</button>
+                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Thời tiết hôm nay thế nào?')">Thời tiết</button>
+                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Làm thế nào để tiết kiệm tiền?')">Tiết kiệm</button>
+                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Tôi muốn học về đầu tư')">Đầu tư</button>
+              </div>
+              <small class="text-muted">
+                Tôi có thể trả lời về nhiều chủ đề: tài chính, công nghệ, giáo dục, sức khỏe...
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
+
+<style>
+  .chat-message {
+    margin-bottom: 1rem;
+    animation: fadeInUp 0.3s ease;
+  }
+  
+  .user-message {
+    text-align: right;
+  }
+  
+  .user-bubble {
+    display: inline-block;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 18px 18px 4px 18px;
+    max-width: 70%;
+    word-wrap: break-word;
+    box-shadow: 0 2px 8px rgba(40,167,69,0.3);
+  }
+  
+  .ai-message {
+    text-align: left;
+  }
+  
+  .ai-bubble {
+    display: inline-block;
+    background: white;
+    color: #333;
+    padding: 12px 18px;
+    border-radius: 18px 18px 18px 4px;
+    max-width: 70%;
+    word-wrap: break-word;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .ai-avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    margin-right: 8px;
+    vertical-align: top;
+  }
+  
+  .typing-indicator {
+    display: inline-block;
+    padding: 12px 18px;
+    background: white;
+    border-radius: 18px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .typing-dots {
+    display: inline-block;
+  }
+  
+  .typing-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #28a745;
+    margin: 0 2px;
+    animation: typing 1.4s infinite ease-in-out;
+  }
+  
+  .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+  
+  @keyframes typing {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  #chat-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40,167,69,0.25);
+  }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="/js/chat.js"></script>

@@ -1,4 +1,8 @@
 // Utility functions for authenticated API calls
+function getAuthToken() {
+  return localStorage.getItem('authToken');
+}
+
 function getAuthHeaders() {
   const token = localStorage.getItem('authToken');
   return {
@@ -14,6 +18,11 @@ function checkAuth() {
     return false;
   }
   return true;
+}
+
+function logout() {
+  localStorage.removeItem('authToken');
+  window.location.href = '/login';
 }
 
 async function authenticatedFetch(url, options = {}) {
@@ -52,7 +61,9 @@ async function authenticatedFetch(url, options = {}) {
 
 // Export for use in other files
 window.authUtils = {
+  getAuthToken,
   getAuthHeaders,
   checkAuth,
-  authenticatedFetch
+  authenticatedFetch,
+  logout
 };

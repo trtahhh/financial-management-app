@@ -29,6 +29,10 @@ public class GoalService {
         return repo.findAll().stream().map(mapper::toDto).toList();
     }
 
+    public List<GoalDTO> findByUserId(Long userId) {
+        return repo.findByUserId(userId).stream().map(mapper::toDto).toList();
+    }
+
     public BigDecimal predictNextMonth() {
         SimpleRegression regression = new SimpleRegression(true);
 
@@ -53,10 +57,18 @@ public class GoalService {
     }
 
     public GoalDTO update(GoalDTO dto) {
-        if (!repo.existsById(dto.getId())) {
-            throw new RuntimeException("Goal not found with id: " + dto.getId());
-        }
-        return mapper.toDto(repo.save(mapper.toEntity(dto)));
+        Goal existingGoal = repo.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Goal not found with id: " + dto.getId()));
+        
+        // Update only the necessary fields to avoid concurrent modification
+        existingGoal.setName(dto.getName());
+        existingGoal.setTargetAmount(dto.getTargetAmount());
+        existingGoal.setCurrentAmount(dto.getCurrentAmount());
+        existingGoal.setDueDate(dto.getDueDate());
+        existingGoal.setStatus(dto.getStatus());
+        existingGoal.setCompletedAt(dto.getCompletedAt());
+        
+        return mapper.toDto(repo.save(existingGoal));
     }
 
     public void deleteById(Long id) {

@@ -11,6 +11,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,12 +23,32 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final BudgetMapper budgetMapper;
     private final CategoryRepository categoryRepository;
+    private final TransactionService transactionService;
 
 
     @Cacheable("budgets")
     public List<BudgetDTO> getAllBudgets() {
         List<Budget> budgets = budgetRepository.findAllByIsDeletedFalse();
-        return budgetMapper.toDTOs(budgets);
+        List<BudgetDTO> budgetDTOs = budgetMapper.toDTOs(budgets);
+        
+        // Calculate progress for each budget
+        for (BudgetDTO budget : budgetDTOs) {
+            BigDecimal usedAmount = transactionService.sumByCategoryAndMonth(
+                budget.getCategoryId(), budget.getMonth(), budget.getYear());
+            
+            // Set used amount
+            budget.setUsedAmount(usedAmount);
+            
+            if (budget.getAmount() != null && budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal progress = usedAmount.divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+                budget.setProgress(Math.min(progress.intValue(), 100));
+            } else {
+                budget.setProgress(0);
+            }
+        }
+        
+        return budgetDTOs;
     }
 
     @Cacheable(value = "budgets", key = "#id")
