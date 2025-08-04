@@ -33,7 +33,12 @@ public class Budget {
 
     private String currencyCode;
     @Column(name = "is_deleted")
-    private boolean isDeleted;
+    private boolean isDeleted = false;
+
+    // Constructor
+    public Budget() {
+        this.isDeleted = false;
+    }
 
     // Thêm getter/setter thủ công
     public Boolean getIsDeleted() {
@@ -41,7 +46,7 @@ public class Budget {
     }
 
     public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
+        this.isDeleted = isDeleted != null ? isDeleted : false;
     }
 
     private LocalDateTime createdAt;

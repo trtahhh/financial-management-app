@@ -57,7 +57,7 @@ function loadTransactions() {
         .map(t => ({
           id: t.id,
           date: t.date,
-          type: t.type === 'CHI' ? 'expense' : 'income',
+          type: t.type, // Use the type as is since backend returns 'income'/'expense'
           category: t.category?.name || 'Khác',
           categoryId: t.categoryId,
           amount: t.amount,
@@ -271,11 +271,12 @@ function saveTransaction() {
   
   const transactionData = {
     date: formData.get('date'),
-    type: formData.get('type') === 'income' ? 'THU' : 'CHI',
+    type: formData.get('type') === 'income' ? 'income' : 'expense',
     categoryId: categoryId ? parseInt(categoryId) : null,
     amount: amount,
     note: formData.get('note') || '',
-    userId: userId
+    userId: userId,
+    walletId: 1 // Default wallet ID
   };
   
   console.log("📤 Sending transaction data:", transactionData);
@@ -314,6 +315,18 @@ function saveTransaction() {
     })
     .then(data => {
       console.log("✅ Transaction saved:", data);
+      
+      // 🔗 TRIGGER INTEGRATION SYSTEM - Kích hoạt hệ thống tích hợp
+      if (window.FinancialIntegration) {
+        FinancialIntegration.processTransaction(transactionData, !editingTransaction);
+      }
+      
+      // Dispatch custom event for other modules
+      const event = new CustomEvent(editingTransaction ? 'transactionUpdated' : 'transactionSaved', {
+        detail: { transaction: { ...transactionData, id: data.id || editingTransaction?.id } }
+      });
+      window.dispatchEvent(event);
+      
       showAlert('success', editingTransaction ? 'Cập nhật giao dịch thành công!' : 'Thêm giao dịch thành công!');
       
       // Reload transactions
@@ -413,4 +426,155 @@ function showAlert(type, message) {
       alertDiv.remove();
     }
   }, 3000);
+}
+
+// 🔗 INTEGRATION FUNCTIONS - Các hàm liên kết giữa các chức năng
+
+/**
+ * Cập nhật việc sử dụng ngân sách khi có giao dịch mới
+ */
+function updateBudgetUsage(categoryId, transactionType, amount) {
+  if (transactionType !== 'CHI' || !categoryId) return;
+  
+  const currentDate = new Date();
+  const month = currentDate.getMonth() + 1;
+  const year = currentDate.getFullYear();
+  
+  // Gọi API để cập nhật budget usage
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  fetch(`http://localhost:8080/api/budgets/updateUsage`, {
+    method: 'POST',
+    headers: headers,
+    mode: 'cors',
+    body: JSON.stringify({
+      categoryId: categoryId,
+      amount: amount,
+      month: month,
+      year: year,
+      userId: userId
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Budget usage updated:", data);
+  })
+  .catch(err => {
+    console.error("❌ Failed to update budget usage:", err);
+  });
+}
+
+/**
+ * Cập nhật tiến độ mục tiêu khi có giao dịch tiết kiệm
+ */
+function updateGoalProgress(transactionType, amount) {
+  if (transactionType !== 'THU') return;
+  
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  fetch(`http://localhost:8080/api/goals/updateProgress`, {
+    method: 'POST',
+    headers: headers,
+    mode: 'cors',
+    body: JSON.stringify({
+      userId: userId,
+      amount: amount
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Goal progress updated:", data);
+  })
+  .catch(err => {
+    console.error("❌ Failed to update goal progress:", err);
+  });
+}
+
+/**
+ * Cập nhật số dư ví
+ */
+function updateWalletBalance(transactionType, amount) {
+  const balanceChange = transactionType === 'THU' ? amount : -amount;
+  
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  fetch(`http://localhost:8080/api/wallets/updateBalance`, {
+    method: 'POST',
+    headers: headers,
+    mode: 'cors',
+    body: JSON.stringify({
+      userId: userId,
+      balanceChange: balanceChange
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Wallet balance updated:", data);
+  })
+  .catch(err => {
+    console.error("❌ Failed to update wallet balance:", err);
+  });
+}
+
+/**
+ * Tạo thông báo về tác động của giao dịch
+ */
+function getTransactionImpactMessage(transaction) {
+  let message = '';
+  
+  if (transaction.type === 'CHI') {
+    message = '💳 Ngân sách đã được cập nhật.';
+  } else if (transaction.type === 'THU') {
+    message = '💰 Mục tiêu tiết kiệm đã được cập nhật.';
+  }
+  
+  return message;
+}
+
+/**
+ * Kiểm tra và cảnh báo vượt ngân sách
+ */
+function checkBudgetAlert(categoryId, amount) {
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  fetch(`http://localhost:8080/api/budgets/check/${categoryId}?userId=${userId}&amount=${amount}`, {
+    method: 'GET',
+    headers: headers,
+    mode: 'cors'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.exceeded) {
+      showAlert('warning', `⚠️ Cảnh báo: Bạn đã vượt ngân sách ${data.categoryName} ${data.percentage}%!`);
+    } else if (data.nearLimit) {
+      showAlert('info', `📊 Thông tin: Bạn đã sử dụng ${data.percentage}% ngân sách ${data.categoryName}.`);
+    }
+  })
+  .catch(err => {
+    console.error("❌ Failed to check budget:", err);
+  });
 }

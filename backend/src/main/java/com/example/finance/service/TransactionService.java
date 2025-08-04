@@ -6,7 +6,7 @@ import com.example.finance.entity.Transaction;
 import com.example.finance.entity.User;
 import com.example.finance.entity.Wallet;
 import com.example.finance.exception.CustomException;
-import com.example.finance.mapper.TransactionMapper;
+import com.example.finance.mapper.TransactionMapperImpl;
 import com.example.finance.repository.CategoryRepository;
 import com.example.finance.repository.TransactionRepository;
 import com.example.finance.repository.UserRepository;
@@ -51,7 +51,7 @@ public class TransactionService {
 
 
     private final TransactionRepository      repo;
-    private final TransactionMapper          mapper;
+    private final TransactionMapperImpl      mapper;
     private final UserRepository             userRepo;
     private final WalletRepository           walletRepo;
     private final CategoryRepository         categoryRepo;
@@ -85,6 +85,20 @@ public class TransactionService {
                 Wallet wallet = walletRepo.findById(dto.getWalletId())
                                           .orElseThrow(() -> new CustomException("Wallet not found!"));
                 entity.setWallet(wallet);
+            } else {
+                // Auto-assign first wallet for user or create one
+                Wallet defaultWallet = walletRepo.findFirstByUserId(dto.getUserId())
+                    .orElse(null);
+                if (defaultWallet == null) {
+                    // Create default wallet if doesn't exist
+                    defaultWallet = new Wallet();
+                    defaultWallet.setUser(user);
+                    defaultWallet.setName("Ví mặc định");
+                    defaultWallet.setType("default");
+                    defaultWallet.setBalance(BigDecimal.ZERO);
+                    defaultWallet = walletRepo.save(defaultWallet);
+                }
+                entity.setWallet(defaultWallet);
             }
 
             if (dto.getCategoryId() != null) {
@@ -94,6 +108,11 @@ public class TransactionService {
             }
 
             Transaction saved = repo.save(entity);
+
+            // Cập nhật số dư ví sau khi tạo giao dịch
+            if (saved.getWallet() != null) {
+                updateWalletBalance(saved.getWallet().getId());
+            }
 
             checkOverBudget(saved);
 
@@ -135,11 +154,46 @@ public class TransactionService {
         if (!repo.existsById(id)) {
             throw new CustomException(TRANSACTION_NOT_FOUND + id);
         }
+        
+        // Lấy thông tin ví trước khi xóa giao dịch để cập nhật số dư
+        Transaction transaction = repo.findById(id)
+                .orElseThrow(() -> new CustomException(TRANSACTION_NOT_FOUND + id));
+        Long walletId = transaction.getWallet() != null ? transaction.getWallet().getId() : null;
+        
         repo.deleteById(id);
+        
+        // Cập nhật số dư ví sau khi xóa giao dịch
+        if (walletId != null) {
+            updateWalletBalance(walletId);
+        }
     }
 
+    /**
+     * Tính toán và cập nhật số dư ví dựa trên các giao dịch
+     */
+    @Transactional
+    public void updateWalletBalance(Long walletId) {
+        Wallet wallet = walletRepo.findById(walletId)
+                .orElseThrow(() -> new CustomException("Wallet not found with id: " + walletId));
+        
+        // Tính tổng thu nhập (income) và chi tiêu (expense) cho ví này
+        BigDecimal totalIncome = repo.sumByWalletIdAndType(walletId, "income");
+        BigDecimal totalExpense = repo.sumByWalletIdAndType(walletId, "expense");
+        
+        // Xử lý trường hợp null
+        totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
+        totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
+        
+        // Số dư = Thu nhập - Chi tiêu
+        BigDecimal newBalance = totalIncome.subtract(totalExpense);
+        wallet.setBalance(newBalance);
+        
+        walletRepo.save(wallet);
+    }
+
+    @Transactional(readOnly = true)
     public List<TransactionDTO> findAll() {
-        return repo.findAll()
+        return repo.findAllWithDetails()
                    .stream()
                    .map(mapper::toDto)
                    .toList();
@@ -157,7 +211,7 @@ public class TransactionService {
         var list = repo.findAllByDateBetween(ym.atDay(1), ym.atEndOfMonth());
         return list.stream()
                    .filter(t -> t.getCategory() != null && t.getCategory().getId().equals(categoryId))
-                   .filter(t -> "CHI".equals(t.getType())) // Only count expenses
+                   .filter(t -> "expense".equals(t.getType())) // Only count expenses
                    .map(Transaction::getAmount)
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -169,7 +223,9 @@ public class TransactionService {
         int month = transaction.getDate().getMonthValue();
         int year = transaction.getDate().getYear();
 
-        var budgets = budgetRepository.findByUserIdAndCategoryIdAndMonthAndYear(userId, categoryId, month, year);
+        var budgets = budgetRepository.findByUserIdAndMonthAndYear(userId, month, year).stream()
+                .filter(b -> b.getCategory().getId().equals(categoryId))
+                .toList();
         if (budgets.isEmpty()) return; 
 
         BigDecimal totalSpending = repo.sumByUserCategoryMonth(userId, categoryId, month, year);

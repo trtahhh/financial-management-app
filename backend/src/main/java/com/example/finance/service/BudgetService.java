@@ -42,7 +42,7 @@ public class BudgetService {
             if (budget.getAmount() != null && budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal progress = usedAmount.divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
-                budget.setProgress(Math.min(progress.intValue(), 100));
+                budget.setProgress(progress.intValue()); // Không giới hạn tối đa để hiển thị vượt ngân sách
             } else {
                 budget.setProgress(0);
             }
@@ -60,8 +60,28 @@ public class BudgetService {
 
     @CacheEvict(value = "budgets", allEntries = true)
     public BudgetDTO createBudget(BudgetDTO dto) {
+        // Validation
+        if (dto.getAmount() == null || dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Budget amount must be greater than 0");
+        }
+        if (dto.getCategoryId() == null) {
+            throw new IllegalArgumentException("Category is required");
+        }
+        if (dto.getMonth() <= 0 || dto.getMonth() > 12) {
+            throw new IllegalArgumentException("Month must be between 1 and 12");
+        }
+        if (dto.getYear() <= 0) {
+            throw new IllegalArgumentException("Year must be greater than 0");
+        }
+        
+        // TEMPORARY: Set userId = 1 for testing
+        if (dto.getUserId() == null) {
+            dto.setUserId(1L);
+        }
+        
         Budget budget = budgetMapper.toEntity(dto);
         budget.setCreatedAt(LocalDateTime.now());
+        // Explicitly set isDeleted to false to avoid NullPointerException
         budget.setIsDeleted(false);
         Budget saved = budgetRepository.save(budget);
         return budgetMapper.toDTO(saved);
@@ -91,7 +111,7 @@ public class BudgetService {
     public void deleteBudget(Long id) {
         Budget budget = budgetRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Budget not found with id " + id));
-        budget.setIsDeleted(false);
+        budget.setIsDeleted(true); // Fixed: should be true to mark as deleted
         budget.setDeletedAt(LocalDateTime.now());
         budgetRepository.save(budget);
     }

@@ -6,10 +6,11 @@ let pieChart, barChart;
 document.addEventListener('DOMContentLoaded', function () {
   const monthInput = document.getElementById('dash-month');
 
-  function fetchStats(month) {
+  // **SỬA LẠI HOÀN TOÀN: Sử dụng endpoint dashboard mới**
+  function fetchDashboardData(month) {
     const [year, monthNum] = month.split('-').map(Number);
-    const url = `http://localhost:8080/api/statistics/summary?userId=${userId}&month=${monthNum}&year=${year}`;
-    console.log("📡 Fetching stats from:", url);
+    const url = `http://localhost:8080/api/dashboard/data?month=${monthNum}&year=${year}`;
+    console.log("📡 Fetching dashboard data from:", url);
     
     const token = localStorage.getItem('authToken');
     const headers = {
@@ -22,24 +23,25 @@ document.addEventListener('DOMContentLoaded', function () {
     return fetch(url, { 
       method: 'GET',
       headers: headers,
+      credentials: 'include', // Quan trọng: để gửi session cookies
       mode: 'cors'
     })
       .then(res => {
-        console.log("🔍 Stats response status:", res.status);
+        console.log("🔍 Dashboard response status:", res.status);
         if (!res.ok) {
           return res.text().then(text => { 
-            console.error("❌ Stats error:", text);
+            console.error("❌ Dashboard error:", text);
             throw new Error(`HTTP ${res.status}: ${text}`); 
           });
         }
         return res.json();
       })
       .then(data => {
-        console.log("✅ Stats data received:", data);
+        console.log("✅ Dashboard data received:", data);
         return data;
       })
       .catch(err => {
-        console.error("🚨 Stats fetch failed:", err);
+        console.error("🚨 Dashboard fetch failed:", err);
         throw err;
       });
   }
@@ -324,12 +326,160 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function load() {
+  function loadDashboard() {
     console.log("🔄 Đang load dữ liệu dashboard cho:", monthInput.value);
-    fetchStats(monthInput.value)
-      .then(renderStats)
+    
+    // **SỬA LẠI: Sử dụng endpoint dashboard mới**
+    fetchDashboardData(monthInput.value)
+      .then(dashboardData => {
+        console.log("📊 Dashboard data loaded:", dashboardData);
+        
+        // Update UI với dữ liệu mới
+        updateDashboardUI(dashboardData);
+        
+        // Update charts với dữ liệu mới
+        updateChartsWithNewData(dashboardData);
+        
+      })
+      .catch(err => {
+        console.error("❌ Error loading dashboard:", err);
+        showError("Không thể tải dữ liệu dashboard: " + err.message);
+      });
+  }
+  
+  function updateDashboardUI(data) {
+    // Cập nhật các số liệu chính
+    document.getElementById('totalIncome').textContent = (data.monthlyIncome || 0).toLocaleString('vi-VN') + ' đ';
+    document.getElementById('totalExpense').textContent = (data.monthlyExpense || 0).toLocaleString('vi-VN') + ' đ';
+    document.getElementById('balance').textContent = (data.totalBalance || 0).toLocaleString('vi-VN') + ' đ';
+    
+    // Cập nhật thông tin tháng hiện tại
+    const monthText = `Tháng ${data.currentMonth}/${data.currentYear}`;
+    const monthDisplay = document.querySelector('.dashboard-month-display');
+    if (monthDisplay) {
+      monthDisplay.textContent = monthText;
+    }
+    
+    // Cập nhật thông tin ví
+    updateWalletDisplay(data.wallets || []);
+  }
+  
+  function updateWalletDisplay(wallets) {
+    const walletContainer = document.querySelector('.wallet-summary');
+    if (walletContainer && wallets.length > 0) {
+      const walletHTML = wallets.map(wallet => 
+        `<div class="wallet-item">
+          <span class="wallet-name">${wallet.name}</span>
+          <span class="wallet-balance">${wallet.balance.toLocaleString('vi-VN')} đ</span>
+        </div>`
+      ).join('');
+      walletContainer.innerHTML = walletHTML;
+    }
+  }
+  
+  function updateChartsWithNewData(data) {
+    // Cập nhật pie chart với category expenses
+    if (data.categoryExpenses && Object.keys(data.categoryExpenses).length > 0) {
+      renderPieChartFromData(data.categoryExpenses);
+    }
+    
+    // Có thể thêm bar chart sau
+    // renderBarChartFromData(data);
+  }
+  
+  function renderPieChartFromData(categoryExpenses) {
+    const ctx = document.getElementById('chart-pie')?.getContext('2d');
+    if (!ctx) {
+      console.error("❌ Không tìm thấy canvas chart-pie");
+      return;
+    }
+    
+    console.log("📊 Rendering pie chart with data:", categoryExpenses);
+    
+    // Destroy existing chart
+    if (pieChart) {
+      pieChart.destroy();
+    }
+    
+    const labels = Object.keys(categoryExpenses);
+    const amounts = Object.values(categoryExpenses);
+    
+    if (labels.length === 0) {
+      // Show empty state
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.fillStyle = '#6c757d';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Chưa có dữ liệu chi tiêu', ctx.canvas.width / 2, ctx.canvas.height / 2);
+      return;
+    }
+    
+    const colors = generateColors(labels.length);
+    
+    pieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: amounts,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 15,
+              usePointStyle: true,
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed;
+                const total = amounts.reduce((sum, amt) => sum + amt, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${context.label}: ${value.toLocaleString('vi-VN')} đ (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  function generateColors(count) {
+    const colors = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+      '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+    ];
+    return Array.from({length: count}, (_, i) => colors[i % colors.length]);
+  }
+  
+  function showError(message) {
+    // Hiển thị lỗi cho user
+    const errorDiv = document.querySelector('.error-message') || document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.style.cssText = 'color: red; padding: 10px; background: #ffebee; border-radius: 4px; margin: 10px 0;';
+    
+    const container = document.querySelector('.dashboard-container') || document.body;
+    container.insertBefore(errorDiv, container.firstChild);
+    
+    // Tự động ẩn sau 5 giây
+    setTimeout(() => errorDiv.remove(), 5000);
+  }
+      })
       .catch(e => {
-        console.error("💥 Lỗi khi tải thống kê:", e);
+        console.error("💥 Lỗi khi tải dữ liệu dashboard:", e);
         // Show error in stats
         document.getElementById('totalIncome').textContent = 'Lỗi';
         document.getElementById('totalExpense').textContent = 'Lỗi';
@@ -348,13 +498,269 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
     monthInput.value = currentMonth;
     monthInput.addEventListener('change', function() {
-      load();
-      refreshCharts();
+      loadDashboard(); // Sử dụng function mới thay vì load() và initCharts()
     });
   }
   
-  // Initialize
+  // Initialize - GỌI DASHBOARD MỚI
   console.log("🚀 Initializing dashboard...");
-  load();
-  initCharts();
+  loadDashboard(); // Chỉ gọi function mới này thôi
 });
+
+// 🔗 ENHANCED INTEGRATION FUNCTIONS - Các hàm liên kết nâng cao
+
+/**
+ * Fetch budgets data
+ */
+function fetchBudgets(month) {
+  const [year, monthNum] = month.split('-').map(Number);
+  const url = `http://localhost:8080/api/budgets?userId=${userId}&month=${monthNum}&year=${year}`;
+  
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  return fetch(url, { 
+    method: 'GET',
+    headers: headers,
+    mode: 'cors'
+  })
+    .then(res => res.ok ? res.json() : [])
+    .catch(err => {
+      console.error("🚨 Budgets fetch failed:", err);
+      return [];
+    });
+}
+
+/**
+ * Fetch goals data
+ */
+function fetchGoals() {
+  const url = `http://localhost:8080/api/goals?userId=${userId}`;
+  
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  return fetch(url, { 
+    method: 'GET',
+    headers: headers,
+    mode: 'cors'
+  })
+    .then(res => res.ok ? res.json() : [])
+    .catch(err => {
+      console.error("🚨 Goals fetch failed:", err);
+      return [];
+    });
+}
+
+/**
+ * Calculate enhanced statistics with cross-functional data
+ */
+function calculateEnhancedStats(stats, transactions, budgets, goals) {
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth() + 1;
+  const currentYear = currentDate.getFullYear();
+  
+  // Filter current month transactions
+  const currentMonthTransactions = transactions.filter(t => {
+    const transactionDate = new Date(t.date);
+    return transactionDate.getMonth() + 1 === currentMonth && 
+           transactionDate.getFullYear() === currentYear;
+  });
+  
+  // Calculate budget usage
+  const totalBudget = budgets.reduce((sum, b) => sum + (b.amount || 0), 0);
+  const usedBudget = budgets.reduce((sum, b) => sum + (b.usedAmount || 0), 0);
+  const budgetUsagePercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
+  
+  // Calculate goals progress
+  const totalGoalsTarget = goals.reduce((sum, g) => sum + (g.targetAmount || 0), 0);
+  const totalGoalsProgress = goals.reduce((sum, g) => sum + (g.currentAmount || 0), 0);
+  const goalsProgressPercent = totalGoalsTarget > 0 ? Math.round((totalGoalsProgress / totalGoalsTarget) * 100) : 0;
+  
+  return {
+    ...stats,
+    totalBudget: totalBudget,
+    usedBudget: usedBudget,
+    budgetUsagePercent: budgetUsagePercent,
+    totalGoalsTarget: totalGoalsTarget,
+    totalGoalsProgress: totalGoalsProgress,
+    goalsProgressPercent: goalsProgressPercent,
+    transactionCount: currentMonthTransactions.length
+  };
+}
+
+/**
+ * Update budget alerts on dashboard
+ */
+function updateBudgetAlerts(budgets) {
+  const alertContainer = document.getElementById('budget-alerts');
+  if (!alertContainer) return;
+  
+  const exceededBudgets = budgets.filter(b => (b.usedAmount || 0) > (b.amount || 0));
+  const nearLimitBudgets = budgets.filter(b => {
+    const usage = (b.usedAmount || 0) / (b.amount || 1);
+    return usage >= 0.8 && usage <= 1.0;
+  });
+  
+  let alertsHtml = '';
+  
+  if (exceededBudgets.length > 0) {
+    alertsHtml += '<div class="alert alert-danger"><strong>⚠️ Vượt ngân sách:</strong> ';
+    alertsHtml += exceededBudgets.map(b => b.categoryName).join(', ');
+    alertsHtml += '</div>';
+  }
+  
+  if (nearLimitBudgets.length > 0) {
+    alertsHtml += '<div class="alert alert-warning"><strong>📊 Gần đạt giới hạn:</strong> ';
+    alertsHtml += nearLimitBudgets.map(b => b.categoryName).join(', ');
+    alertsHtml += '</div>';
+  }
+  
+  alertContainer.innerHTML = alertsHtml;
+}
+
+/**
+ * Update goal progress display
+ */
+function updateGoalProgress(goals, transactions) {
+  const goalContainer = document.getElementById('goal-progress');
+  if (!goalContainer || goals.length === 0) return;
+  
+  const savingsTransactions = transactions.filter(t => t.type === 'THU');
+  const thisMonthSavings = savingsTransactions
+    .filter(t => {
+      const date = new Date(t.date);
+      const now = new Date();
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  let goalHtml = '<h6>🎯 Tiến độ mục tiêu</h6>';
+  goals.slice(0, 3).forEach(goal => {
+    const progress = Math.min(((goal.currentAmount || 0) / (goal.targetAmount || 1)) * 100, 100);
+    goalHtml += `
+      <div class="mb-2">
+        <div class="d-flex justify-content-between">
+          <small>${goal.name}</small>
+          <small>${progress.toFixed(1)}%</small>
+        </div>
+        <div class="progress" style="height: 8px;">
+          <div class="progress-bar ${progress >= 100 ? 'bg-success' : progress >= 75 ? 'bg-info' : 'bg-warning'}" 
+               style="width: ${progress}%"></div>
+        </div>
+      </div>
+    `;
+  });
+  
+  if (thisMonthSavings > 0) {
+    goalHtml += `<small class="text-success">💰 Tháng này tiết kiệm: ${thisMonthSavings.toLocaleString('vi-VN')} đ</small>`;
+  }
+  
+  goalContainer.innerHTML = goalHtml;
+}
+
+/**
+ * Enhanced update stats with integrated data
+ */
+function updateStats(enhancedStats) {
+  console.log("✅ Rendering enhanced stats:", enhancedStats);
+  
+  // Basic stats
+  document.getElementById('totalIncome').textContent = (enhancedStats.totalIncome || 0).toLocaleString('vi-VN') + ' đ';
+  document.getElementById('totalExpense').textContent = (enhancedStats.totalExpense || 0).toLocaleString('vi-VN') + ' đ';
+  document.getElementById('balance').textContent = (enhancedStats.balance || 0).toLocaleString('vi-VN') + ' đ';
+  
+  // Enhanced stats
+  const budgetUsageEl = document.getElementById('budget-usage');
+  if (budgetUsageEl) {
+    budgetUsageEl.innerHTML = `
+      <div class="text-center">
+        <div class="h5 mb-0">${enhancedStats.budgetUsagePercent}%</div>
+        <small class="text-muted">Đã sử dụng ngân sách</small>
+        <div class="progress mt-2" style="height: 8px;">
+          <div class="progress-bar ${enhancedStats.budgetUsagePercent > 100 ? 'bg-danger' : enhancedStats.budgetUsagePercent > 80 ? 'bg-warning' : 'bg-success'}" 
+               style="width: ${Math.min(enhancedStats.budgetUsagePercent, 100)}%"></div>
+        </div>
+      </div>
+    `;
+  }
+  
+  const goalsProgressEl = document.getElementById('goals-progress');
+  if (goalsProgressEl) {
+    goalsProgressEl.innerHTML = `
+      <div class="text-center">
+        <div class="h5 mb-0">${enhancedStats.goalsProgressPercent}%</div>
+        <small class="text-muted">Tiến độ mục tiêu</small>
+        <div class="progress mt-2" style="height: 8px;">
+          <div class="progress-bar bg-primary" style="width: ${Math.min(enhancedStats.goalsProgressPercent, 100)}%"></div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Update quick stats
+  const transactionCountEl = document.getElementById('transaction-count');
+  if (transactionCountEl) {
+    transactionCountEl.textContent = enhancedStats.transactionCount || 0;
+  }
+  
+  const avgTransactionEl = document.getElementById('average-transaction');
+  if (avgTransactionEl && enhancedStats.transactionCount > 0) {
+    const avgAmount = (enhancedStats.totalExpense + enhancedStats.totalIncome) / enhancedStats.transactionCount;
+    avgTransactionEl.textContent = avgAmount.toLocaleString('vi-VN') + 'đ';
+  }
+}
+
+/**
+ * Update recent transactions display
+ */
+function updateRecentTransactions(transactions) {
+  const container = document.getElementById('recent-transactions');
+  if (!container || !transactions.length) {
+    if (container) {
+      container.innerHTML = `
+        <div class="text-center text-muted">
+          <i class="fas fa-receipt fa-2x mb-2"></i>
+          <p>Chưa có giao dịch nào. <a href="/transactions" class="text-success">Thêm giao dịch đầu tiên</a>?</p>
+        </div>
+      `;
+    }
+    return;
+  }
+  
+  const recentTransactionsHtml = transactions.map(tx => {
+    const isIncome = tx.type === 'THU';
+    const amountClass = isIncome ? 'text-success' : 'text-danger';
+    const amountPrefix = isIncome ? '+' : '-';
+    const date = new Date(tx.date).toLocaleDateString('vi-VN');
+    
+    return `
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div class="d-flex align-items-center">
+          <div class="me-3">
+            <i class="fas ${isIncome ? 'fa-arrow-up' : 'fa-arrow-down'} ${amountClass}"></i>
+          </div>
+          <div>
+            <div class="fw-bold">${tx.note || 'Giao dịch'}</div>
+            <small class="text-muted">${tx.category || 'Khác'} • ${date}</small>
+          </div>
+        </div>
+        <div class="${amountClass} fw-bold">
+          ${amountPrefix}${(tx.amount || 0).toLocaleString('vi-VN')}đ
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  container.innerHTML = recentTransactionsHtml;
+}

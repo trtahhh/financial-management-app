@@ -40,13 +40,14 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="d-flex flex-column">
                 <span class="fw-bold">${(b.usedAmount || 0).toLocaleString('vi-VN')} VND</span>
                 <div class="progress mt-1" style="height: 8px;">
-                  <div class="progress-bar ${(b.progress||0) > 100 ? 'bg-danger' : (b.progress||0) > 80 ? 'bg-warning' : 'bg-success'}" 
+                  <div class="progress-bar ${(b.progress||0) >= 100 ? 'bg-danger' : (b.progress||0) >= 80 ? 'bg-warning' : 'bg-success'}" 
                        role="progressbar" 
                        style="width:${Math.min(b.progress||0, 100)}%"
                        title="${b.progress||0}% đã sử dụng">
                   </div>
                 </div>
-                <small class="text-muted">${b.progress||0}% đã sử dụng</small>
+                <small class="fw-bold ${(b.progress||0) >= 100 ? 'text-danger' : (b.progress||0) >= 80 ? 'text-warning' : 'text-success'}">${b.progress||0}% đã sử dụng</small>
+                ${(b.progress||0) > 100 ? '<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Vượt ngân sách!</small>' : ''}
               </div>
             </td>
             <td>

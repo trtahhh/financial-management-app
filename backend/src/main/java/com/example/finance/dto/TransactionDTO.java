@@ -11,6 +11,8 @@ public class TransactionDTO {
     private Long    userId;
     private Long    walletId;
     private Long    categoryId;
+    private CategoryDTO category; // Add category object
+    private WalletDTO wallet; // Add wallet object  
     private BigDecimal amount;
     private String  type;
     private String  note;

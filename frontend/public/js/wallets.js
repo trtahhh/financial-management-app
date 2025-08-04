@@ -20,14 +20,22 @@ document.addEventListener('DOMContentLoaded', function () {
           d.map(w =>
             `<tr data-id="${w.id}">
               <td>${w.name}</td>
-              <td>${w.balance}</td>
+              <td>${formatCurrency(w.balance || 0)}</td>
               <td>
                 <button class="btn btn-sm btn-outline-primary edit">Sửa</button>
                 <button class="btn btn-sm btn-outline-danger ms-2 del">Xoá</button>
+                <button class="btn btn-sm btn-outline-info ms-2 update-balance">Cập nhật</button>
               </td>
             </tr>`
           ).join('') + '</tbody>';
       }).catch(e => alert(e.message));
+  }
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
   }
 
   document.getElementById('wallet-add-btn').addEventListener('click', function () {
@@ -35,6 +43,24 @@ document.addEventListener('DOMContentLoaded', function () {
     f.reset();
     title.textContent = 'Thêm ví';
     m.show();
+  });
+
+  document.getElementById('update-balances-btn').addEventListener('click', function () {
+    if (confirm('Cập nhật số dư tất cả ví dựa trên giao dịch?')) {
+      fetch('/api/wallets/update-balances', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(res => {
+          if (!res.ok) return res.text().then(text => { throw new Error(text); });
+          return res.text();
+        })
+        .then(message => {
+          alert('Đã cập nhật số dư thành công!');
+          load();
+        })
+        .catch(e => alert('Lỗi cập nhật số dư: ' + e.message));
+    }
   });
 
   t.addEventListener('click', function (e) {
@@ -58,6 +84,23 @@ document.addEventListener('DOMContentLoaded', function () {
             load();
           })
           .catch(e => alert(e.message));
+      }
+    }
+    if (e.target.classList.contains('update-balance')) {
+      if (confirm('Cập nhật số dư ví này dựa trên giao dịch?')) {
+        fetch('/api/wallets/' + id + '/update-balance', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+          .then(res => {
+            if (!res.ok) return res.text().then(text => { throw new Error(text); });
+            return res.text();
+          })
+          .then(message => {
+            alert('Đã cập nhật số dư ví thành công!');
+            load();
+          })
+          .catch(e => alert('Lỗi cập nhật số dư: ' + e.message));
       }
     }
   });

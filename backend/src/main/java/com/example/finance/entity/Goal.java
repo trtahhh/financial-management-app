@@ -42,6 +42,9 @@ public class Goal {
 
     @Column(name ="completed_at")
     private LocalDateTime completedAt;
+    
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @Override
     public boolean equals(Object o) {

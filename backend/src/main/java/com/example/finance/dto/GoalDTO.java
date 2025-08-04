@@ -16,5 +16,7 @@ public class GoalDTO {
     private LocalDate dueDate;
     private Long userId;
     private String status; 
-    private LocalDateTime completedAt; 
+    private LocalDateTime completedAt;
+    private BigDecimal currentBalance; // Số dư hiện tại từ ví
+    private Double progress; // Phần trăm tiến độ
 }

@@ -37,12 +37,10 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(
-            @RequestBody TransactionDTO dto,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+    public ResponseEntity<?> create(@RequestBody TransactionDTO dto) {
         try {
             log.info("Creating transaction with data: {}", dto);
-            TransactionDTO created = service.save(dto, file);
+            TransactionDTO created = service.save(dto, null);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Tạo giao dịch thành công",
@@ -50,7 +48,7 @@ public class TransactionController {
             ));
         } catch (Exception e) {
             log.error("Error creating transaction", e);
-            return ResponseEntity.badRequest()
+            return ResponseEntity.status(500)
                 .body(Map.of("success", false, "message", "Lỗi tạo giao dịch: " + e.getMessage()));
         }
     }
@@ -72,14 +70,23 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TransactionDTO> update(
+    public ResponseEntity<?> update(
             @PathVariable("id") Long id,
-            @RequestBody TransactionDTO dto,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestBody TransactionDTO dto
     ) {
-        dto.setId(id);
-        TransactionDTO updated = service.save(dto, file);
-        return ResponseEntity.ok(updated);
+        try {
+            dto.setId(id);
+            TransactionDTO updated = service.save(dto, null);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Cập nhật giao dịch thành công",
+                "data", updated
+            ));
+        } catch (Exception e) {
+            log.error("Error updating transaction", e);
+            return ResponseEntity.status(500)
+                .body(Map.of("success", false, "message", "Lỗi cập nhật giao dịch: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -3,6 +3,7 @@ package com.example.finance.service;
 import com.example.finance.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,14 +25,25 @@ public class StatisticService {
     private final CategoryRepository categoryRepository;
 
     public SummaryDTO getSummary(Long userId, Integer month, Integer year) {
-        Double totalIncome = transactionRepository.sumAmountByUserAndType(userId, "INCOME", month, year);
-        Double totalExpense = transactionRepository.sumAmountByUserAndType(userId, "EXPENSE", month, year);
+        System.out.println("🔍 StatisticService getSummary: userId=" + userId + ", month=" + month + ", year=" + year);
+        
+        // Use database transaction types: income and expense
+        BigDecimal totalIncome = transactionRepository.sumAmountByUserAndType(userId, "income", month, year);
+        BigDecimal totalExpense = transactionRepository.sumAmountByUserAndType(userId, "expense", month, year);
 
-        if (totalIncome == null) totalIncome = 0.0;
-        if (totalExpense == null) totalExpense = 0.0;
-        Double balance = totalIncome - totalExpense;
+        System.out.println("📊 Raw results: totalIncome=" + totalIncome + ", totalExpense=" + totalExpense);
+        
+        if (totalIncome == null) totalIncome = BigDecimal.ZERO;
+        if (totalExpense == null) totalExpense = BigDecimal.ZERO;
+        BigDecimal balance = totalIncome.subtract(totalExpense);
 
-        return new SummaryDTO(totalIncome, totalExpense, balance);
+        System.out.println("✅ Final summary: income=" + totalIncome + ", expense=" + totalExpense + ", balance=" + balance);
+        
+        return new SummaryDTO(
+            totalIncome.doubleValue(), 
+            totalExpense.doubleValue(), 
+            balance.doubleValue()
+        );
     }
 
     public List<CategoryStatisticDTO> getByCategory(Long userId, Integer month, Integer year) {
@@ -52,9 +64,11 @@ public class StatisticService {
         for (Transaction t : transactions) {
             CategoryStatisticDTO dto = map.get(t.getCategory().getId());
             if (dto == null) continue;
-            if (t.getType().equalsIgnoreCase("income")) {
+            
+            // Use correct Vietnamese transaction types: THU (income) and CHI (expense)
+            if (t.getType().equalsIgnoreCase("THU")) {
                 dto.setTotalIncome(dto.getTotalIncome() + t.getAmount().doubleValue());
-            } else {
+            } else if (t.getType().equalsIgnoreCase("CHI")) {
                 dto.setTotalExpense(dto.getTotalExpense() + t.getAmount().doubleValue());
             }
             dto.setBalance(dto.getTotalIncome() - dto.getTotalExpense());

@@ -5,6 +5,7 @@ import com.example.finance.entity.Goal;
 import com.example.finance.exception.CustomException;
 import com.example.finance.mapper.GoalMapper;
 import com.example.finance.repository.GoalRepository;
+import com.example.finance.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class GoalService {
     private final GoalMapper mapper;
     private final TransactionService transactionService;
     private final NotificationService notificationService;
+    private final WalletRepository walletRepository;
 
 
     public List<GoalDTO> findAll() {
@@ -30,7 +32,27 @@ public class GoalService {
     }
 
     public List<GoalDTO> findByUserId(Long userId) {
-        return repo.findByUserId(userId).stream().map(mapper::toDto).toList();
+        // Tính tổng số dư của user từ tất cả ví
+        BigDecimal totalBalance = walletRepository.findByUserId(userId).stream()
+            .map(wallet -> wallet.getBalance() != null ? wallet.getBalance() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return repo.findByUserId(userId).stream().map(goal -> {
+            GoalDTO dto = mapper.toDto(goal);
+            dto.setCurrentBalance(totalBalance);
+            
+            // Tính phần trăm tiến độ dựa trên số dư hiện tại
+            if (goal.getTargetAmount() != null && goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
+                double progress = totalBalance.divide(goal.getTargetAmount(), 4, RoundingMode.HALF_UP)
+                                            .multiply(BigDecimal.valueOf(100))
+                                            .doubleValue();
+                dto.setProgress(Math.min(progress, 100.0)); // Giới hạn tối đa 100%
+            } else {
+                dto.setProgress(0.0);
+            }
+            
+            return dto;
+        }).toList();
     }
 
     public BigDecimal predictNextMonth() {

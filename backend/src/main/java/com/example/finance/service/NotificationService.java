@@ -1,8 +1,8 @@
 package com.example.finance.service;
 
 import com.example.finance.dto.NotificationDTO;
-import com.example.finance.entity.Notification;
-import com.example.finance.repository.NotificationRepository;
+import com.example.finance.entity.*;
+import com.example.finance.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,21 @@ public class NotificationService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private WalletRepository walletRepository;
+
+    @Autowired
+    private BudgetRepository budgetRepository;
+
+    @Autowired
+    private GoalRepository goalRepository;
 
     public List<NotificationDTO> getUserNotifications(Long userId) {
         List<Notification> list = notificationRepository.findByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(userId);
@@ -42,65 +57,70 @@ public class NotificationService {
 
     public void createOverBudgetNotification(Long userId, Long categoryId, Long budgetId, BigDecimal spending, BigDecimal limit, int month, int year) {
         Notification noti = new Notification();
-        noti.setUserId(userId);
-        noti.setCategoryId(categoryId);
-        noti.setBudgetId(budgetId);
+        
+        // Set relationships
+        User user = userRepository.findById(userId).orElse(null);
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        Budget budget = budgetRepository.findById(budgetId).orElse(null);
+        
+        noti.setUser(user);
+        noti.setCategory(category);
+        noti.setBudget(budget);
         noti.setType("OVER_BUDGET");
         noti.setMessage("Bạn đã vượt quá ngân sách (" + limit + ") cho danh mục/tháng này! Tổng chi: " + spending);
         noti.setMonth(month);
         noti.setYear(year);
-        noti.setIsRead(false);
-        noti.setIsDeleted(false);
-        noti.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(noti);
     }
 
     public void createLowBalanceNotification(Long userId, Long walletId, BigDecimal balance) {
         Notification notification = new Notification();
-        notification.setUserId(userId);
-        notification.setWalletId(walletId);
+        
+        User user = userRepository.findById(userId).orElse(null);
+        Wallet wallet = walletRepository.findById(walletId).orElse(null);
+        
+        notification.setUser(user);
+        notification.setWallet(wallet);
         notification.setType("LOW_BALANCE");
         notification.setMessage("Số dư ví đã xuống dưới " + balance + " VNĐ.");
-        notification.setIsRead(false);
-        notification.setIsDeleted(false);
-        notification.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(notification);
     }
 
     public void createGoalNotification(Long userId, Long goalId, String type, String message) {
         Notification notification = new Notification();
-        notification.setUserId(userId);
-        notification.setGoalId(goalId);
+        
+        User user = userRepository.findById(userId).orElse(null);
+        Goal goal = goalRepository.findById(goalId).orElse(null);
+        
+        notification.setUser(user);
+        notification.setGoal(goal);
         notification.setType(type); 
         notification.setMessage(message);
-        notification.setIsRead(false);
-        notification.setIsDeleted(false);
-        notification.setCreatedAt(LocalDateTime.now());
         notificationRepository.save(notification);
     }
 
     public void createGoalCompletedNotification(Long userId, Long goalId, String goalName) {
         Notification noti = new Notification();
-        noti.setUserId(userId);
-        noti.setGoalId(goalId);
+        
+        User user = userRepository.findById(userId).orElse(null);
+        Goal goal = goalRepository.findById(goalId).orElse(null);
+        
+        noti.setUser(user);
+        noti.setGoal(goal);
         noti.setType("GOAL_COMPLETED");
         noti.setMessage("Chúc mừng! Bạn đã hoàn thành mục tiêu: " + goalName);
-        noti.setIsRead(false);
-        noti.setIsDeleted(false);
-        noti.setCreatedAt(java.time.LocalDateTime.now());
         notificationRepository.save(noti);
     }
-
 
     public NotificationDTO toDTO(Notification n) {
         NotificationDTO dto = new NotificationDTO();
         dto.setId(n.getId());
-        dto.setUserId(n.getUserId());
-        dto.setWalletId(n.getWalletId());
-        dto.setBudgetId(n.getBudgetId());
-        dto.setGoalId(n.getGoalId());
-        dto.setTransactionId(n.getTransactionId());
-        dto.setCategoryId(n.getCategoryId());
+        dto.setUserId(n.getUser() != null ? n.getUser().getId() : null);
+        dto.setWalletId(n.getWallet() != null ? n.getWallet().getId() : null);
+        dto.setBudgetId(n.getBudget() != null ? n.getBudget().getId() : null);
+        dto.setGoalId(n.getGoal() != null ? n.getGoal().getId() : null);
+        dto.setTransactionId(n.getTransaction() != null ? n.getTransaction().getId() : null);
+        dto.setCategoryId(n.getCategory() != null ? n.getCategory().getId() : null);
         dto.setMessage(n.getMessage());
         dto.setType(n.getType());
         dto.setIsRead(n.getIsRead());

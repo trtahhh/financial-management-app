@@ -58,3 +58,13 @@ footer {
 .progress-bar {
   font-weight: 500;
 }
+
+/* Hide any floating action buttons or menus */
+.fab, .floating, .btn-floating, .floating-menu, .floating-action-button {
+  display: none !important;
+}
+
+/* Hide any fixed positioned action buttons at bottom */
+.fixed-bottom .btn, .position-fixed .btn-floating {
+  display: none !important;
+}
