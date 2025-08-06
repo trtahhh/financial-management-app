@@ -1,16 +1,19 @@
 package com.example.finance.controller;
 
 import com.example.finance.dto.WalletDTO;
+import com.example.finance.security.CustomUserDetails;
 import com.example.finance.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/wallets")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8081"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080"})
 @RequiredArgsConstructor
 public class WalletController {
 
@@ -19,7 +22,11 @@ public class WalletController {
     @GetMapping
     public ResponseEntity<List<WalletDTO>> list() { 
         try {
-            return ResponseEntity.ok(service.findAll()); 
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+
+            return ResponseEntity.ok(service.findAll(userId)); 
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
@@ -71,7 +78,11 @@ public class WalletController {
     @PostMapping("/update-balances")
     public ResponseEntity<?> updateAllBalances() {
         try {
-            service.updateAllWalletBalances();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+
+            service.updateAllWalletBalances(userId);
             return ResponseEntity.ok().body("All wallet balances updated successfully");
         } catch (Exception e) {
             System.err.println("Error updating wallet balances: " + e.getMessage());

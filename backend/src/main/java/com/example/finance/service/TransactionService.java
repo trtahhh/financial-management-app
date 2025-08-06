@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -271,5 +273,140 @@ public class TransactionService {
                     arr[1] == null ? 0 : ((Number) arr[1]).longValue()
                 ))
                 .toList();
+    }
+
+    // Thêm method này vào TransactionService (có thể thêm gần cuối class):
+
+    /**
+     * Tính tổng chi tiêu theo category trong tháng
+     */
+    public BigDecimal getTotalSpentByCategory(Long userId, Long categoryId, int month, int year) {
+        return repo.sumByUserCategoryMonth(userId, categoryId, month, year);
+    }
+
+    /**
+     * Lấy chi tiêu theo category cho dashboard
+     */
+    public List<Map<String, Object>> getExpensesByCategory(Long userId, Integer month, Integer year) {
+        List<Object[]> results = repo.findExpensesByCategory(userId, month, year);
+        
+        return results.stream().map(result -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("categoryName", result[0]);
+            map.put("categoryColor", result[1]);
+            map.put("totalAmount", result[2]);
+            map.put("transactionCount", result[3]);
+            return map;
+        }).toList();
+    }
+
+    /**
+     * Lấy giao dịch gần đây
+     */
+    public List<Map<String, Object>> getRecentTransactions(Long userId, int limit) {
+        List<Transaction> transactions = repo.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .limit(limit)
+                .toList();
+                
+        return transactions.stream().map(t -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", t.getId());
+            map.put("amount", t.getAmount());
+            map.put("type", t.getType());
+            map.put("note", t.getNote());
+            map.put("date", t.getDate());
+            map.put("categoryName", t.getCategory() != null ? t.getCategory().getName() : "");
+            map.put("walletName", t.getWallet() != null ? t.getWallet().getName() : "");
+            return map;
+        }).toList();
+    }
+
+    /**
+     * Tính tổng theo type và date range
+     */
+    public BigDecimal getTotalByTypeAndDateRange(Long userId, String type, LocalDate startDate, LocalDate endDate) {
+        BigDecimal total = repo.sumByUserTypeAndDateRange(userId, type, startDate, endDate);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    /**
+     * Lấy xu hướng chi tiêu theo tháng
+     */
+    public List<Map<String, Object>> getMonthlySpendingTrend(Long userId, int months) {
+        List<Map<String, Object>> trend = new ArrayList<>();
+        
+        for (int i = months - 1; i >= 0; i--) {
+            YearMonth yearMonth = YearMonth.now().minusMonths(i);
+            LocalDate startDate = yearMonth.atDay(1);
+            LocalDate endDate = yearMonth.atEndOfMonth();
+            
+            BigDecimal monthlyIncome = getTotalByTypeAndDateRange(userId, "income", startDate, endDate);
+            BigDecimal monthlyExpense = getTotalByTypeAndDateRange(userId, "expense", startDate, endDate);
+            
+            Map<String, Object> monthData = new HashMap<>();
+            monthData.put("month", yearMonth.getMonth().name());
+            monthData.put("year", yearMonth.getYear());
+            monthData.put("income", monthlyIncome);
+            monthData.put("expense", monthlyExpense);
+            monthData.put("net", monthlyIncome.subtract(monthlyExpense));
+            
+            trend.add(monthData);
+        }
+        
+        return trend;
+    }
+
+    /**
+     * Đếm số giao dịch của user
+     */
+    public Long countByUserId(Long userId) {
+        return repo.countByUserIdAndIsDeletedFalse(userId);
+    }
+
+    /**
+     * Lấy chi tiêu theo danh mục trong khoảng ngày
+     */
+    public List<Map<String, Object>> getExpensesByCategoryByDate(Long userId, LocalDate startDate, LocalDate endDate) {
+        // Nếu repo có method tương ứng, ví dụ: repo.findExpensesByCategoryByDate(userId, startDate, endDate)
+        List<Object[]> results = repo.findExpensesByCategoryByDate(userId, startDate, endDate);
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("categoryName", row[0]);
+            map.put("categoryColor", row[1]);
+            map.put("totalAmount", row[2]);
+            map.put("transactionCount", row[3]);
+            list.add(map);
+        }
+        return list;
+    }
+
+    /**
+     * Lấy giao dịch gần đây trong khoảng ngày
+     */
+    public List<Map<String, Object>> getRecentTransactionsByDate(Long userId, LocalDate startDate, LocalDate endDate, int limit) {
+        List<Transaction> transactions = repo.findByUserIdAndDateBetweenOrderByCreatedAtDesc(userId, startDate, endDate)
+                .stream()
+                .limit(limit)
+                .toList();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Transaction t : transactions) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", t.getId());
+            map.put("amount", t.getAmount());
+            map.put("type", t.getType());
+            map.put("note", t.getNote());
+            map.put("date", t.getDate());
+            map.put("categoryName", t.getCategory() != null ? t.getCategory().getName() : "");
+            map.put("walletName", t.getWallet() != null ? t.getWallet().getName() : "");
+            result.add(map);
+        }
+        return result;
+    }
+
+    public BigDecimal getTotalSpentByCategoryAndDateRange(Long userId, Long categoryId, LocalDate startDate, LocalDate endDate) {
+        BigDecimal total = repo.sumByUserCategoryAndDateRange(userId, categoryId, startDate, endDate);
+        return total != null ? total : BigDecimal.ZERO;
     }
 }

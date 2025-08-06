@@ -1,6 +1,5 @@
 let transactions = [];
 let editingTransaction = null;
-const userId = 1; // User ID for API calls
 
 document.addEventListener('DOMContentLoaded', function() {
   const table = document.getElementById('tx-table');
@@ -53,7 +52,6 @@ function loadTransactions() {
     .then(data => {
       console.log("✅ Transactions loaded:", data);
       transactions = data
-        .filter(t => t.userId === userId) // Filter by userId on frontend
         .map(t => ({
           id: t.id,
           date: t.date,
@@ -270,14 +268,13 @@ function saveTransaction() {
   const categoryId = selectedOption.dataset.categoryId;
   
   const transactionData = {
-    date: formData.get('date'),
-    type: formData.get('type') === 'income' ? 'income' : 'expense',
-    categoryId: categoryId ? parseInt(categoryId) : null,
-    amount: amount,
-    note: formData.get('note') || '',
-    userId: userId,
-    walletId: 1 // Default wallet ID
-  };
+  date: formData.get('date'),
+  type: formData.get('type') === 'income' ? 'income' : 'expense',
+  categoryId: categoryId ? parseInt(categoryId) : null,
+  amount: amount,
+  note: formData.get('note') || '',
+  walletId: 1 // Default wallet ID
+};
   
   console.log("📤 Sending transaction data:", transactionData);
   

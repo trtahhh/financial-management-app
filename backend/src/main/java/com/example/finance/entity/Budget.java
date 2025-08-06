@@ -1,55 +1,58 @@
 package com.example.finance.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "budgets")
-@Data
 @Getter
 @Setter
+@Table(name = "Budgets")
 public class Budget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    private int month;
-    private int year;
+    @Column(nullable = false)
+    private Integer month;
 
+    @Column(nullable = false)
+    private Integer year;
+
+    @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
-    private String currencyCode;
-    @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    @Column(name = "spent_amount", precision = 18, scale = 2)
+    private BigDecimal spentAmount = BigDecimal.ZERO;
 
-    // Constructor
-    public Budget() {
-        this.isDeleted = false;
-    }
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Thêm getter/setter thủ công
-    public Boolean getIsDeleted() {
-        return isDeleted;
-    }
+    @Column(name = "currency_code")
+    private String currencyCode = "VND";
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted != null ? isDeleted : false;
-    }
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "alert_threshold", precision = 5, scale = 2)
+    private BigDecimal alertThreshold = BigDecimal.valueOf(80.00);
+
+    @Column(name = "rollover")
+    private Boolean rollover = false;
 }

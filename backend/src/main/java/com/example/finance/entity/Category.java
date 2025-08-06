@@ -3,8 +3,7 @@ package com.example.finance.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -16,11 +15,25 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String type;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user; // Null cho system categories
 
-    @ManyToMany(mappedBy = "categories")
-    private Set<Goal> goals = new HashSet<>();
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String type; // expense, income
+
+    private String color; // Hex color code
+
+    private String icon; // Font Awesome icon class
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "is_system")
+    private Boolean isSystem = false;
 
     @Override
     public boolean equals(Object o) {

@@ -12,10 +12,12 @@ public class UserProfile {
     @Column(name = "user_id")
     private Long userId;
 
+    private String fullName;
     private LocalDate birthday;
     private String gender;
     private String phone;
     private String address;
+    @Column(name = "image_url")
     private String imageUrl;
 
     @OneToOne

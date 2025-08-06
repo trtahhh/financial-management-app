@@ -20,11 +20,10 @@ public class WalletService {
     private final TransactionRepository transactionRepository;
     private final WalletMapper mapper;
 
-    public List<WalletDTO> findAll() {
+    public List<WalletDTO> findAll(Long userId) {
         try {
-            // TEMPORARY: Get wallets for userId = 1 for testing
-            List<Wallet> wallets = repo.findByUserId(1L);
-            
+            List<Wallet> wallets = repo.findByUserId(userId);
+
             // Tính toán số dư thực tế cho mỗi ví dựa trên giao dịch
             for (Wallet wallet : wallets) {
                 BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(wallet.getId(), "income");
@@ -47,9 +46,8 @@ public class WalletService {
     @Transactional
     public WalletDTO save(WalletDTO dto) {
         try {
-            // TEMPORARY: Set userId = 1 for testing
             if (dto.getUserId() == null) {
-                dto.setUserId(1L);
+                throw new IllegalArgumentException("UserId is required");
             }
             return mapper.toDto(repo.save(mapper.toEntity(dto)));
         } catch (Exception e) {
@@ -103,11 +101,6 @@ public class WalletService {
         Wallet wallet = repo.findById(walletId)
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + walletId));
         
-        // Lưu số dư ban đầu (có thể lấy từ database ban đầu hoặc giá trị được thiết lập)
-        // Nếu muốn giữ số dư ban đầu, cần một cách để lưu trữ giá trị này
-        // Hiện tại, tôi sẽ sử dụng logic: Số dư hiện tại = Thu nhập - Chi tiêu
-        // (Giả định rằng số dư ban đầu đã được tính vào giao dịch đầu tiên)
-        
         // Tính tổng thu nhập (income) và chi tiêu (expense) cho ví này
         BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(walletId, "income");
         BigDecimal totalExpense = transactionRepository.sumByWalletIdAndType(walletId, "expense");
@@ -133,12 +126,49 @@ public class WalletService {
             updateWalletBalance(wallet.getId());
         }
     }
+    
+    /**
+     * Tính tổng số dư của tất cả ví
+     */
+    public BigDecimal getTotalBalance(Long userId) {
+        List<Wallet> wallets = repo.findByUserId(userId);
+        
+        BigDecimal totalBalance = BigDecimal.ZERO;
+        for (Wallet wallet : wallets) {
+            if (wallet.getBalance() != null) {
+                totalBalance = totalBalance.add(wallet.getBalance());
+            }
+        }
+        
+        return totalBalance;
+    }
 
     /**
-     * Cập nhật số dư cho tất cả ví (sử dụng userId = 1 cho testing)
+     * Đếm số ví của user
      */
-    @Transactional
-    public void updateAllWalletBalances() {
-        updateAllWalletBalances(1L);
+    public Long countByUserId(Long userId) {
+        return repo.countByUserIdAndIsDeletedFalse(userId);
+    }
+
+    /**
+     * Lấy danh sách ví theo userId
+     */
+    public List<WalletDTO> findByUserId(Long userId) {
+        List<Wallet> wallets = repo.findByUserId(userId);
+        
+        // Tính toán số dư thực tế cho mỗi ví dựa trên giao dịch
+        for (Wallet wallet : wallets) {
+            BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(wallet.getId(), "income");
+            BigDecimal totalExpense = transactionRepository.sumByWalletIdAndType(wallet.getId(), "expense");
+            
+            totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
+            totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
+            
+            // Số dư thực tế = Thu nhập - Chi tiêu
+            BigDecimal actualBalance = totalIncome.subtract(totalExpense);
+            wallet.setBalance(actualBalance);
+        }
+        
+        return wallets.stream().map(mapper::toDto).toList();
     }
 }

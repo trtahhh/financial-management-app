@@ -24,13 +24,13 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private AuthenticationManager authenticationManager;
-    
+
     @Autowired
     private JwtTokenProvider tokenProvider;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -45,7 +45,7 @@ public class AuthController {
             }
 
             // Kiểm tra email đã tồn tại (nếu có)
-            if (registerRequest.getEmail() != null && !registerRequest.getEmail().isEmpty() 
+            if (registerRequest.getEmail() != null && !registerRequest.getEmail().isEmpty()
                 && userService.existsByEmail(registerRequest.getEmail())) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, "Email đã tồn tại!"));
@@ -56,20 +56,23 @@ public class AuthController {
             user.setUsername(registerRequest.getUsername());
             user.setEmail(registerRequest.getEmail());
             user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
-            user.setFullName(registerRequest.getFullName());
             user.setRole("USER");
             user.setCreatedAt(LocalDateTime.now());
 
             User savedUser = userService.save(user);
 
-            // Tạo profile cho user
-            if (registerRequest.getPhone() != null || registerRequest.getBirthday() != null 
-                || registerRequest.getGender() != null) {
+            // Tạo profile cho user (nếu có thông tin)
+            if (registerRequest.getFullName() != null || registerRequest.getPhone() != null ||
+                registerRequest.getBirthday() != null || registerRequest.getGender() != null ||
+                registerRequest.getAddress() != null || registerRequest.getImageUrl() != null) {
                 UserProfile profile = new UserProfile();
-                profile.setUser(savedUser);  // Set User object thay vì userId
+                profile.setUser(savedUser);
+                profile.setFullName(registerRequest.getFullName());
                 profile.setPhone(registerRequest.getPhone());
                 profile.setBirthday(registerRequest.getBirthday());
                 profile.setGender(registerRequest.getGender());
+                profile.setAddress(registerRequest.getAddress());
+                profile.setImageUrl(registerRequest.getImageUrl());
                 userService.saveProfile(profile);
             }
 
@@ -92,8 +95,10 @@ public class AuthController {
 
             String jwt = tokenProvider.generateToken(authentication);
             User user = userService.findByUsername(loginRequest.getUsername());
+            UserProfile profile = userService.findProfileByUserId(user.getId()).orElse(null);
 
-            return ResponseEntity.ok(new AuthResponse(jwt, user));
+            // Trả về cả user và profile nếu cần
+            return ResponseEntity.ok(new AuthResponse(jwt, user, profile));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, "Tên đăng nhập hoặc mật khẩu không đúng!"));

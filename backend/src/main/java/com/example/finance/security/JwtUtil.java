@@ -34,6 +34,14 @@ public class JwtUtil {
         return parse(token).getSubject();
     }
 
+    public Long getUserId(String token) {
+        Object id = parse(token).get("userId");
+        if (id instanceof Integer) return ((Integer) id).longValue();
+        if (id instanceof Long) return (Long) id;
+        if (id instanceof String) return Long.parseLong((String) id);
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     public Collection<SimpleGrantedAuthority> getAuthorities(String token) {
         List<String> roles = (List<String>) parse(token).get("roles", List.class);

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,5 +132,70 @@ public class NotificationService {
         dto.setMonth(n.getMonth());
         dto.setYear(n.getYear());
         return dto;
+    }
+
+    // Thêm các method này vào cuối class NotificationService (trước method toDTO):
+
+    /**
+     * Kiểm tra xem đã có notification cho budget với type cụ thể chưa
+     */
+    public boolean existsByBudgetAndType(Long budgetId, String type, Integer month, Integer year) {
+        return notificationRepository.existsByBudgetIdAndTypeAndMonthAndYearAndIsDeletedFalse(
+                budgetId, type, month, year);
+    }
+
+    /**
+     * Tạo notification cho budget alert
+     */
+    public void createBudgetNotification(Long userId, Long budgetId, Long categoryId, 
+                                    String message, String type, Integer month, Integer year) {
+        Notification notification = new Notification();
+        
+        // Set relationships
+        User user = userRepository.findById(userId).orElse(null);
+        Budget budget = budgetRepository.findById(budgetId).orElse(null);
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        
+        notification.setUser(user);
+        notification.setBudget(budget);
+        notification.setCategory(category);
+        notification.setMessage(message);
+        notification.setType(type);
+        notification.setMonth(month);
+        notification.setYear(year);
+        notification.setIsRead(false);
+        notification.setIsDeleted(false);
+        
+        // Set priority based on type
+        if ("BUDGET_EXCEEDED".equals(type)) {
+            notification.setPriority(3); // High priority
+        } else if ("BUDGET_WARNING".equals(type)) {
+            notification.setPriority(2); // Medium priority
+        } else {
+            notification.setPriority(1); // Low priority
+        }
+        
+        notificationRepository.save(notification);
+    }
+
+    /**
+     * Lấy danh sách notification chưa đọc
+     */
+    public List<Map<String, Object>> getUnreadNotifications(Long userId) {
+        List<Notification> notifications = notificationRepository
+                .findByUserIdAndIsReadFalseAndIsDeletedFalseOrderByCreatedAtDesc(userId);
+        
+        return notifications.stream()
+                .limit(5) // Chỉ lấy 5 notification gần nhất
+                .map(n -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", n.getId());
+                    map.put("message", n.getMessage());
+                    map.put("type", n.getType());
+                    map.put("createdAt", n.getCreatedAt());
+                    map.put("priority", n.getPriority() != null ? n.getPriority() : 1); 
+                    return map;
+                })
+                .toList();
     }
 }

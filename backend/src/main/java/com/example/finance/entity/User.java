@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -19,21 +19,15 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String username;
-    
+
     private String email;
-    
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-    
+
     @Column(name = "role")
     private String role = "USER";
-    
-    @Column(name = "full_name")
-    private String fullName;
-    
-    @Column(name = "image_url")
-    private String imageUrl;
-    
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

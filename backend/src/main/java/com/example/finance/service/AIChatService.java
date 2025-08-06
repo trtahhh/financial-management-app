@@ -10,13 +10,13 @@ import org.json.JSONObject;
 
 @Service
 public class AIChatService {
-    @Value("${openrouter.api.key}")
+    @Value("${spring.ai.openai.api-key}")
     private String apiKey;
 
-    @Value("${openrouter.api.url}")
+    @Value("${spring.ai.openai.base-url}")
     private String apiUrl;
 
-    @Value("${openrouter.model}")
+    @Value("${spring.ai.openai.chat.model}")
     private String model;
 
     private final WebClient webClient = WebClient.builder().build();

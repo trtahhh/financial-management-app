@@ -1,6 +1,5 @@
 console.log("Dashboard JS loaded");
 
-const userId = 1; // User ID for API calls
 let pieChart, barChart;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -477,14 +476,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Tự động ẩn sau 5 giây
     setTimeout(() => errorDiv.remove(), 5000);
   }
-      })
-      .catch(e => {
-        console.error("💥 Lỗi khi tải dữ liệu dashboard:", e);
-        // Show error in stats
-        document.getElementById('totalIncome').textContent = 'Lỗi';
-        document.getElementById('totalExpense').textContent = 'Lỗi';
-        document.getElementById('balance').textContent = 'Lỗi';
-      });
+
+  function refreshCharts() {
+    console.log("🔄 Refreshing charts...");
+    initCharts();
   }
 
   function refreshCharts() {
@@ -504,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function () {
   
   // Initialize - GỌI DASHBOARD MỚI
   console.log("🚀 Initializing dashboard...");
-  loadDashboard(); // Chỉ gọi function mới này thôi
+  loadDashboard(); 
 });
 
 // 🔗 ENHANCED INTEGRATION FUNCTIONS - Các hàm liên kết nâng cao

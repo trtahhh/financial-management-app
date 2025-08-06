@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.YearMonth;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.time.LocalDateTime;
 
@@ -55,7 +57,7 @@ public class GoalService {
         }).toList();
     }
 
-    public BigDecimal predictNextMonth() {
+    public BigDecimal predictNextMonth(Long userId) {
         SimpleRegression regression = new SimpleRegression(true);
 
         YearMonth start = YearMonth.now().minusMonths(11); // last 12 months
@@ -112,4 +114,61 @@ public class GoalService {
         return mapper.toDto(saved);
     }
 
+    // Thêm các method này vào GoalService:
+
+    /**
+     * Lấy tiến độ mục tiêu
+     */
+    public List<Map<String, Object>> getGoalProgress(Long userId) {
+        List<Goal> activeGoals = repo.findByUserIdAndIsDeletedFalse(userId);
+        
+        // Tính tổng số dư của user từ tất cả ví
+        BigDecimal totalBalance = walletRepository.findByUserId(userId).stream()
+                .map(wallet -> wallet.getBalance() != null ? wallet.getBalance() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return activeGoals.stream().map(goal -> {
+            Map<String, Object> goalData = new HashMap<>();
+            goalData.put("goalId", goal.getId());
+            goalData.put("goalName", goal.getName());
+            goalData.put("targetAmount", goal.getTargetAmount());
+            
+            // Sử dụng currentAmount từ goal entity
+            BigDecimal currentAmount = goal.getCurrentAmount() != null ? goal.getCurrentAmount() : BigDecimal.ZERO;
+            goalData.put("currentAmount", currentAmount);
+            goalData.put("currentBalance", totalBalance);
+            
+            // Tính phần trăm tiến độ dựa trên currentAmount
+            BigDecimal progressPercentage = goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0 ? 
+                    currentAmount.divide(goal.getTargetAmount(), 4, java.math.RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100)) : BigDecimal.ZERO;
+            
+            goalData.put("progressPercentage", progressPercentage.doubleValue());
+            
+            // Xác định trạng thái
+            String status = "in-progress";
+            if (currentAmount.compareTo(goal.getTargetAmount()) >= 0) {
+                status = "completed";
+            } else if (progressPercentage.compareTo(BigDecimal.valueOf(80)) >= 0) {
+                status = "near-completion";
+            }
+            goalData.put("status", status);
+            
+            // Tính số tiền còn thiếu
+            BigDecimal remainingAmount = goal.getTargetAmount().subtract(currentAmount);
+            if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
+                remainingAmount = BigDecimal.ZERO;
+            }
+            goalData.put("remainingAmount", remainingAmount);
+            
+            return goalData;
+        }).toList();
+    }
+
+    /**
+     * Đếm số mục tiêu đang hoạt động
+     */
+    public Long countActiveGoals(Long userId) {
+        return (long) repo.findByUserIdAndIsDeletedFalse(userId).size();
+    }
 }

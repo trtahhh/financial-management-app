@@ -21,4 +21,18 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         @Param("month") Integer month, 
         @Param("year") Integer year
     );
+
+    // Thêm các method mới:
+    @Query("SELECT CASE WHEN COUNT(n) > 0 THEN true ELSE false END FROM Notification n " +
+           "WHERE n.budget.id = :budgetId AND n.type = :type " +
+           "AND n.month = :month AND n.year = :year AND n.isDeleted = false")
+    boolean existsByBudgetIdAndTypeAndMonthAndYearAndIsDeletedFalse(
+        @Param("budgetId") Long budgetId, 
+        @Param("type") String type, 
+        @Param("month") Integer month, 
+        @Param("year") Integer year
+    );
+
+    @Query("SELECT n FROM Notification n WHERE n.user.id = :userId AND n.isRead = false AND n.isDeleted = false ORDER BY n.priority DESC, n.createdAt DESC")
+    List<Notification> findByUserIdAndIsReadFalseAndIsDeletedFalseOrderByCreatedAtDesc(@Param("userId") Long userId);
 }

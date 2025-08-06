@@ -88,9 +88,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("year") Integer year
     );
 
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId AND MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.isDeleted = false")
-    BigDecimal sumByUserCategoryMonth(Long userId, Long categoryId, int month, int year);
-
     // Check if wallet has any transactions
     @Query("SELECT COUNT(t) > 0 FROM Transaction t WHERE t.wallet.id = :walletId AND t.isDeleted = false")
     boolean existsByWalletId(@Param("walletId") Long walletId);
@@ -103,4 +100,32 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.isDeleted = false")
     BigDecimal sumByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
 
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId AND MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.type = 'expense' AND t.isDeleted = false")
+    BigDecimal sumByUserCategoryMonth(@Param("userId") Long userId, @Param("categoryId") Long categoryId, @Param("month") int month, @Param("year") int year);
+
+    @Query("SELECT c.name, c.color, SUM(t.amount), COUNT(t) FROM Transaction t JOIN t.category c WHERE t.user.id = :userId AND t.type = 'expense' AND MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.isDeleted = false GROUP BY c.id, c.name, c.color ORDER BY SUM(t.amount) DESC")
+    List<Object[]> findExpensesByCategory(@Param("userId") Long userId, @Param("month") Integer month, @Param("year") Integer year);
+
+    List<Transaction> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
+    BigDecimal sumByUserTypeAndDateRange(@Param("userId") Long userId, @Param("type") String type, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    Long countByUserIdAndIsDeletedFalse(Long userId);
+
+    @Query("SELECT t.category.name, t.category.color, SUM(t.amount), COUNT(t) FROM Transaction t WHERE t.user.id = :userId AND t.type = 'expense' AND t.date BETWEEN :startDate AND :endDate GROUP BY t.category.name, t.category.color")
+    List<Object[]> findExpensesByCategoryByDate(@Param("userId") Long userId,
+                                                @Param("startDate") LocalDate startDate,
+                                                @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.date BETWEEN :startDate AND :endDate ORDER BY t.createdAt DESC")
+    List<Transaction> findByUserIdAndDateBetweenOrderByCreatedAtDesc(@Param("userId") Long userId,
+                                                                    @Param("startDate") LocalDate startDate,
+                                                                    @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId AND t.type = 'expense' AND t.date BETWEEN :startDate AND :endDate")
+    BigDecimal sumByUserCategoryAndDateRange(@Param("userId") Long userId,
+                                            @Param("categoryId") Long categoryId,
+                                            @Param("startDate") LocalDate startDate,
+                                            @Param("endDate") LocalDate endDate);
 }

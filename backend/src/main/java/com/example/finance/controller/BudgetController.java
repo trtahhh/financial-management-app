@@ -4,6 +4,9 @@ import com.example.finance.dto.BudgetDTO;
 import com.example.finance.service.BudgetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +54,10 @@ public class BudgetController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody BudgetDTO dto) {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Long userId = Long.parseLong(authentication.getName());
+            dto.setUserId(userId);
+
             log.info("Creating budget with data: {}", dto);
             BudgetDTO result = service.createBudget(dto);
             return ResponseEntity.ok(Map.of(
