@@ -5,6 +5,7 @@ import com.example.finance.entity.UserProfile;
 import com.example.finance.repository.UserRepository;
 import com.example.finance.repository.UserProfileRepository;
 import com.example.finance.security.JwtUtil;
+import com.example.finance.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,25 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UserService userService;
+
     private Long extractUserId(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").replace("Bearer ", "");
-        return jwtUtil.getUserId(token);
+        try {
+            String token = request.getHeader("Authorization").replace("Bearer ", "");
+            Long userId = jwtUtil.getUserId(token);
+            if (userId == null) {
+                // Fallback: get userId from username
+                String username = jwtUtil.getUsername(token);
+                if (username != null) {
+                    return userService.findByUsername(username).getId();
+                }
+            }
+            return userId;
+        } catch (Exception e) {
+            log.error("Error extracting userId from token", e);
+            return null;
+        }
     }
 
     @GetMapping("/profile")

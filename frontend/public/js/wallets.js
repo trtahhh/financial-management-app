@@ -5,6 +5,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const title = document.getElementById('wallet-modal-title');
   let editing = null;
 
+  function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    return headers;
+  }
+
   function safeJson(res) {
     if (!res.ok) return res.text().then(text => { throw new Error(text); });
     if (res.headers.get('content-type')?.includes('application/json')) return res.json();
@@ -12,7 +23,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function load() {
-    fetch('/api/wallets')
+    fetch('/api/wallets', {
+      headers: getAuthHeaders()
+    })
       .then(safeJson)
       .then(d => {
         t.innerHTML =
@@ -49,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (confirm('Cập nhật số dư tất cả ví dựa trên giao dịch?')) {
       fetch('/api/wallets/update-balances', { 
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       })
         .then(res => {
           if (!res.ok) return res.text().then(text => { throw new Error(text); });
@@ -66,7 +79,9 @@ document.addEventListener('DOMContentLoaded', function () {
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/wallets/' + id)
+      fetch('/api/wallets/' + id, {
+        headers: getAuthHeaders()
+      })
         .then(safeJson)
         .then(w => {
           editing = id;
@@ -78,7 +93,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá ví này?')) {
-        fetch('/api/wallets/' + id, { method: 'DELETE' })
+        fetch('/api/wallets/' + id, { 
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        })
           .then(res => {
             if (!res.ok) return res.text().then(text => { throw new Error(text); });
             load();
@@ -90,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (confirm('Cập nhật số dư ví này dựa trên giao dịch?')) {
         fetch('/api/wallets/' + id + '/update-balance', { 
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: getAuthHeaders()
         })
           .then(res => {
             if (!res.ok) return res.text().then(text => { throw new Error(text); });
@@ -115,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const url = '/api/wallets' + (editing ? '/' + editing : '');
     fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
       .then(res => {

@@ -5,8 +5,21 @@ document.addEventListener('DOMContentLoaded', function () {
   const title = document.getElementById('cat-modal-title');
   let editing = null;
 
+  function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    return headers;
+  }
+
   function load() {
-    fetch('/api/categories')
+    fetch('/api/categories', {
+      headers: getAuthHeaders()
+    })
       .then(r => r.json())
       .then(response => {
         // Handle both direct array and response object formats
@@ -49,7 +62,9 @@ document.addEventListener('DOMContentLoaded', function () {
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/categories/' + id)
+      fetch('/api/categories/' + id, {
+        headers: getAuthHeaders()
+      })
         .then(r => r.json())
         .then(response => {
           const category = response.data || response;
@@ -65,7 +80,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá danh mục này?')) {
-        fetch('/api/categories/' + id, { method: 'DELETE' })
+        fetch('/api/categories/' + id, { 
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        })
           .then(r => r.json())
           .then(response => {
             if (response.success !== false) {
@@ -99,22 +117,22 @@ document.addEventListener('DOMContentLoaded', function () {
     
     fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
-    .then(r => r.json())
-    .then(response => {
-      if (response.success !== false) {
-        m.hide();
-        load();
-      } else {
-        alert('Lỗi: ' + (response.message || 'Unknown error'));
-      }
-    })
-    .catch(e => {
-      console.error('Error saving category:', e);
-      alert('Lỗi lưu danh mục: ' + e.message);
-    });
+      .then(r => r.json())
+      .then(response => {
+        if (response.success !== false) {
+          m.hide();
+          load();
+        } else {
+          alert('Lỗi lưu danh mục: ' + (response.message || 'Unknown error'));
+        }
+      })
+      .catch(e => {
+        console.error('Error saving category:', e);
+        alert('Lỗi lưu danh mục: ' + e.message);
+      });
   });
 
   load();

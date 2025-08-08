@@ -6,10 +6,37 @@
 // Global variables
 const INTEGRATION_CONFIG = {
   API_BASE: 'http://localhost:8080/api',
-  USER_ID: 1,
+  USER_ID: null, // Will be set dynamically from JWT token
   NOTIFICATIONS_ENABLED: true,
   AUTO_REFRESH_DASHBOARD: true
 };
+
+/**
+ * 🔐 JWT UTILS - Tiện ích xử lý JWT
+ */
+class JwtUtils {
+  static getUserIdFromToken() {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return null;
+      
+      // Decode JWT token (payload part only)
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload));
+      return decoded.userId || null;
+    } catch (error) {
+      console.error('Error extracting userId from token:', error);
+      return null;
+    }
+  }
+  
+  static getCurrentUserId() {
+    if (!INTEGRATION_CONFIG.USER_ID) {
+      INTEGRATION_CONFIG.USER_ID = this.getUserIdFromToken();
+    }
+    return INTEGRATION_CONFIG.USER_ID;
+  }
+}
 
 /**
  * 🔄 CROSS-MODULE NOTIFICATIONS - Thông báo liên module
@@ -124,7 +151,10 @@ class BudgetIntegration {
   
   static async checkBudgetAlert(categoryId, amount) {
     try {
-      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets/check/${categoryId}?userId=${INTEGRATION_CONFIG.USER_ID}&amount=${amount}`, {
+      const userId = JwtUtils.getCurrentUserId();
+      if (!userId) throw new Error('User not authenticated');
+      
+      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets/check/${categoryId}?userId=${userId}&amount=${amount}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         }
@@ -148,7 +178,10 @@ class BudgetIntegration {
   
   static async getCurrentUsage(categoryId, month, year) {
     try {
-      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets/usage/${categoryId}?userId=${INTEGRATION_CONFIG.USER_ID}&month=${month}&year=${year}`, {
+      const userId = JwtUtils.getCurrentUserId();
+      if (!userId) throw new Error('User not authenticated');
+      
+      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets/usage/${categoryId}?userId=${userId}&month=${month}&year=${year}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         }
@@ -180,7 +213,7 @@ class GoalsIntegration {
           'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         },
         body: JSON.stringify({
-          userId: INTEGRATION_CONFIG.USER_ID,
+          userId: JwtUtils.getCurrentUserId(),
           amount: transaction.amount,
           date: transaction.date
         })
@@ -209,7 +242,10 @@ class GoalsIntegration {
   
   static async getActiveGoals() {
     try {
-      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/goals?userId=${INTEGRATION_CONFIG.USER_ID}&status=active`, {
+      const userId = JwtUtils.getCurrentUserId();
+      if (!userId) throw new Error('User not authenticated');
+      
+      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/goals?userId=${userId}&status=active`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         }
@@ -241,7 +277,7 @@ class WalletIntegration {
           'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         },
         body: JSON.stringify({
-          userId: INTEGRATION_CONFIG.USER_ID,
+          userId: JwtUtils.getCurrentUserId(),
           balanceChange: balanceChange,
           transactionId: transaction.id,
           walletId: transaction.walletId || 1 // Default wallet
@@ -272,7 +308,7 @@ class WalletIntegration {
   static async getCurrentBalance(walletId = null) {
     const url = walletId 
       ? `${INTEGRATION_CONFIG.API_BASE}/wallets/${walletId}/balance`
-      : `${INTEGRATION_CONFIG.API_BASE}/wallets/total-balance?userId=${INTEGRATION_CONFIG.USER_ID}`;
+      : `${INTEGRATION_CONFIG.API_BASE}/wallets/total-balance?userId=${JwtUtils.getCurrentUserId()}`;
     
     try {
       const response = await fetch(url, {
@@ -361,10 +397,10 @@ class FinancialIntegration {
     
     try {
       const promises = [
-        fetch(`${INTEGRATION_CONFIG.API_BASE}/statistics/summary?userId=${INTEGRATION_CONFIG.USER_ID}&month=${month}&year=${year}`),
-        fetch(`${INTEGRATION_CONFIG.API_BASE}/transactions?userId=${INTEGRATION_CONFIG.USER_ID}`),
-        fetch(`${INTEGRATION_CONFIG.API_BASE}/categories?userId=${INTEGRATION_CONFIG.USER_ID}`),
-        fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets?userId=${INTEGRATION_CONFIG.USER_ID}&month=${month}&year=${year}`),
+              fetch(`${INTEGRATION_CONFIG.API_BASE}/statistics/summary?userId=${JwtUtils.getCurrentUserId()}&month=${month}&year=${year}`),
+      fetch(`${INTEGRATION_CONFIG.API_BASE}/transactions?userId=${JwtUtils.getCurrentUserId()}`),
+      fetch(`${INTEGRATION_CONFIG.API_BASE}/categories?userId=${JwtUtils.getCurrentUserId()}`),
+      fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets?userId=${JwtUtils.getCurrentUserId()}&month=${month}&year=${year}`),
         GoalsIntegration.getActiveGoals(),
         WalletIntegration.getCurrentBalance()
       ];

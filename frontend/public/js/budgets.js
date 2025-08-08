@@ -7,9 +7,22 @@ document.addEventListener('DOMContentLoaded', function () {
   let editing = null;
   let categories = [];
 
+  function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    return headers;
+  }
+
   // Load categories first
   function loadCategories() {
-    return fetch('/api/categories')
+    return fetch('/api/categories', {
+      headers: getAuthHeaders()
+    })
       .then(r => r.json())
       .then(cats => {
         categories = cats;
@@ -22,8 +35,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function load() {
     Promise.all([
-      fetch('/api/budgets').then(r => r.json()),
-      fetch('/api/categories').then(r => r.json())
+      fetch('/api/budgets', {
+        headers: getAuthHeaders()
+      }).then(r => r.json()),
+      fetch('/api/categories', {
+        headers: getAuthHeaders()
+      }).then(r => r.json())
     ]).then(([budgets, categories]) => {
       const categoryMap = {};
       categories.forEach(cat => categoryMap[cat.id] = cat.name);
@@ -71,7 +88,9 @@ document.addEventListener('DOMContentLoaded', function () {
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/budgets/' + id)
+      fetch('/api/budgets/' + id, {
+        headers: getAuthHeaders()
+      })
         .then(r => r.json())
         .then(b => {
           editing = id;
@@ -85,7 +104,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá ngân sách này?')) {
-        fetch('/api/budgets/' + id, { method: 'DELETE' })
+        fetch('/api/budgets/' + id, { 
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        })
           .then(load)
           .catch(e => alert(e.message));
       }
@@ -100,20 +122,40 @@ document.addEventListener('DOMContentLoaded', function () {
       categoryId: +f.category_id.value,
       amount: +f.amount.value
     };
+    
+    if (!data.categoryId) {
+      alert('Vui lòng chọn danh mục');
+      return;
+    }
+    
+    if (!data.amount || data.amount <= 0) {
+      alert('Số tiền phải lớn hơn 0');
+      return;
+    }
+    
     const method = editing ? 'PUT' : 'POST';
     const url = '/api/budgets' + (editing ? '/' + editing : '');
+    
     fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
-    }).then(() => {
-      m.hide();
-      load();
-    }).catch(e => alert(e.message));
+    })
+      .then(r => r.json())
+      .then(response => {
+        if (response.success !== false) {
+          m.hide();
+          load();
+        } else {
+          alert('Lỗi lưu ngân sách: ' + (response.message || 'Unknown error'));
+        }
+      })
+      .catch(e => {
+        console.error('Error saving budget:', e);
+        alert('Lỗi lưu ngân sách: ' + e.message);
+      });
   });
 
   // Initialize
-  loadCategories().then(() => {
-    load();
-  });
+  loadCategories().then(load);
 });

@@ -5,8 +5,21 @@ document.addEventListener('DOMContentLoaded', function () {
   const title = document.getElementById('goal-modal-title');
   let editing = null;
 
+  function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    return headers;
+  }
+
   function load() {
-    fetch('/api/goals')
+    fetch('/api/goals', {
+      headers: getAuthHeaders()
+    })
       .then(r => r.json())
       .then(response => {
         // Handle both direct array and response object formats
@@ -68,7 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Error loading goals:', e);
         list.innerHTML = '<div class="alert alert-danger">Lỗi tải mục tiêu: ' + e.message + '</div>';
       });
-    fetch('/api/goals/predict')
+    fetch('/api/goals/predict', {
+      headers: getAuthHeaders()
+    })
       .then(r => r.json())
       .then(p => { document.getElementById('predict').textContent = p.message; })
       .catch(e => {});
@@ -84,7 +99,9 @@ document.addEventListener('DOMContentLoaded', function () {
   list.addEventListener('click', function (e) {
     const id = e.target.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/goals/' + id)
+      fetch('/api/goals/' + id, {
+        headers: getAuthHeaders()
+      })
         .then(r => r.json())
         .then(response => {
           const goal = response.data || response;
@@ -101,12 +118,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá mục tiêu này?')) {
-        fetch('/api/goals/' + id, { method: 'DELETE' })
+        fetch('/api/goals/' + id, { 
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        })
           .then(r => r.json())
           .then(response => {
             if (response.success !== false) {
               load();
-              alert('Xóa mục tiêu thành công!');
             } else {
               alert('Lỗi xóa mục tiêu: ' + (response.message || 'Unknown error'));
             }
@@ -121,26 +140,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   f.addEventListener('submit', function (e) {
     e.preventDefault();
-    
     const data = {
-      name: f.name.value.trim(),
-      targetAmount: parseFloat(f.target_amount.value),
+      name: f.name.value,
+      targetAmount: +f.target_amount.value,
       dueDate: f.due_date.value
     };
     
-    // Validation
-    if (!data.name) {
+    if (!data.name.trim()) {
       alert('Tên mục tiêu không được để trống');
       return;
     }
     
     if (!data.targetAmount || data.targetAmount <= 0) {
-      alert('Số tiền cần đạt phải lớn hơn 0');
-      return;
-    }
-    
-    if (!data.dueDate) {
-      alert('Ngày hoàn thành dự kiến không được để trống');
+      alert('Số tiền mục tiêu phải lớn hơn 0');
       return;
     }
     
@@ -149,23 +161,22 @@ document.addEventListener('DOMContentLoaded', function () {
     
     fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
-    .then(r => r.json())
-    .then(response => {
-      if (response.success !== false) {
-        m.hide();
-        load();
-        alert(editing ? 'Cập nhật mục tiêu thành công!' : 'Thêm mục tiêu thành công!');
-      } else {
-        alert('Lỗi: ' + (response.message || 'Unknown error'));
-      }
-    })
-    .catch(e => {
-      console.error('Error saving goal:', e);
-      alert('Lỗi lưu mục tiêu: ' + e.message);
-    });
+      .then(r => r.json())
+      .then(response => {
+        if (response.success !== false) {
+          m.hide();
+          load();
+        } else {
+          alert('Lỗi lưu mục tiêu: ' + (response.message || 'Unknown error'));
+        }
+      })
+      .catch(e => {
+        console.error('Error saving goal:', e);
+        alert('Lỗi lưu mục tiêu: ' + e.message);
+      });
   });
 
   load();

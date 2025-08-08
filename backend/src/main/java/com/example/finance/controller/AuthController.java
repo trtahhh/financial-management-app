@@ -86,6 +86,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
+            System.out.println("Login attempt for user: " + loginRequest.getUsername());
+            
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     loginRequest.getUsername(),
@@ -97,11 +99,15 @@ public class AuthController {
             User user = userService.findByUsername(loginRequest.getUsername());
             UserProfile profile = userService.findProfileByUserId(user.getId()).orElse(null);
 
+            System.out.println("Login successful for user: " + loginRequest.getUsername());
+            
             // Trả về cả user và profile nếu cần
             return ResponseEntity.ok(new AuthResponse(jwt, user, profile));
         } catch (Exception e) {
+            System.out.println("Login failed for user: " + loginRequest.getUsername() + ", Error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest()
-                .body(new ApiResponse(false, "Tên đăng nhập hoặc mật khẩu không đúng!"));
+                .body(new ApiResponse(false, "Tên đăng nhập hoặc mật khẩu không đúng! Error: " + e.getMessage()));
         }
     }
 

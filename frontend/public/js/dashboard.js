@@ -2,6 +2,22 @@ console.log("Dashboard JS loaded");
 
 let pieChart, barChart;
 
+// JWT Utils
+function getUserIdFromToken() {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) return null;
+    
+    // Decode JWT token (payload part only)
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    return decoded.userId || null;
+  } catch (error) {
+    console.error('Error extracting userId from token:', error);
+    return null;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const monthInput = document.getElementById('dash-month');
 
@@ -74,8 +90,8 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(data => {
         console.log("✅ Transactions data received:", data);
-        // Filter by userId on frontend
-        return data.filter(t => t.userId === userId);
+        // No need to filter on frontend - backend already filters by user
+        return data;
       })
       .catch(err => {
         console.error("🚨 Transactions fetch failed:", err);
@@ -112,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(data => {
         console.log("✅ Categories data received:", data);
-        // Filter by userId on frontend if needed
-        return data.filter(c => c.userId === userId || !c.userId);
+        // No need to filter on frontend - backend already handles user-specific data
+        return data;
       })
       .catch(err => {
         console.error("🚨 Categories fetch failed:", err);
@@ -509,6 +525,7 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 function fetchBudgets(month) {
   const [year, monthNum] = month.split('-').map(Number);
+  const userId = getUserIdFromToken();
   const url = `http://localhost:8080/api/budgets?userId=${userId}&month=${monthNum}&year=${year}`;
   
   const token = localStorage.getItem('authToken');
@@ -535,6 +552,7 @@ function fetchBudgets(month) {
  * Fetch goals data
  */
 function fetchGoals() {
+  const userId = getUserIdFromToken();
   const url = `http://localhost:8080/api/goals?userId=${userId}`;
   
   const token = localStorage.getItem('authToken');

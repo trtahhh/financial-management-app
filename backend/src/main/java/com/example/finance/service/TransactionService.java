@@ -61,6 +61,30 @@ public class TransactionService {
     @Transactional
     public TransactionDTO save(TransactionDTO dto, MultipartFile file) {
         try {
+            // Business logic validation
+            if (dto.getAmount() == null || dto.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new CustomException("Amount must be greater than 0");
+            }
+            
+            if (dto.getType() == null || (!dto.getType().equals("income") && !dto.getType().equals("expense"))) {
+                throw new CustomException("Type must be 'income' or 'expense'");
+            }
+            
+            if (dto.getDate() == null) {
+                throw new CustomException("Transaction date is required");
+            }
+            
+            // Validate date range (not in future, not too old)
+            LocalDate today = LocalDate.now();
+            if (dto.getDate().isAfter(today)) {
+                throw new CustomException("Transaction date cannot be in the future");
+            }
+            
+            if (dto.getDate().isBefore(today.minusYears(10))) {
+                throw new CustomException("Transaction date cannot be more than 10 years ago");
+            }
+            
+            // File upload handling
             if (!Files.exists(UPLOAD_DIR)) {
                 Files.createDirectories(UPLOAD_DIR);
             }
@@ -73,7 +97,7 @@ public class TransactionService {
             Transaction entity = mapper.toEntity(dto);
 
             if (entity.getStatus() == null) {
-            entity.setStatus("cleared");      
+                entity.setStatus("cleared");      
             }
 
             if (dto.getUserId() == null) {
@@ -258,7 +282,7 @@ public class TransactionService {
         return raw.stream()
                 .map(arr -> new WalletStatDTO(
                     arr[0] == null ? null : ((Number) arr[0]).longValue(),
-                    arr[1] == null ? 0 : ((Number) arr[1]).doubleValue(),
+                    arr[1] == null ? BigDecimal.ZERO : (BigDecimal) arr[1],
                     null 
                 ))
                 .toList();
@@ -270,7 +294,7 @@ public class TransactionService {
                 .map(arr -> new WalletStatDTO(
                     arr[0] == null ? null : ((Number) arr[0]).longValue(),
                     null, 
-                    arr[1] == null ? 0 : ((Number) arr[1]).longValue()
+                    arr[1] == null ? 0L : ((Number) arr[1]).longValue()
                 ))
                 .toList();
     }

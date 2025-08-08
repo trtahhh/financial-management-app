@@ -1,26 +1,37 @@
 package com.example.finance.security;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.example.finance.service.UserService;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+
 @Component
 public class JwtTokenProvider {
 
-    @Value("${app.jwtSecret:mySecretKeyThatIsLongEnoughForHS512Algorithm}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwtExpirationInMs:604800000}")
+    @Value("${jwt.expiration}")
     private int jwtExpirationInMs;
 
+    @Autowired
+    private UserService userService;
+
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        try {
+            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid JWT_SECRET format. Must be valid Base64", e);
+        }
     }
 
     public String generateToken(Authentication authentication) {
@@ -28,12 +39,16 @@ public class JwtTokenProvider {
 
         Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationInMs);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(userPrincipal.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
+                .claim("userId", getUserIdFromUsername(userPrincipal.getUsername()))
                 .signWith(getSigningKey())
                 .compact();
+                
+        System.out.println("Generated JWT token for user: " + userPrincipal.getUsername());
+        return token;
     }
 
     public String getUsernameFromJWT(String token) {
@@ -56,5 +71,14 @@ public class JwtTokenProvider {
             System.err.println("JWT claims string is empty");
         }
         return false;
+    }
+
+    private Long getUserIdFromUsername(String username) {
+        try {
+            return userService.findByUsername(username).getId();
+        } catch (Exception e) {
+            System.err.println("Error getting userId for username " + username + ": " + e.getMessage());
+            return null;
+        }
     }
 }

@@ -43,6 +43,10 @@ public class WalletService {
         }
     }
 
+    public boolean existsById(Long id) {
+        return repo.existsById(id);
+    }
+
     @Transactional
     public WalletDTO save(WalletDTO dto) {
         try {

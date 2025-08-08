@@ -1,6 +1,31 @@
 let transactions = [];
 let editingTransaction = null;
 
+// JWT Utils
+function getUserIdFromToken() {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) return null;
+    
+    // Decode JWT token (payload part only)
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload));
+    return decoded.userId || null;
+  } catch (error) {
+    console.error('Error extracting userId from token:', error);
+    return null;
+  }
+}
+
+function getCurrentUserId() {
+  const userId = getUserIdFromToken();
+  if (!userId) {
+    console.error('User not authenticated');
+    return null;
+  }
+  return userId;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const table = document.getElementById('tx-table');
   const form = document.getElementById('tx-form');
@@ -98,7 +123,7 @@ function loadCategories() {
     })
     .then(data => {
       console.log("✅ Categories loaded:", data);
-      updateCategoryDropdowns(data.filter(c => c.userId === userId || !c.userId));
+      updateCategoryDropdowns(data);
     })
     .catch(err => {
       console.error("🚨 Failed to load categories:", err);
@@ -455,7 +480,7 @@ function updateBudgetUsage(categoryId, transactionType, amount) {
       amount: amount,
       month: month,
       year: year,
-      userId: userId
+      userId: getCurrentUserId()
     })
   })
   .then(res => res.json())
@@ -486,7 +511,7 @@ function updateGoalProgress(transactionType, amount) {
     headers: headers,
     mode: 'cors',
     body: JSON.stringify({
-      userId: userId,
+      userId: getCurrentUserId(),
       amount: amount
     })
   })
@@ -518,7 +543,7 @@ function updateWalletBalance(transactionType, amount) {
     headers: headers,
     mode: 'cors',
     body: JSON.stringify({
-      userId: userId,
+      userId: getCurrentUserId(),
       balanceChange: balanceChange
     })
   })
@@ -558,7 +583,7 @@ function checkBudgetAlert(categoryId, amount) {
     headers['Authorization'] = 'Bearer ' + token;
   }
   
-  fetch(`http://localhost:8080/api/budgets/check/${categoryId}?userId=${userId}&amount=${amount}`, {
+  fetch(`http://localhost:8080/api/budgets/check/${categoryId}?userId=${getCurrentUserId()}&amount=${amount}`, {
     method: 'GET',
     headers: headers,
     mode: 'cors'

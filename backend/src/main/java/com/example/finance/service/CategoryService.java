@@ -53,4 +53,7 @@ public class CategoryService {
         return mapper.toDto(repo.save(mapper.toEntity(dto)));
     }
 
+    public boolean existsById(Long id) {
+        return repo.existsById(id);
+    }
 }

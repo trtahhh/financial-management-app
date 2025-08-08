@@ -4,6 +4,9 @@ import com.example.finance.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Pageable;
+import com.example.finance.dto.CategoryStatisticDTO;
+import com.example.finance.dto.WalletStatDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -128,4 +131,48 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                                             @Param("categoryId") Long categoryId,
                                             @Param("startDate") LocalDate startDate,
                                             @Param("endDate") LocalDate endDate);
+
+    // Optimized query for recent transactions with pagination
+    @Query("SELECT t FROM Transaction t " +
+           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.wallet " +
+           "WHERE t.user.id = :userId AND t.isDeleted = false " +
+           "ORDER BY t.createdAt DESC")
+    List<Transaction> findRecentTransactionsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    // Optimized query for statistics with better performance
+    @Query("SELECT NEW com.example.finance.dto.CategoryStatisticDTO(" +
+           "c.name, c.color, SUM(t.amount), COUNT(t)) " +
+           "FROM Transaction t JOIN t.category c " +
+           "WHERE t.user.id = :userId AND t.type = 'expense' " +
+           "AND (:month IS NULL OR FUNCTION('MONTH', t.date) = :month) " +
+           "AND (:year IS NULL OR FUNCTION('YEAR', t.date) = :year) " +
+           "AND t.isDeleted = false " +
+           "GROUP BY c.id, c.name, c.color " +
+           "ORDER BY SUM(t.amount) DESC")
+    List<CategoryStatisticDTO> findExpenseStatisticsByCategory(
+        @Param("userId") Long userId, 
+        @Param("month") Integer month, 
+        @Param("year") Integer year
+    );
+
+    // Optimized query for wallet statistics
+    @Query("SELECT NEW com.example.finance.dto.WalletStatDTO(" +
+           "w.id, w.name, SUM(t.amount), COUNT(t)) " +
+           "FROM Transaction t JOIN t.wallet w " +
+           "WHERE t.user.id = :userId " +
+           "AND (:walletId IS NULL OR w.id = :walletId) " +
+           "AND (:type IS NULL OR t.type = :type) " +
+           "AND (:month IS NULL OR FUNCTION('MONTH', t.date) = :month) " +
+           "AND (:year IS NULL OR FUNCTION('YEAR', t.date) = :year) " +
+           "AND t.isDeleted = false " +
+           "GROUP BY w.id, w.name " +
+           "ORDER BY SUM(t.amount) DESC")
+    List<WalletStatDTO> findWalletStatistics(
+        @Param("userId") Long userId,
+        @Param("walletId") Long walletId,
+        @Param("type") String type,
+        @Param("month") Integer month,
+        @Param("year") Integer year
+    );
 }
