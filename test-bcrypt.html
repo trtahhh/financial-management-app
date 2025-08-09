@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test BCrypt</title>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+</head>
+<body>
+    <h2>Test BCrypt Hashing</h2>
+    <div>
+        <label>Password:</label>
+        <input type="text" id="password" value="123456">
+        <button onclick="testHash()">Generate Hash</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        function testHash() {
+            const password = document.getElementById('password').value;
+            const hash = bcrypt.hashSync(password, 10);
+            const verify = bcrypt.compareSync(password, hash);
+            
+            document.getElementById('result').innerHTML = 
+                '<h3>BCrypt Test Results:</h3>' +
+                '<p><strong>Password:</strong> ' + password + '</p>' +
+                '<p><strong>Hash:</strong> ' + hash + '</p>' +
+                '<p><strong>Verify:</strong> ' + verify + '</p>';
+        }
+    </script>
+</body>
+</html>

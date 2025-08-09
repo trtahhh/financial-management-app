@@ -1,8 +1,8 @@
-# Financial Management App
+# 🚀 Financial Management App
 
 A comprehensive personal finance management application built with Spring Boot backend and Node.js frontend.
 
-## 🚀 Features
+## 🎯 Features
 
 ### ✅ Core Features
 - **User Authentication**: JWT-based login/register system
@@ -43,46 +43,193 @@ A comprehensive personal finance management application built with Spring Boot b
 
 ## 📋 Prerequisites
 
-- Java 17+
-- Node.js 18+
-- SQL Server 2019+
-- Maven 3.6+
+- **Java 17+**
+- **Node.js 18+**
+- **SQL Server 2019+** (or SQL Server Express)
+- **Maven 3.6+**
 
-## 🔧 Installation & Setup
+## 🚀 Quick Start Guide
 
-### 1. Database Setup
-```sql
--- Run the schema file
--- database/schema/FinancialManagement.sql
-```
-
-### 2. Environment Configuration
-Copy `backend/env.example` to `backend/.env` and configure:
+### **Step 1: Clone Repository**
 ```bash
-# Database
-DB_URL=jdbc:sqlserver://localhost:1433;databaseName=FinancialManagement
-DB_USERNAME=sa
-DB_PASSWORD=your_secure_password
-
-# JWT (generate a secure 32+ character key)
-JWT_SECRET=your_secure_jwt_secret_here
-
-# AI Configuration
-OPENAI_API_KEY=your_openai_api_key
+git clone <repository-url>
+cd financial-management-app
 ```
 
-### 3. Backend Setup
+### **Step 2: Database Setup**
+
+#### **Option A: Automatic Setup (Recommended)**
+```bash
+# Run the database setup script
+scripts\setup-database.bat
+```
+
+#### **Option B: Manual Setup**
+1. **Open SQL Server Management Studio**
+2. **Run file:** `database/schema/FinancialManagement.sql`
+3. **Verify database creation**
+
+### **Step 3: Environment Configuration**
+
+#### **Create `.env` file in `backend/` directory:**
+```bash
+# Database Configuration
+DB_URL=jdbc:sqlserver://localhost:1433;databaseName=FinancialManagement;encrypt=false;trustServerCertificate=true
+DB_USERNAME=sa
+DB_PASSWORD=your_sql_server_password
+
+# JWT Configuration (Base64 format - already generated)
+JWT_SECRET=pvrI7sWa6Jbj22rtj731qFr9BkW7Uq7KpSFyEdJm6zk=
+
+# AI Configuration (Optional - for AI features)
+OPENAI_API_KEY=your_openrouter_api_key_here
+OPENAI_BASE_URL=https://openrouter.ai/api/v1/chat/completions
+OPENAI_MODEL=deepseek/deepseek-r1-distill-llama-70b:free
+
+# Server Configuration
+SERVER_PORT=8080
+LOGGING_LEVEL=INFO
+```
+
+### **Step 4: Start Backend**
 ```bash
 cd backend
-mvn clean install
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
-### 4. Frontend Setup
+### **Step 5: Start Frontend**
 ```bash
 cd frontend
 npm install
-npm run dev
+npm start
+```
+
+### **Step 6: Access Application**
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8080
+- **Health Check:** http://localhost:8080/actuator/health
+
+## 🔐 Default Credentials
+
+After setup, you can login with:
+
+### **Admin User:**
+- **Username:** `admin`
+- **Password:** `123456`
+
+### **Regular User (with full data):**
+- **Username:** `user`
+- **Password:** `123456`
+- **Profile:** Nguyễn Văn An (1995-03-15)
+- **Data includes:** 3 months of transactions, budgets, goals, notifications
+
+## 🛠️ Troubleshooting
+
+### **Common Issues & Solutions**
+
+#### **1. Database Connection Error**
+```bash
+# Check SQL Server is running
+sqlcmd -S localhost -E -Q "SELECT @@VERSION"
+
+# Test connection with credentials
+sqlcmd -S localhost -U sa -P your_password -Q "SELECT 1"
+```
+
+#### **2. JWT Secret Error**
+- Ensure JWT_SECRET is Base64 format
+- Restart backend after changing JWT_SECRET
+
+#### **3. Port Conflicts**
+- Change port in `backend/src/main/resources/application.properties`
+- Default ports: Backend (8080), Frontend (3000)
+
+#### **4. Node.js Dependencies**
+```bash
+cd frontend
+npm cache clean --force
+npm install
+```
+
+#### **5. Maven Dependencies**
+```bash
+cd backend
+.\mvnw.cmd clean install
+```
+
+### **Database Verification**
+```sql
+USE FinancialManagement;
+SELECT COUNT(*) as user_count FROM Users;
+SELECT COUNT(*) as category_count FROM Categories;
+```
+
+## 📊 Database Schema Overview
+
+### **Main Tables:**
+- **Users** - User information and authentication
+- **User_Profile** - Detailed user profiles
+- **Wallets** - Financial wallets/accounts
+- **Categories** - Income/expense categories
+- **Transactions** - Financial transactions
+- **Budgets** - Monthly budget planning
+- **Goals** - Financial goals and targets
+- **Notifications** - System notifications
+- **AI_History** - AI chat history
+
+### **Key Relationships:**
+- Users → Wallets (1:N)
+- Users → Transactions (1:N)
+- Categories → Transactions (1:N)
+- Users → Budgets (1:N)
+- Users → Goals (1:N)
+
+## 🎯 Available Features
+
+### **Core Features:**
+- ✅ User Authentication (JWT)
+- ✅ Transaction Management
+- ✅ Wallet Management
+- ✅ Category Management
+- ✅ Budget Planning
+- ✅ Goal Setting
+- ✅ Statistics & Reports
+- ✅ AI Chat Assistant
+- ✅ File Upload
+- ✅ Notifications
+
+### **Advanced Features:**
+- ✅ Recurring Transactions
+- ✅ Shared Budgets
+- ✅ Multi-language Support
+- ✅ Data Export/Import
+- ✅ Real-time Notifications
+
+## 📁 Project Structure
+
+```
+financial-management-app/
+├── backend/                 # Spring Boot application
+│   ├── src/main/java/
+│   │   └── com/example/finance/
+│   │       ├── config/      # Configuration classes
+│   │       ├── controller/  # REST controllers
+│   │       ├── dto/         # Data transfer objects
+│   │       ├── entity/      # JPA entities
+│   │       ├── repository/  # Data access layer
+│   │       ├── security/    # Security components
+│   │       └── service/     # Business logic
+│   └── src/main/resources/
+│       └── application.properties
+├── frontend/               # Node.js application
+│   ├── public/            # Static assets
+│   ├── views/             # EJS templates
+│   └── server.js          # Express server
+├── database/              # Database scripts
+│   ├── schema/            # Database schema
+│   └── migrations/        # Database migrations
+└── scripts/               # Setup scripts
+    └── setup-database.bat # Database setup script
 ```
 
 ## 🔐 Security Features

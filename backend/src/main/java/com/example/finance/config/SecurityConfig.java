@@ -29,7 +29,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints (must match JwtFilter.PUBLIC_ENDPOINTS)
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/register", 
-                               "/actuator/health", "/actuator/info").permitAll()
+                               "/api/test/generate-hash", "/actuator/health", "/actuator/info").permitAll()
                 // Protected endpoints
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
