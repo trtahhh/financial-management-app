@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function load() {
-    fetch('/api/categories', {
+    fetch('http://localhost:8080/api/categories', {
       headers: getAuthHeaders()
     })
       .then(r => r.json())
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/categories/' + id, {
+      fetch('http://localhost:8080/api/categories/' + id, {
         headers: getAuthHeaders()
       })
         .then(r => r.json())
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá danh mục này?')) {
-        fetch('/api/categories/' + id, { 
+        fetch('http://localhost:8080/api/categories/' + id, { 
           method: 'DELETE',
           headers: getAuthHeaders()
         })

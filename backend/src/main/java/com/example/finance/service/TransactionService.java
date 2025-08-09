@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -170,21 +171,28 @@ public class TransactionService {
     }
 
     @Cacheable
+    @Transactional(readOnly = true)
     public TransactionDTO findById(Long id) {
-        return repo.findById(id)
+        return repo.findByIdWithDetails(id)
                    .map(mapper::toDto)
                    .orElseThrow(() -> new CustomException(TRANSACTION_NOT_FOUND + id));
     }
 
+    @Transactional
     public void deleteById(Long id) {
         if (!repo.existsById(id)) {
             throw new CustomException(TRANSACTION_NOT_FOUND + id);
         }
         
-        // Lấy thông tin ví trước khi xóa giao dịch để cập nhật số dư
+        // Lấy thông tin ví trước khi xóa giao dịch để cập nhật số dự
         Transaction transaction = repo.findById(id)
                 .orElseThrow(() -> new CustomException(TRANSACTION_NOT_FOUND + id));
-        Long walletId = transaction.getWallet() != null ? transaction.getWallet().getId() : null;
+        Long walletId = null;
+        try {
+            walletId = transaction.getWallet() != null ? transaction.getWallet().getId() : null;
+        } catch (Exception e) {
+            System.err.println("Could not access wallet for transaction delete: " + e.getMessage());
+        }
         
         repo.deleteById(id);
         
@@ -265,6 +273,8 @@ public class TransactionService {
     }
 
 
+
+
     public List<Map<String, Object>> sumAmountByCategory(Long userId, Integer month, Integer year) {
         List<Object[]> result = repo.sumAmountByCategory(userId, month, year);
         List<Map<String, Object>> list = new java.util.ArrayList<>();
@@ -329,10 +339,8 @@ public class TransactionService {
      */
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getRecentTransactions(Long userId, int limit) {
-        List<Transaction> transactions = repo.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .limit(limit)
-                .toList();
+        // Use the optimized query with JOIN FETCH and pagination
+        List<Transaction> transactions = repo.findRecentTransactionsByUserId(userId, PageRequest.of(0, limit));
                 
         return transactions.stream().map(t -> {
             Map<String, Object> map = new HashMap<>();

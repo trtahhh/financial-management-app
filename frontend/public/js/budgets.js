@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Load categories first
   function loadCategories() {
-    return fetch('/api/categories', {
+    return fetch('http://localhost:8080/api/categories', {
       headers: getAuthHeaders()
     })
       .then(r => r.json())
@@ -35,10 +35,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function load() {
     Promise.all([
-      fetch('/api/budgets', {
+      fetch('http://localhost:8080/api/budgets', {
         headers: getAuthHeaders()
       }).then(r => r.json()),
-      fetch('/api/categories', {
+      fetch('http://localhost:8080/api/categories', {
         headers: getAuthHeaders()
       }).then(r => r.json())
     ]).then(([budgets, categories]) => {
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/budgets/' + id, {
+      fetch('http://localhost:8080/api/budgets/' + id, {
         headers: getAuthHeaders()
       })
         .then(r => r.json())
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá ngân sách này?')) {
-        fetch('/api/budgets/' + id, { 
+        fetch('http://localhost:8080/api/budgets/' + id, { 
           method: 'DELETE',
           headers: getAuthHeaders()
         })

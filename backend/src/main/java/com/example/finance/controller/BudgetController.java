@@ -1,5 +1,7 @@
 package com.example.finance.controller;
 
+import com.example.finance.security.CustomUserDetails;
+
 import com.example.finance.dto.BudgetDTO;
 import com.example.finance.service.BudgetService;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +57,8 @@ public class BudgetController {
     public ResponseEntity<?> create(@RequestBody BudgetDTO dto) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Long userId = Long.parseLong(authentication.getName());
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
             dto.setUserId(userId);
 
             log.info("Creating budget with data: {}", dto);

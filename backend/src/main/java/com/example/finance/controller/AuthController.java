@@ -57,7 +57,9 @@ public class AuthController {
             user.setEmail(registerRequest.getEmail());
             user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
             user.setRole("USER");
+            user.setIsActive(true);
             user.setCreatedAt(LocalDateTime.now());
+            user.setUpdatedAt(LocalDateTime.now());
 
             User savedUser = userService.save(user);
 
@@ -66,6 +68,7 @@ public class AuthController {
                 registerRequest.getBirthday() != null || registerRequest.getGender() != null ||
                 registerRequest.getAddress() != null || registerRequest.getImageUrl() != null) {
                 UserProfile profile = new UserProfile();
+                profile.setUserId(savedUser.getId());
                 profile.setUser(savedUser);
                 profile.setFullName(registerRequest.getFullName());
                 profile.setPhone(registerRequest.getPhone());

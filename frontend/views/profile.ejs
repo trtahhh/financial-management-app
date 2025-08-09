@@ -472,7 +472,7 @@
 
   async function loadProfile() {
     try {
-      const response = await fetch('/api/users/profile', {
+      const response = await fetch('http://localhost:8080/api/users/profile', {
         headers: {
           'Authorization': 'Bearer ' + getAuthToken()
         }
@@ -558,7 +558,7 @@
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/files/upload', {
+      const response = await fetch('http://localhost:8080/api/files/upload', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + getAuthToken()
@@ -608,7 +608,7 @@
         imageUrl: imageUrl
       };
 
-      const response = await fetch('/api/users/profile', {
+      const response = await fetch('http://localhost:8080/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -675,7 +675,7 @@
 
       console.log('Sending profile data:', profileData); // Debug log
 
-      const response = await fetch('/api/users/profile', {
+      const response = await fetch('http://localhost:8080/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -739,7 +739,7 @@
         profileData.imageUrl = originalProfileData.imageUrl;
       }
 
-      await fetch('/api/users/profile?userId=1', {
+      await fetch('http://localhost:8080/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -762,7 +762,7 @@
       const token = getAuthToken();
       
       // Get wallets count
-      const walletsResponse = await fetch('/api/wallets', {
+      const walletsResponse = await fetch('http://localhost:8080/api/wallets', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let walletsCount = 0;
@@ -772,7 +772,7 @@
       }
       
       // Get goals count
-      const goalsResponse = await fetch('/api/goals', {
+      const goalsResponse = await fetch('http://localhost:8080/api/goals', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let goalsCount = 0;
@@ -782,7 +782,7 @@
       }
       
       // Get transactions count
-      const transactionsResponse = await fetch('/api/transactions', {
+      const transactionsResponse = await fetch('http://localhost:8080/api/transactions', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let transactionsCount = 0;
@@ -792,7 +792,7 @@
       }
       
       // Get budgets count
-      const budgetsResponse = await fetch('/api/budgets', {
+      const budgetsResponse = await fetch('http://localhost:8080/api/budgets', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let budgetsCount = 0;
@@ -822,7 +822,7 @@
       const token = getAuthToken();
       
       // Get recent transactions (activity history)
-      const transactionsResponse = await fetch('/api/transactions', {
+      const transactionsResponse = await fetch('http://localhost:8080/api/transactions', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       

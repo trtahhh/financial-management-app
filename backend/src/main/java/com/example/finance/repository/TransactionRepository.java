@@ -11,6 +11,7 @@ import com.example.finance.dto.WalletStatDTO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     List<Transaction> findAllByDateBetween(LocalDate from, LocalDate to);
@@ -180,4 +181,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("month") Integer month,
         @Param("year") Integer year
     );
+
+    // Find transaction by ID with eager loading
+    @Query("SELECT t FROM Transaction t " +
+           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.wallet " +
+           "LEFT JOIN FETCH t.user " +
+           "WHERE t.id = :id")
+    Optional<Transaction> findByIdWithDetails(@Param("id") Long id);
 }

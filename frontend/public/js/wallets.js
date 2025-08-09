@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function load() {
-    fetch('/api/wallets', {
+    fetch('http://localhost:8080/api/wallets', {
       headers: getAuthHeaders()
     })
       .then(safeJson)
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.getElementById('update-balances-btn').addEventListener('click', function () {
     if (confirm('Cập nhật số dư tất cả ví dựa trên giao dịch?')) {
-      fetch('/api/wallets/update-balances', { 
+      fetch('http://localhost:8080/api/wallets/update-balances', { 
         method: 'POST',
         headers: getAuthHeaders()
       })
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/wallets/' + id, {
+      fetch('http://localhost:8080/api/wallets/' + id, {
         headers: getAuthHeaders()
       })
         .then(safeJson)
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá ví này?')) {
-        fetch('/api/wallets/' + id, { 
+        fetch('http://localhost:8080/api/wallets/' + id, { 
           method: 'DELETE',
           headers: getAuthHeaders()
         })
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('update-balance')) {
       if (confirm('Cập nhật số dư ví này dựa trên giao dịch?')) {
-        fetch('/api/wallets/' + id + '/update-balance', { 
+        fetch('http://localhost:8080/api/wallets/' + id + '/update-balance', { 
           method: 'POST',
           headers: getAuthHeaders()
         })
@@ -127,10 +127,11 @@ document.addEventListener('DOMContentLoaded', function () {
     e.preventDefault();
     const data = {
       name: f.name.value,
-      balance: +f.balance.value
+      balance: +f.balance.value,
+      type: 'CASH'  // Default type
     };
     const method = editing ? 'PUT' : 'POST';
-    const url = '/api/wallets' + (editing ? '/' + editing : '');
+    const url = 'http://localhost:8080/api/wallets' + (editing ? '/' + editing : '');
     fetch(url, {
       method,
       headers: getAuthHeaders(),

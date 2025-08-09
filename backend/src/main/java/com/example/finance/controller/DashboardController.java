@@ -64,17 +64,43 @@ public class DashboardController {
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year) {
         
-        LocalDate now = LocalDate.now();
-        if (month == null) month = now.getMonthValue();
-        if (year == null) year = now.getYear();
-        
-        // Extract userId from JWT token
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-        
-        Map<String, Object> dashboard = dashboardService.getDashboardData(userId, month, year);
-        return ResponseEntity.ok(dashboard);
+        try {
+            LocalDate now = LocalDate.now();
+            if (month == null) month = now.getMonthValue();
+            if (year == null) year = now.getYear();
+            
+            // Extract userId from JWT token
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            System.out.println("Dashboard request for userId: " + userId + ", month: " + month + ", year: " + year);
+            
+            // Simple response for testing
+            Map<String, Object> dashboard = new java.util.HashMap<>();
+            dashboard.put("userId", userId);
+            dashboard.put("month", month);
+            dashboard.put("year", year);
+            dashboard.put("status", "success");
+            
+            // Try to get data safely
+            try {
+                Map<String, Object> fullDashboard = dashboardService.getDashboardData(userId, month, year);
+                dashboard.putAll(fullDashboard);
+            } catch (Exception e) {
+                System.err.println("Error getting dashboard data: " + e.getMessage());
+                e.printStackTrace();
+                dashboard.put("error", e.getMessage());
+            }
+            
+            return ResponseEntity.ok(dashboard);
+        } catch (Exception e) {
+            System.err.println("Error in dashboard controller: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
+        }
     }
 
     @GetMapping("/data-by-date")

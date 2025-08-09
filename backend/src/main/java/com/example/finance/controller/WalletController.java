@@ -26,8 +26,12 @@ public class WalletController {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Long userId = userDetails.getId();
 
-            return ResponseEntity.ok(service.findAll(userId)); 
+            List<WalletDTO> wallets = service.findAll(userId);
+            System.out.println("Found " + wallets.size() + " wallets for user " + userId);
+            return ResponseEntity.ok(wallets); 
         } catch (Exception e) {
+            System.err.println("Error in WalletController.list(): " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
@@ -35,6 +39,13 @@ public class WalletController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody WalletDTO dto) { 
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            // Set userId from authentication
+            dto.setUserId(userId);
+            
             WalletDTO savedWallet = service.save(dto);
             return ResponseEntity.ok(savedWallet); 
         } catch (Exception e) {
@@ -68,9 +79,16 @@ public class WalletController {
     @PutMapping("/{id}")
     public ResponseEntity<WalletDTO> update(@PathVariable("id") Long id, @RequestBody WalletDTO dto) {
         try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
             dto.setId(id);
+            dto.setUserId(userId); // Set userId from authentication
             return ResponseEntity.ok(service.update(dto)); 
         } catch (Exception e) {
+            System.err.println("Error updating wallet: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }

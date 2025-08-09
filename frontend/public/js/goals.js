@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function load() {
-    fetch('/api/goals', {
+    fetch('http://localhost:8080/api/goals', {
       headers: getAuthHeaders()
     })
       .then(r => r.json())
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Error loading goals:', e);
         list.innerHTML = '<div class="alert alert-danger">Lỗi tải mục tiêu: ' + e.message + '</div>';
       });
-    fetch('/api/goals/predict', {
+    fetch('http://localhost:8080/api/goals/predict', {
       headers: getAuthHeaders()
     })
       .then(r => r.json())
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
   list.addEventListener('click', function (e) {
     const id = e.target.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('/api/goals/' + id, {
+      fetch('http://localhost:8080/api/goals/' + id, {
         headers: getAuthHeaders()
       })
         .then(r => r.json())
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá mục tiêu này?')) {
-        fetch('/api/goals/' + id, { 
+        fetch('http://localhost:8080/api/goals/' + id, { 
           method: 'DELETE',
           headers: getAuthHeaders()
         })

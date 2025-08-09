@@ -82,25 +82,18 @@ public class UserController {
 
             if (existingProfile == null) {
                 // Nếu chưa có profile thì tạo mới
+                User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
                 profileData.setUserId(userId);
+                profileData.setUser(user);
                 userProfileRepository.save(profileData);
             } else {
-                // Update only the fields provided in the request
-                if (profileData.getFullName() != null) {
-                    existingProfile.setFullName(profileData.getFullName());
-                }
-                if (profileData.getPhone() != null) {
-                    existingProfile.setPhone(profileData.getPhone());
-                }
-                if (profileData.getBirthday() != null) {
-                    existingProfile.setBirthday(profileData.getBirthday());
-                }
-                if (profileData.getGender() != null) {
-                    existingProfile.setGender(profileData.getGender());
-                }
-                if (profileData.getAddress() != null) {
-                    existingProfile.setAddress(profileData.getAddress());
-                }
+                // Update all fields from request (including empty strings)
+                existingProfile.setFullName(profileData.getFullName());
+                existingProfile.setPhone(profileData.getPhone());
+                existingProfile.setBirthday(profileData.getBirthday());
+                existingProfile.setGender(profileData.getGender());
+                existingProfile.setAddress(profileData.getAddress());
                 if (profileData.getImageUrl() != null) {
                     existingProfile.setImageUrl(profileData.getImageUrl());
                 }

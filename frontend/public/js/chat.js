@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    fetch('/api/chat/message', {
+    fetch('http://localhost:8080/api/chat/message', {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({ message: q })

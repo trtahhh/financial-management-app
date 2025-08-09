@@ -16,8 +16,9 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     @Query("SELECT SUM(w.balance) FROM Wallet w WHERE w.user.id = :userId")
     BigDecimal sumBalanceByUserId(@Param("userId") Long userId);
     
-    // Lấy danh sách wallet theo user
-    List<Wallet> findByUserId(Long userId);
+    // Lấy danh sách wallet theo user (chỉ active wallets)
+    @Query("SELECT w FROM Wallet w WHERE w.user.id = :userId AND w.isActive = true")
+    List<Wallet> findByUserId(@Param("userId") Long userId);
 
     Long countByUserIdAndIsActiveTrue(Long userId);
 }
