@@ -33,6 +33,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         @Param("year") Integer year
     );
 
-    @Query("SELECT n FROM Notification n WHERE n.user.id = :userId AND n.isRead = false AND n.isDeleted = false ORDER BY n.priority DESC, n.createdAt DESC")
+    @Query("SELECT n FROM Notification n WHERE n.user.id = :userId AND n.isRead = false AND n.isDeleted = false ORDER BY n.createdAt DESC")
     List<Notification> findByUserIdAndIsReadFalseAndIsDeletedFalseOrderByCreatedAtDesc(@Param("userId") Long userId);
 }

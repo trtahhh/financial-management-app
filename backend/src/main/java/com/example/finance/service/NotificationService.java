@@ -166,14 +166,7 @@ public class NotificationService {
         notification.setIsRead(false);
         notification.setIsDeleted(false);
         
-        // Set priority based on type
-        if ("BUDGET_EXCEEDED".equals(type)) {
-            notification.setPriority(3); // High priority
-        } else if ("BUDGET_WARNING".equals(type)) {
-            notification.setPriority(2); // Medium priority
-        } else {
-            notification.setPriority(1); // Low priority
-        }
+        // Priority removed from entity
         
         notificationRepository.save(notification);
     }
@@ -193,7 +186,7 @@ public class NotificationService {
                     map.put("message", n.getMessage());
                     map.put("type", n.getType());
                     map.put("createdAt", n.getCreatedAt());
-                    map.put("priority", n.getPriority() != null ? n.getPriority() : 1); 
+                    map.put("priority", 1); // Default priority since removed from entity 
                     return map;
                 })
                 .toList();

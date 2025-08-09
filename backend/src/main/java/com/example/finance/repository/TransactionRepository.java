@@ -109,7 +109,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT c.name, c.color, SUM(t.amount), COUNT(t) FROM Transaction t JOIN t.category c WHERE t.user.id = :userId AND t.type = 'expense' AND MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.isDeleted = false GROUP BY c.id, c.name, c.color ORDER BY SUM(t.amount) DESC")
     List<Object[]> findExpensesByCategory(@Param("userId") Long userId, @Param("month") Integer month, @Param("year") Integer year);
 
-    List<Transaction> findByUserIdOrderByCreatedAtDesc(Long userId);
+    @Query("SELECT t FROM Transaction t " +
+           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.wallet " +
+           "WHERE t.user.id = :userId AND t.isDeleted = false " +
+           "ORDER BY t.createdAt DESC")
+    List<Transaction> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
     BigDecimal sumByUserTypeAndDateRange(@Param("userId") Long userId, @Param("type") String type, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);

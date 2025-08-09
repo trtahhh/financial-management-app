@@ -39,8 +39,8 @@ public class BudgetService {
             BigDecimal usedAmount = transactionService.sumByCategoryAndMonth(
                 budget.getCategoryId(), budget.getMonth(), budget.getYear());
             
-            // Set used amount
-            budget.setUsedAmount(usedAmount);
+            // Set spent amount
+            budget.setSpentAmount(usedAmount);
             
             if (budget.getAmount() != null && budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal progress = usedAmount.divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
@@ -94,7 +94,7 @@ public class BudgetService {
             budget.setAmount(dto.getAmount());
             budget.setMonth(dto.getMonth());
             budget.setYear(dto.getYear());
-            budget.setCurrencyCode(dto.getCurrencyCode());
+            // Currency code removed from entity
             budget.setUpdatedAt(LocalDateTime.now());
 
             var category = categoryRepository.findById(dto.getCategoryId())
@@ -138,7 +138,7 @@ public class BudgetService {
             String status = "OK";
             if (usagePercent.compareTo(BigDecimal.valueOf(100)) >= 0) {
                 status = "EXCEEDED";
-            } else if (usagePercent.compareTo(budget.getAlertThreshold()) >= 0) {
+            } else if (usagePercent.compareTo(BigDecimal.valueOf(80)) >= 0) {
                 status = "WARNING";
             }
             
@@ -149,7 +149,7 @@ public class BudgetService {
             result.put("budgetAmount", budget.getAmount());
             result.put("spentAmount", actualSpent);
             result.put("usagePercent", usagePercent.doubleValue());
-            result.put("alertThreshold", budget.getAlertThreshold().doubleValue());
+            result.put("alertThreshold", 80.0);
             result.put("status", status);
             
             return result;
@@ -221,7 +221,7 @@ public class BudgetService {
             String status = "OK";
             if (usagePercent.compareTo(BigDecimal.valueOf(100)) >= 0) {
                 status = "EXCEEDED";
-            } else if (usagePercent.compareTo(budget.getAlertThreshold()) >= 0) {
+            } else if (usagePercent.compareTo(BigDecimal.valueOf(80)) >= 0) {
                 status = "WARNING";
             }
 
@@ -232,7 +232,7 @@ public class BudgetService {
             result.put("budgetAmount", budget.getAmount());
             result.put("spentAmount", actualSpent);
             result.put("usagePercent", usagePercent.doubleValue());
-            result.put("alertThreshold", budget.getAlertThreshold().doubleValue());
+            result.put("alertThreshold", 80.0);
             result.put("status", status);
 
             return result;

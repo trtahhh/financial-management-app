@@ -11,8 +11,7 @@ public class BudgetDTO {
     private int month;
     private int year;
     private BigDecimal amount;
-    private BigDecimal usedAmount; // Amount already spent
-    private String currencyCode;
+    private BigDecimal spentAmount; // Amount already spent
     private Boolean isDeleted;
     private Integer progress; // Progress percentage (0-100)
 }

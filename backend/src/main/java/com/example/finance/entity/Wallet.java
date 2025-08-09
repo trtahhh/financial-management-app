@@ -31,14 +31,11 @@ public class Wallet {
     @Column(precision = 18, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
-    @Column(length = 3)
-    private String currency = "VND";
-
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
     @Override
     public boolean equals(Object o) {

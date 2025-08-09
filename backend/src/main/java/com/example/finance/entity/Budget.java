@@ -41,9 +41,6 @@ public class Budget {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "currency_code")
-    private String currencyCode = "VND";
-
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
@@ -52,10 +49,4 @@ public class Budget {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "alert_threshold", precision = 5, scale = 2)
-    private BigDecimal alertThreshold = BigDecimal.valueOf(80.00);
-
-    @Column(name = "rollover")
-    private Boolean rollover = false;
 }

@@ -151,7 +151,7 @@ public class WalletService {
      * Đếm số ví của user
      */
     public Long countByUserId(Long userId) {
-        return repo.countByUserIdAndIsDeletedFalse(userId);
+        return repo.countByUserIdAndIsActiveTrue(userId);
     }
 
     /**

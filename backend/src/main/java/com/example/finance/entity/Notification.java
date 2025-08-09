@@ -58,6 +58,9 @@ public class Notification {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
@@ -66,12 +69,6 @@ public class Notification {
 
     @Column(name = "year")
     private Integer year;
-
-    @Column(name = "action_url")
-    private String actionUrl;
-
-    @Column(name = "priority")
-    private Integer priority = 1; // 1=Low, 2=Medium, 3=High
 
     @PrePersist
     protected void onCreate() {
@@ -83,9 +80,6 @@ public class Notification {
         }
         if (isDeleted == null) {
             isDeleted = false;
-        }
-        if (priority == null) {
-            priority = 1;
         }
     }
 }

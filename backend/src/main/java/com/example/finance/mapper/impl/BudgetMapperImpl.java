@@ -8,6 +8,7 @@ import com.example.finance.mapper.BudgetMapper;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,14 +26,19 @@ public class BudgetMapperImpl implements BudgetMapper {
         dto.setUserId(budget.getUser() != null ? budget.getUser().getId() : null);
         dto.setCategoryId(budget.getCategory() != null ? budget.getCategory().getId() : null);
         dto.setAmount(budget.getAmount());
+        dto.setSpentAmount(budget.getSpentAmount() != null ? budget.getSpentAmount() : BigDecimal.ZERO);
         dto.setMonth(budget.getMonth());
         dto.setYear(budget.getYear());
         dto.setIsDeleted(budget.getIsDeleted());
         
-        // Initialize default values
-        dto.setUsedAmount(BigDecimal.ZERO);
-        dto.setCurrencyCode("VND");
-        dto.setProgress(0);
+        // Calculate progress percentage
+        if (budget.getAmount() != null && budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal spentAmount = budget.getSpentAmount() != null ? budget.getSpentAmount() : BigDecimal.ZERO;
+            dto.setProgress(spentAmount.multiply(BigDecimal.valueOf(100))
+                    .divide(budget.getAmount(), 0, RoundingMode.HALF_UP).intValue());
+        } else {
+            dto.setProgress(0);
+        }
 
         return dto;
     }
@@ -46,6 +52,7 @@ public class BudgetMapperImpl implements BudgetMapper {
         Budget budget = new Budget();
         budget.setId(dto.getId());
         budget.setAmount(dto.getAmount());
+        budget.setSpentAmount(dto.getSpentAmount());
         budget.setMonth(dto.getMonth());
         budget.setYear(dto.getYear());
         budget.setIsDeleted(dto.getIsDeleted());

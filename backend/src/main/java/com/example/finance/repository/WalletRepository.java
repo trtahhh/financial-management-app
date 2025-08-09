@@ -19,5 +19,5 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     // Lấy danh sách wallet theo user
     List<Wallet> findByUserId(Long userId);
 
-    Long countByUserIdAndIsDeletedFalse(Long userId);
+    Long countByUserIdAndIsActiveTrue(Long userId);
 }

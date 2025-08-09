@@ -64,7 +64,7 @@ public class BudgetAlertService {
         if (usagePercent.compareTo(BigDecimal.valueOf(100)) >= 0) {
             // Vượt ngân sách
             createBudgetNotification(budget, totalSpent, usagePercent, "BUDGET_EXCEEDED");
-        } else if (usagePercent.compareTo(budget.getAlertThreshold()) >= 0) {
+        } else if (usagePercent.compareTo(BigDecimal.valueOf(80)) >= 0) {
             // Gần đạt ngân sách
             createBudgetNotification(budget, totalSpent, usagePercent, "BUDGET_WARNING");
         }

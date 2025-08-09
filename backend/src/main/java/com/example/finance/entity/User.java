@@ -30,8 +30,14 @@ public class User {
     @Column(name = "role")
     private String role = "USER";
 
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

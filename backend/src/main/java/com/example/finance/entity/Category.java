@@ -1,6 +1,5 @@
 package com.example.finance.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,11 +15,6 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private User user; // Null cho system categories
-
     @Column(nullable = false)
     private String name;
 
@@ -34,8 +28,8 @@ public class Category {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "is_system")
-    private Boolean isSystem = false;
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
     @Override
     public boolean equals(Object o) {
