@@ -58,8 +58,13 @@ public class WalletController {
     @GetMapping("/{id}")
     public ResponseEntity<WalletDTO> get(@PathVariable("id") Long id) { 
         try {
-            return ResponseEntity.ok(service.findById(id));
+            WalletDTO wallet = service.findById(id);
+            System.out.println("Getting wallet " + id + ": " + wallet);
+            System.out.println("Wallet balance: " + wallet.getBalance());
+            return ResponseEntity.ok(wallet);
         } catch (Exception e) {
+            System.err.println("Error in WalletController.get(): " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
@@ -118,6 +123,17 @@ public class WalletController {
             System.err.println("Error updating wallet balance: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error updating wallet balance: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/migrate-initial-balances")
+    public ResponseEntity<String> migrateInitialBalances() {
+        try {
+            service.migrateWalletInitialBalances();
+            return ResponseEntity.ok("Migration completed successfully");
+        } catch (Exception e) {
+            System.err.println("Error in migration: " + e.getMessage());
+            return ResponseEntity.status(500).body("Migration failed: " + e.getMessage());
         }
     }
 }

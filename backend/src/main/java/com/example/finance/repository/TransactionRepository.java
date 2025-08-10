@@ -92,22 +92,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("year") Integer year
     );
 
-    // Check if wallet has any transactions
-    @Query("SELECT COUNT(t) > 0 FROM Transaction t WHERE t.wallet.id = :walletId AND t.isDeleted = false")
-    boolean existsByWalletId(@Param("walletId") Long walletId);
+    // Check if wallet has any transactions - Using Integer return type
+    @Query(value = "SELECT COUNT(*) FROM Transactions WHERE wallet_id = :walletId AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)
+    Integer countByWalletId(@Param("walletId") Long walletId);
 
     // Sum transactions by wallet and type for balance calculation
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.wallet.id = :walletId AND t.type = :type AND t.isDeleted = false")
+    @Query(value = "SELECT COALESCE(SUM(amount), 0) FROM Transactions WHERE wallet_id = :walletId AND type = :type AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)
     BigDecimal sumByWalletIdAndType(@Param("walletId") Long walletId, @Param("type") String type);
 
     // Sum transactions by user and type for total balance calculation  
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.isDeleted = false")
     BigDecimal sumByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
 
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId AND MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.type = 'expense' AND t.isDeleted = false")
+    @Query(value = "SELECT COALESCE(SUM(amount), 0) FROM Transactions WHERE user_id = :userId AND category_id = :categoryId AND MONTH(trans_date) = :month AND YEAR(trans_date) = :year AND type = 'expense' AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)
     BigDecimal sumByUserCategoryMonth(@Param("userId") Long userId, @Param("categoryId") Long categoryId, @Param("month") int month, @Param("year") int year);
 
-    @Query("SELECT c.name, c.color, SUM(t.amount), COUNT(t) FROM Transaction t JOIN t.category c WHERE t.user.id = :userId AND t.type = 'expense' AND MONTH(t.date) = :month AND YEAR(t.date) = :year AND t.isDeleted = false GROUP BY c.id, c.name, c.color ORDER BY SUM(t.amount) DESC")
+    @Query(value = "SELECT c.name, c.color, SUM(Transactions.amount), COUNT(Transactions.id) FROM Transactions JOIN Categories c ON Transactions.category_id = c.id WHERE Transactions.user_id = :userId AND Transactions.type = 'expense' AND MONTH(Transactions.trans_date) = :month AND YEAR(Transactions.trans_date) = :year AND (Transactions.is_deleted = 0 OR Transactions.is_deleted IS NULL) GROUP BY c.id, c.name, c.color ORDER BY SUM(Transactions.amount) DESC", nativeQuery = true)
     List<Object[]> findExpensesByCategory(@Param("userId") Long userId, @Param("month") Integer month, @Param("year") Integer year);
 
     @Query("SELECT t FROM Transaction t " +
@@ -117,7 +117,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
            "ORDER BY t.createdAt DESC")
     List<Transaction> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
+    @Query(value = "SELECT COALESCE(SUM(amount), 0) FROM Transactions WHERE user_id = :userId AND type = :type AND trans_date BETWEEN :startDate AND :endDate AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)
     BigDecimal sumByUserTypeAndDateRange(@Param("userId") Long userId, @Param("type") String type, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     Long countByUserIdAndIsDeletedFalse(Long userId);

@@ -43,8 +43,8 @@ public class Transaction {
     @Column(name = "tags")
     private String tags;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

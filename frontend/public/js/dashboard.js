@@ -19,13 +19,30 @@ function getUserIdFromToken() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const monthInput = document.getElementById('dash-month');
+  const dateFromInput = document.getElementById('dash-date-from');
+  const dateToInput = document.getElementById('dash-date-to');
+  
+  // Set default dates (current month)
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  
+  if (dateFromInput) {
+    dateFromInput.value = firstDay.toISOString().split('T')[0];
+  }
+  if (dateToInput) {
+    dateToInput.value = lastDay.toISOString().split('T')[0];
+  }
 
-  // **SỬA LẠI HOÀN TOÀN: Sử dụng endpoint dashboard mới**
-  function fetchDashboardData(month) {
-    const [year, monthNum] = month.split('-').map(Number);
+  // **SỬA LẠI: Sử dụng endpoint dashboard với month/year**
+  function fetchDashboardData() {
+    const now = new Date();
+    const monthNum = now.getMonth() + 1; // JavaScript months are 0-based
+    const year = now.getFullYear();
+    
     const url = `http://localhost:8080/api/dashboard/data?month=${monthNum}&year=${year}`;
     console.log("📡 Fetching dashboard data from:", url);
+    console.log("🗓️ Month:", monthNum, "Year:", year);
     
     const token = localStorage.getItem('authToken');
     const headers = {
@@ -342,10 +359,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function loadDashboard() {
-    console.log("🔄 Đang load dữ liệu dashboard cho:", monthInput.value);
+    console.log("🔄 Đang load dữ liệu dashboard...");
     
     // **SỬA LẠI: Sử dụng endpoint dashboard mới**
-    fetchDashboardData(monthInput.value)
+    fetchDashboardData()
       .then(dashboardData => {
         console.log("📊 Dashboard data loaded:", dashboardData);
         
@@ -363,10 +380,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function updateDashboardUI(data) {
+    console.log("🔧 Dashboard data structure:", data); // Debug log
+    
+    // Lấy dữ liệu từ monthlyStats
+    const monthlyStats = data.monthlyStats || {};
+    const monthlyIncome = monthlyStats.monthlyIncome || 0;
+    const monthlyExpense = monthlyStats.monthlyExpense || 0;
+    const totalBalance = data.totalBalance || 0;
+    
+    console.log("💰 Monthly income:", monthlyIncome);
+    console.log("💸 Monthly expense:", monthlyExpense); 
+    console.log("💳 Total balance:", totalBalance);
+    
     // Cập nhật các số liệu chính
-    document.getElementById('totalIncome').textContent = (data.monthlyIncome || 0).toLocaleString('vi-VN') + ' đ';
-    document.getElementById('totalExpense').textContent = (data.monthlyExpense || 0).toLocaleString('vi-VN') + ' đ';
-    document.getElementById('balance').textContent = (data.totalBalance || 0).toLocaleString('vi-VN') + ' đ';
+    document.getElementById('totalIncome').textContent = monthlyIncome.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('totalExpense').textContent = monthlyExpense.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('balance').textContent = totalBalance.toLocaleString('vi-VN') + ' đ';
     
     // Cập nhật thông tin tháng hiện tại
     const monthText = `Tháng ${data.currentMonth}/${data.currentYear}`;
@@ -393,13 +422,145 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function updateChartsWithNewData(data) {
-    // Cập nhật pie chart với category expenses
-    if (data.categoryExpenses && Object.keys(data.categoryExpenses).length > 0) {
-      renderPieChartFromData(data.categoryExpenses);
+    console.log("📊 Updating charts with data:", data);
+    console.log("🔍 ExpensesByCategory:", data.expensesByCategory);
+    console.log("🔍 SpendingTrend:", data.spendingTrend);
+    
+    // Cập nhật pie chart với expenses by category từ API dashboard
+    if (data.expensesByCategory && data.expensesByCategory.length > 0) {
+      renderPieChartFromDashboardData(data.expensesByCategory);
+    } else {
+      console.log("⚠️ No expensesByCategory data found. Data:", data.expensesByCategory);
     }
     
-    // Có thể thêm bar chart sau
-    // renderBarChartFromData(data);
+    // Cập nhật bar chart với spending trend
+    if (data.spendingTrend && data.spendingTrend.length > 0) {
+      renderBarChartFromTrend(data.spendingTrend);
+    } else {
+      console.log("⚠️ No spendingTrend data found. Data:", data.spendingTrend);
+    }
+  }
+  
+  function renderPieChartFromDashboardData(expensesByCategory) {
+    const ctx = document.getElementById('chart-pie')?.getContext('2d');
+    if (!ctx) {
+      console.error("❌ Không tìm thấy canvas chart-pie");
+      return;
+    }
+    
+    console.log("📊 Rendering pie chart from dashboard data:", expensesByCategory);
+    
+    // Destroy existing chart
+    if (pieChart) {
+      pieChart.destroy();
+    }
+    
+    // Transform API data to chart format
+    const labels = expensesByCategory.map(item => item.categoryName || 'Không xác định');
+    const amounts = expensesByCategory.map(item => item.totalAmount || 0);
+    const colors = expensesByCategory.map(item => item.categoryColor || '#6c757d');
+    
+    if (labels.length === 0 || amounts.every(amount => amount === 0)) {
+      // Show empty state
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.fillStyle = '#6c757d';
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Chưa có dữ liệu chi tiêu', ctx.canvas.width / 2, ctx.canvas.height / 2);
+      return;
+    }
+    
+    // Create new chart
+    pieChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: amounts,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              padding: 20,
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.parsed;
+                const total = amounts.reduce((sum, amount) => sum + amount, 0);
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return `${context.label}: ${value.toLocaleString('vi-VN')}đ (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderBarChartFromTrend(spendingTrend) {
+    console.log("📈 Rendering bar chart from trend data:", spendingTrend);
+    const barChartCanvas = document.getElementById('chart-bar');
+    if (!barChartCanvas) {
+      console.warn("⚠️ Bar chart canvas not found");
+      return;
+    }
+
+    // Destroy existing chart if exists
+    if (window.barChartInstance) {
+      window.barChartInstance.destroy();
+    }
+
+    // Prepare data
+    const labels = spendingTrend.map(item => item.period || 'N/A');
+    const amounts = spendingTrend.map(item => parseFloat(item.amount) || 0);
+
+    console.log("📊 Bar chart data:", { labels, amounts });
+
+    // Create bar chart
+    window.barChartInstance = new Chart(barChartCanvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Chi tiêu',
+          data: amounts,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return value.toLocaleString('vi-VN') + ' đ';
+              }
+            }
+          }
+        }
+      }
+    });
   }
   
   function renderPieChartFromData(categoryExpenses) {
@@ -503,13 +664,13 @@ document.addEventListener('DOMContentLoaded', function () {
     initCharts();
   }
 
-  // Set default month to current month
-  if (monthInput) {
-    const now = new Date();
-    const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-    monthInput.value = currentMonth;
-    monthInput.addEventListener('change', function() {
-      loadDashboard(); // Sử dụng function mới thay vì load() và initCharts()
+  // Add event listeners for date inputs
+  if (dateFromInput && dateToInput) {
+    dateFromInput.addEventListener('change', function() {
+      loadDashboard();
+    });
+    dateToInput.addEventListener('change', function() {
+      loadDashboard();
     });
   }
   

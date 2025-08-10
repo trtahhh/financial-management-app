@@ -24,7 +24,7 @@ public class DashboardController {
      * Lấy toàn bộ dữ liệu dashboard
      */
     @GetMapping("/user/{userId}")
-    @Cacheable(value = "dashboard", key = "#userId + '_' + #month + '_' + #year")
+    // @Cacheable(value = "dashboard", key = "#userId + '_' + #month + '_' + #year") // Disabled for testing
     public ResponseEntity<Map<String, Object>> getDashboard(
             @PathVariable Long userId,
             @RequestParam(required = false) Integer month,
@@ -34,7 +34,12 @@ public class DashboardController {
         if (month == null) month = now.getMonthValue();
         if (year == null) year = now.getYear();
         
+        System.out.println("=== DASHBOARD REQUEST ===");
+        System.out.println("User ID: " + userId + ", Month: " + month + ", Year: " + year);
+        
         Map<String, Object> dashboard = dashboardService.getDashboardData(userId, month, year);
+        System.out.println("Dashboard totalBalance: " + dashboard.get("totalBalance"));
+        
         return ResponseEntity.ok(dashboard);
     }
 

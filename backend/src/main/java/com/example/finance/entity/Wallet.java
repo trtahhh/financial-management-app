@@ -31,6 +31,9 @@ public class Wallet {
     @Column(precision = 18, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Column(name = "initial_balance", precision = 18, scale = 2)
+    private BigDecimal initialBalance = BigDecimal.ZERO;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 

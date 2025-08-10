@@ -57,8 +57,8 @@ public class DashboardService {
         List<Map<String, Object>> unreadNotifications = notificationService.getUnreadNotifications(userId);
         dashboard.put("notifications", unreadNotifications);
         
-        // 9. Xu hướng chi tiêu 6 tháng gần đây
-        List<Map<String, Object>> spendingTrend = getSpendingTrend(userId, 6);
+        // 9. Xu hướng chi tiêu 4 tuần gần đây
+        List<Map<String, Object>> spendingTrend = getWeeklySpendingTrend(userId, 4);
         dashboard.put("spendingTrend", spendingTrend);
         
         // 10. Thống kê tổng quan
@@ -87,9 +87,9 @@ public class DashboardService {
         return stats;
     }
 
-    private List<Map<String, Object>> getSpendingTrend(Long userId, int months) {
-        // Implementation để lấy xu hướng chi tiêu
-        return transactionService.getMonthlySpendingTrend(userId, months);
+    private List<Map<String, Object>> getWeeklySpendingTrend(Long userId, int weeks) {
+        // Implementation để lấy xu hướng chi tiêu theo tuần
+        return transactionService.getWeeklySpendingTrend(userId, weeks);
     }
 
     private Map<String, Object> getOverviewStats(Long userId) {

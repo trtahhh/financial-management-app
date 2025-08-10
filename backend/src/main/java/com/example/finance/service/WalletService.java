@@ -23,19 +23,10 @@ public class WalletService {
     public List<WalletDTO> findAll(Long userId) {
         try {
             List<Wallet> wallets = repo.findByUserId(userId);
-
-            // Tính toán số dư thực tế cho mỗi ví dựa trên giao dịch
-            for (Wallet wallet : wallets) {
-                BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(wallet.getId(), "income");
-                BigDecimal totalExpense = transactionRepository.sumByWalletIdAndType(wallet.getId(), "expense");
-                
-                totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
-                totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
-                
-                // Số dư thực tế = Thu nhập - Chi tiêu (ví ban đầu = 0)
-                BigDecimal actualBalance = totalIncome.subtract(totalExpense);
-                wallet.setBalance(actualBalance);
-            }
+            
+            // Giữ nguyên balance hiện tại từ database
+            // Không override bằng transaction calculation
+            // Người dùng có thể set balance trực tiếp
             
             return wallets.stream().map(mapper::toDto).toList();
         } catch (Exception e) {
@@ -60,9 +51,34 @@ public class WalletService {
     }
 
     public WalletDTO findById(Long id) {
-        return repo.findById(id)
-                .map(mapper::toDto)
+        Wallet wallet = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + id));
+        
+        System.out.println("=== WALLET BALANCE CALCULATION ===");
+        System.out.println("Wallet ID: " + wallet.getId());
+        System.out.println("Wallet Name: " + wallet.getName());
+        
+        // Lấy balance hiện tại từ database (số tiền người dùng đã set)
+        BigDecimal currentBalance = wallet.getBalance() != null ? wallet.getBalance() : BigDecimal.ZERO;
+        System.out.println("Current wallet balance from DB: " + currentBalance);
+        
+        // Tính toán tổng thay đổi từ transactions (optional - để hiển thị history)
+        BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(wallet.getId(), "income");
+        BigDecimal totalExpense = transactionRepository.sumByWalletIdAndType(wallet.getId(), "expense");
+        
+        totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
+        totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
+        BigDecimal transactionDelta = totalIncome.subtract(totalExpense);
+        
+        System.out.println("Transaction income: " + totalIncome);
+        System.out.println("Transaction expense: " + totalExpense);
+        System.out.println("Transaction delta: " + transactionDelta);
+        
+        // Sử dụng balance hiện tại (không override bằng transaction calculation)
+        // Người dùng có thể set balance trực tiếp khi tạo/sửa ví
+        System.out.println("Final balance: " + currentBalance);
+        
+        return mapper.toDto(wallet);
     }
 
     @Transactional
@@ -72,7 +88,8 @@ public class WalletService {
         }
         
         // Kiểm tra xem có transaction nào liên kết với ví này không
-        boolean hasTransactions = transactionRepository.existsByWalletId(id);
+        Integer transactionCount = transactionRepository.countByWalletId(id);
+        boolean hasTransactions = transactionCount != null && transactionCount > 0;
         if (hasTransactions) {
             throw new RuntimeException("Cannot delete wallet with existing transactions. Please delete related transactions first.");
         }
@@ -113,10 +130,18 @@ public class WalletService {
         totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
         totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
         
-        // Số dư = Thu nhập - Chi tiêu
-        BigDecimal newBalance = totalIncome.subtract(totalExpense);
-        wallet.setBalance(newBalance);
+        // **NEW FORMULA**: Số dư = Initial Balance + Thu nhập - Chi tiêu
+        BigDecimal initialBalance = wallet.getInitialBalance() != null ? wallet.getInitialBalance() : BigDecimal.ZERO;
+        BigDecimal newBalance = initialBalance.add(totalIncome).subtract(totalExpense);
         
+        System.out.println("=== WALLET BALANCE UPDATE (WalletService) ===");
+        System.out.println("Wallet ID: " + walletId);
+        System.out.println("Initial Balance: " + initialBalance);
+        System.out.println("Total Income: " + totalIncome);
+        System.out.println("Total Expense: " + totalExpense);
+        System.out.println("New Balance: " + newBalance);
+        
+        wallet.setBalance(newBalance);
         repo.save(wallet);
     }
 
@@ -137,13 +162,19 @@ public class WalletService {
     public BigDecimal getTotalBalance(Long userId) {
         List<Wallet> wallets = repo.findByUserId(userId);
         
+        System.out.println("=== TOTAL BALANCE CALCULATION ===");
+        System.out.println("User ID: " + userId);
+        System.out.println("Found " + wallets.size() + " wallets");
+        
         BigDecimal totalBalance = BigDecimal.ZERO;
         for (Wallet wallet : wallets) {
+            System.out.println("Wallet " + wallet.getId() + " (" + wallet.getName() + "): " + wallet.getBalance());
             if (wallet.getBalance() != null) {
                 totalBalance = totalBalance.add(wallet.getBalance());
             }
         }
         
+        System.out.println("Total Balance Result: " + totalBalance);
         return totalBalance;
     }
 
@@ -168,11 +199,29 @@ public class WalletService {
             totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
             totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
             
-            // Số dư thực tế = Thu nhập - Chi tiêu
-            BigDecimal actualBalance = totalIncome.subtract(totalExpense);
+            // Số dư thực tế = Initial Balance + Thu nhập - Chi tiêu
+            BigDecimal initialBalance = wallet.getInitialBalance() != null ? wallet.getInitialBalance() : BigDecimal.ZERO;
+            BigDecimal actualBalance = initialBalance.add(totalIncome).subtract(totalExpense);
             wallet.setBalance(actualBalance);
         }
         
         return wallets.stream().map(mapper::toDto).toList();
+    }
+
+    /**
+     * Migrate existing wallets: set initialBalance = current balance
+     */
+    @Transactional
+    public void migrateWalletInitialBalances() {
+        List<Wallet> allWallets = repo.findAll();
+        
+        for (Wallet wallet : allWallets) {
+            if (wallet.getInitialBalance() == null || wallet.getInitialBalance().compareTo(BigDecimal.ZERO) == 0) {
+                // Set initial balance = current balance nếu chưa có
+                wallet.setInitialBalance(wallet.getBalance());
+                repo.save(wallet);
+                System.out.println("Migrated wallet " + wallet.getId() + ": initialBalance = " + wallet.getBalance());
+            }
+        }
     }
 }

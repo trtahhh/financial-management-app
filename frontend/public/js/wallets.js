@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // Check authentication first
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    alert('Vui lòng đăng nhập lại');
+    window.location.href = '/login';
+    return;
+  }
+
   const t = document.getElementById('wallet-table');
   const m = new bootstrap.Modal(document.getElementById('wallet-modal'));
   const f = document.getElementById('wallet-form');
@@ -7,11 +15,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function getAuthHeaders() {
     const token = localStorage.getItem('authToken');
+    console.log('Current token:', token); // Debug log
     const headers = {
       'Content-Type': 'application/json'
     };
     if (token) {
       headers['Authorization'] = 'Bearer ' + token;
+      console.log('Auth header set:', headers['Authorization']); // Debug log
+    } else {
+      console.error('No auth token found in localStorage');
     }
     return headers;
   }
@@ -28,6 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
     })
       .then(safeJson)
       .then(d => {
+        console.log('Wallets list data:', d); // Debug log
+        d.forEach(w => console.log(`Wallet ${w.id}: name=${w.name}, balance=${w.balance} (${typeof w.balance})`)); // Debug each wallet
+        
         t.innerHTML =
           '<thead><tr><th>Tên ví</th><th>Số dư</th><th></th></tr></thead><tbody>' +
           d.map(w =>
@@ -45,6 +60,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function formatCurrency(amount) {
+    // Handle null/undefined/NaN cases
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      amount = 0;
+    }
+    
+    // Convert to number if it's a string
+    if (typeof amount === 'string') {
+      amount = Number(amount);
+      if (isNaN(amount)) {
+        amount = 0;
+      }
+    }
+    
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -84,12 +112,35 @@ document.addEventListener('DOMContentLoaded', function () {
       })
         .then(safeJson)
         .then(w => {
+          console.log('Wallet data from API:', w); // Debug log
+          console.log('Raw balance value:', w.balance, 'Type:', typeof w.balance); // Debug balance
           editing = id;
-          f.name.value = w.name;
-          f.balance.value = w.balance;
+          f.name.value = w.name || '';
+          
+          // Handle different balance formats (BigDecimal from Java can be a number or string)
+          let balanceValue = 0;
+          if (w.balance !== null && w.balance !== undefined) {
+            // Convert to number regardless of whether it's string or number
+            balanceValue = Number(w.balance);
+            if (isNaN(balanceValue)) {
+              balanceValue = 0;
+            }
+          }
+          
+          f.balance.value = balanceValue;
+          console.log('Final balance set to input:', f.balance.value); // Debug log
           title.textContent = 'Sửa ví';
           m.show();
-        }).catch(e => alert(e.message));
+        }).catch(e => {
+          console.error('Error fetching wallet:', e); // Debug error
+          if (e.message.includes('401') || e.message.includes('Unauthorized')) {
+            alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+            localStorage.removeItem('authToken');
+            window.location.href = '/login';
+          } else {
+            alert('Lỗi: ' + e.message);
+          }
+        });
     }
     if (e.target.classList.contains('del')) {
       if (confirm('Bạn chắc chắn xoá ví này?')) {

@@ -218,11 +218,21 @@ public class TransactionService {
         totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
         totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
         
-        // Số dư = Thu nhập - Chi tiêu
-        BigDecimal newBalance = totalIncome.subtract(totalExpense);
-        wallet.setBalance(newBalance);
+        // **CORRECTED FORMULA**: Số dư = Initial Balance + Thu nhập - Chi tiêu
+        BigDecimal initialBalance = wallet.getInitialBalance() != null ? wallet.getInitialBalance() : BigDecimal.ZERO;
+        BigDecimal newBalance = initialBalance.add(totalIncome).subtract(totalExpense);
         
+        System.out.println("=== WALLET BALANCE UPDATE (TransactionService) ===");
+        System.out.println("Wallet ID: " + walletId);
+        System.out.println("Initial Balance: " + initialBalance);
+        System.out.println("Total Income: " + totalIncome);
+        System.out.println("Total Expense: " + totalExpense);
+        System.out.println("New Balance: " + newBalance);
+        
+        wallet.setBalance(newBalance);
         walletRepo.save(wallet);
+        
+        System.out.println("✅ Wallet balance updated successfully!");
     }
 
     @Transactional(readOnly = true)
@@ -322,7 +332,16 @@ public class TransactionService {
      * Lấy chi tiêu theo category cho dashboard
      */
     public List<Map<String, Object>> getExpensesByCategory(Long userId, Integer month, Integer year) {
+        System.out.println("=== EXPENSES BY CATEGORY DEBUG ===");
+        System.out.println("User ID: " + userId + ", Month: " + month + ", Year: " + year);
+        
         List<Object[]> results = repo.findExpensesByCategory(userId, month, year);
+        System.out.println("SQL Results count: " + results.size());
+        
+        for (int i = 0; i < results.size(); i++) {
+            Object[] result = results.get(i);
+            System.out.println("Result " + i + ": " + java.util.Arrays.toString(result));
+        }
         
         return results.stream().map(result -> {
             Map<String, Object> map = new HashMap<>();
@@ -386,14 +405,67 @@ public class TransactionService {
             BigDecimal monthlyIncome = getTotalByTypeAndDateRange(userId, "income", startDate, endDate);
             BigDecimal monthlyExpense = getTotalByTypeAndDateRange(userId, "expense", startDate, endDate);
             
+            // Format tháng tiếng Việt
+            String monthName = getVietnameseMonth(yearMonth.getMonthValue());
+            String period = monthName + " " + yearMonth.getYear();
+            
             Map<String, Object> monthData = new HashMap<>();
-            monthData.put("month", yearMonth.getMonth().name());
-            monthData.put("year", yearMonth.getYear());
+            monthData.put("period", period); // Format cho frontend: "Tháng 8 2025"
+            monthData.put("amount", monthlyExpense); // Chỉ hiển thị chi tiêu cho đơn giản
             monthData.put("income", monthlyIncome);
             monthData.put("expense", monthlyExpense);
             monthData.put("net", monthlyIncome.subtract(monthlyExpense));
             
             trend.add(monthData);
+        }
+        
+        return trend;
+    }
+
+    private String getVietnameseMonth(int month) {
+        String[] months = {
+            "", "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+        };
+        return months[month];
+    }
+
+    /**
+     * Lấy xu hướng chi tiêu theo tuần
+     */
+    public List<Map<String, Object>> getWeeklySpendingTrend(Long userId, int weeks) {
+        List<Map<String, Object>> trend = new ArrayList<>();
+        
+        LocalDate today = LocalDate.now();
+        
+        for (int i = weeks - 1; i >= 0; i--) {
+            // Tính tuần (từ Thứ 2 đến Chủ nhật)
+            LocalDate weekStart = today.minusWeeks(i).with(java.time.DayOfWeek.MONDAY);
+            LocalDate weekEnd = weekStart.plusDays(6);
+            
+            BigDecimal weeklyIncome = getTotalByTypeAndDateRange(userId, "income", weekStart, weekEnd);
+            BigDecimal weeklyExpense = getTotalByTypeAndDateRange(userId, "expense", weekStart, weekEnd);
+            
+            // Format period cho frontend
+            String period;
+            if (i == 0) {
+                period = "Tuần này";
+            } else if (i == 1) {
+                period = "Tuần trước";
+            } else {
+                period = "Tuần " + (weeks - i);
+            }
+            
+            Map<String, Object> weekData = new HashMap<>();
+            weekData.put("period", period);
+            weekData.put("amount", weeklyExpense); // Hiển thị chi tiêu chính
+            weekData.put("income", weeklyIncome);
+            weekData.put("expense", weeklyExpense);
+            weekData.put("net", weeklyIncome.subtract(weeklyExpense));
+            weekData.put("weekStart", weekStart.toString());
+            weekData.put("weekEnd", weekEnd.toString());
+            
+            trend.add(weekData);
         }
         
         return trend;
