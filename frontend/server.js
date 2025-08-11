@@ -41,6 +41,22 @@ app.use(
   })
 );
 
+// 📂 Proxy uploads folder để serve static files từ backend
+app.use(
+  '/uploads',
+  createProxyMiddleware({
+    target: 'http://localhost:8080',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/uploads': '/api/files/uploads'
+    },
+    logLevel: 'debug',
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`📷 Proxying file: ${req.originalUrl} → ${proxyReq.path}`);
+    }
+  })
+);
+
 // 🌐 Các routes render view
 // Trang public (không cần đăng nhập)
 app.get('/', (req, res) => res.render('home', { layout: false }));

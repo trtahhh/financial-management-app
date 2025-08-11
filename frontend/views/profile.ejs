@@ -472,54 +472,68 @@
 
   async function loadProfile() {
     try {
-      const response = await fetch('http://localhost:8080/api/users/profile', {
+      const response = await fetch('/api/users/profile', {
         headers: {
           'Authorization': 'Bearer ' + getAuthToken()
         }
       });
 
       if (response.ok) {
-        const profile = await response.json();
-        originalProfileData = { ...profile };
+        const data = await response.json();
+        console.log('Profile API Response:', data); // Debug log
         
-        // Update all fields
-        document.getElementById('profileNameDisplay').textContent = profile.fullName || profile.username || 'Tên người dùng';
-        document.getElementById('profileRole').textContent = profile.role || 'USER';
-        document.getElementById('profileEmailDisplay').textContent = profile.email || 'email@example.com';
-        
-        document.getElementById('fullName').value = profile.fullName || '';
-        document.getElementById('username').value = profile.username || '';
-        document.getElementById('email').value = profile.email || '';
-        document.getElementById('role').value = profile.role || '';
-        document.getElementById('phone').value = profile.phone || '';
-        document.getElementById('birthday').value = profile.birthday || '';
-        document.getElementById('gender').value = profile.gender || '';
-        document.getElementById('address').value = profile.address || '';
-        
-        if (profile.createdAt) {
-          document.getElementById('createdAt').value = new Date(profile.createdAt).toLocaleDateString('vi-VN');
-        }
-        
-        // Load profile image if available
-        if (profile.imageUrl) {
-          document.getElementById('profileImage').src = profile.imageUrl;
+        if (data.success && data.user) {
+          const user = data.user;
+          const profile = data.profile || {}; // Empty object if no profile
           
-          // Also update sidebar avatar if exists
-          const sidebarAvatar = document.querySelector('#userAvatar');
-          if (sidebarAvatar) {
-            sidebarAvatar.src = profile.imageUrl;
+          // Combine user and profile data
+          const combinedData = {
+            ...user,
+            ...profile
+          };
+          
+          originalProfileData = { ...combinedData };
+          
+          // Update all fields
+          document.getElementById('profileNameDisplay').textContent = combinedData.fullName || combinedData.username || 'Tên người dùng';
+          document.getElementById('profileRole').textContent = combinedData.role || 'USER';
+          document.getElementById('profileEmailDisplay').textContent = combinedData.email || 'email@example.com';
+          
+          document.getElementById('fullName').value = combinedData.fullName || '';
+          document.getElementById('username').value = combinedData.username || '';
+          document.getElementById('email').value = combinedData.email || '';
+          document.getElementById('role').value = combinedData.role || '';
+          document.getElementById('phone').value = combinedData.phone || '';
+          document.getElementById('birthday').value = combinedData.birthday || '';
+          document.getElementById('gender').value = combinedData.gender || '';
+          document.getElementById('address').value = combinedData.address || '';
+          
+          if (combinedData.createdAt) {
+            document.getElementById('createdAt').value = new Date(combinedData.createdAt).toLocaleDateString('vi-VN');
           }
-        }
-        
-        // Update sidebar user info if exists
-        const sidebarUserName = document.querySelector('#userName');
-        const sidebarUserRole = document.querySelector('#userRole');
-        
-        if (sidebarUserName) {
-          sidebarUserName.textContent = profile.fullName || profile.username || 'Người dùng';
-        }
-        if (sidebarUserRole) {
-          sidebarUserRole.textContent = profile.role || 'USER';
+          
+          // Load profile image if available
+          if (combinedData.imageUrl) {
+            // Normalize the image URL to handle both old and new formats
+            const normalizedUrl = window.authUtils && window.authUtils.normalizeImageUrl ? 
+              window.authUtils.normalizeImageUrl(combinedData.imageUrl) : combinedData.imageUrl;
+            
+            document.getElementById('profileImage').src = normalizedUrl;
+            
+            // Also update sidebar avatar if exists
+            const sidebarAvatar = document.querySelector('#userAvatar');
+            if (sidebarAvatar) {
+              sidebarAvatar.src = normalizedUrl;
+            }
+          }
+          
+          // Update global user info using auth-utils
+          if (window.authUtils && window.authUtils.updateGlobalUserInfo) {
+            window.authUtils.updateGlobalUserInfo(combinedData);
+          }
+        } else {
+          console.error('Invalid response format:', data);
+          showErrorAlert('Dữ liệu profile không hợp lệ');
         }
         
       } else if (response.status === 401) {
@@ -558,7 +572,7 @@
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('http://localhost:8080/api/files/upload', {
+      const response = await fetch('/api/files/upload', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + getAuthToken()
@@ -608,7 +622,7 @@
         imageUrl: imageUrl
       };
 
-      const response = await fetch('http://localhost:8080/api/users/profile', {
+      const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -623,10 +637,9 @@
         // Update original data with new image URL
         originalProfileData.imageUrl = imageUrl;
         
-        // Update sidebar avatar if exists
-        const sidebarAvatar = document.querySelector('#userAvatar');
-        if (sidebarAvatar) {
-          sidebarAvatar.src = imageUrl;
+        // Update avatars globally using auth-utils
+        if (window.authUtils && window.authUtils.updateGlobalAvatar) {
+          window.authUtils.updateGlobalAvatar(imageUrl);
         }
         
       } else {
@@ -675,7 +688,7 @@
 
       console.log('Sending profile data:', profileData); // Debug log
 
-      const response = await fetch('http://localhost:8080/api/users/profile', {
+      const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -739,7 +752,7 @@
         profileData.imageUrl = originalProfileData.imageUrl;
       }
 
-      await fetch('http://localhost:8080/api/users/profile', {
+      await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -762,7 +775,7 @@
       const token = getAuthToken();
       
       // Get wallets count
-      const walletsResponse = await fetch('http://localhost:8080/api/wallets', {
+      const walletsResponse = await fetch('/api/wallets', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let walletsCount = 0;
@@ -772,7 +785,7 @@
       }
       
       // Get goals count
-      const goalsResponse = await fetch('http://localhost:8080/api/goals', {
+      const goalsResponse = await fetch('/api/goals', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let goalsCount = 0;
@@ -782,7 +795,7 @@
       }
       
       // Get transactions count
-      const transactionsResponse = await fetch('http://localhost:8080/api/transactions', {
+      const transactionsResponse = await fetch('/api/transactions', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let transactionsCount = 0;
@@ -792,7 +805,7 @@
       }
       
       // Get budgets count
-      const budgetsResponse = await fetch('http://localhost:8080/api/budgets', {
+      const budgetsResponse = await fetch('/api/budgets', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       let budgetsCount = 0;
@@ -822,7 +835,7 @@
       const token = getAuthToken();
       
       // Get recent transactions (activity history)
-      const transactionsResponse = await fetch('http://localhost:8080/api/transactions', {
+      const transactionsResponse = await fetch('/api/transactions', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       

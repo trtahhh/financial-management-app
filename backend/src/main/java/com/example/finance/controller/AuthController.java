@@ -15,11 +15,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@Slf4j
 public class AuthController {
 
     @Autowired
@@ -35,20 +38,19 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    @Transactional
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         try {
             // Kiểm tra username đã tồn tại
             if (userService.existsByUsername(registerRequest.getUsername())) {
                 return ResponseEntity.badRequest()
-                    .body(new ApiResponse(false, "Tên đăng nhập đã tồn tại!"));
+                    .body(Map.of("success", false, "message", "Tên đăng nhập đã tồn tại!"));
             }
 
             // Kiểm tra email đã tồn tại (nếu có)
             if (registerRequest.getEmail() != null && !registerRequest.getEmail().isEmpty()
                 && userService.existsByEmail(registerRequest.getEmail())) {
                 return ResponseEntity.badRequest()
-                    .body(new ApiResponse(false, "Email đã tồn tại!"));
+                    .body(Map.of("success", false, "message", "Email đã tồn tại!"));
             }
 
             // Tạo user mới
@@ -67,22 +69,31 @@ public class AuthController {
             if (registerRequest.getFullName() != null || registerRequest.getPhone() != null ||
                 registerRequest.getBirthday() != null || registerRequest.getGender() != null ||
                 registerRequest.getAddress() != null || registerRequest.getImageUrl() != null) {
-                UserProfile profile = new UserProfile();
-                profile.setUserId(savedUser.getId());
-                profile.setUser(savedUser);
-                profile.setFullName(registerRequest.getFullName());
-                profile.setPhone(registerRequest.getPhone());
-                profile.setBirthday(registerRequest.getBirthday());
-                profile.setGender(registerRequest.getGender());
-                profile.setAddress(registerRequest.getAddress());
-                profile.setImageUrl(registerRequest.getImageUrl());
-                userService.saveProfile(profile);
+                try {
+                    UserProfile profile = new UserProfile();
+                    profile.setUserId(savedUser.getId());
+                    profile.setUser(savedUser);
+                    profile.setFullName(registerRequest.getFullName());
+                    profile.setPhone(registerRequest.getPhone());
+                    profile.setBirthday(registerRequest.getBirthday());
+                    profile.setGender(registerRequest.getGender());
+                    profile.setAddress(registerRequest.getAddress());
+                    profile.setImageUrl(registerRequest.getImageUrl());
+                    
+                    // Lưu profile vào bảng User_Profile
+                    UserProfile savedProfile = userService.saveProfile(profile);
+                    log.info("Profile created successfully for user: {} with profile: {}", savedUser.getId(), savedProfile);
+                } catch (Exception e) {
+                    log.error("Error creating profile for user: {}", savedUser.getId(), e);
+                    // Không throw exception, chỉ log lỗi để user vẫn được tạo
+                }
             }
 
-            return ResponseEntity.ok(new ApiResponse(true, "Đăng ký thành công!"));
+            return ResponseEntity.ok(Map.of("success", true, "message", "Đăng ký thành công!"));
         } catch (Exception e) {
+            log.error("Error during registration", e);
             return ResponseEntity.badRequest()
-                .body(new ApiResponse(false, "Lỗi đăng ký: " + e.getMessage()));
+                .body(Map.of("success", false, "message", "Lỗi đăng ký: " + e.getMessage()));
         }
     }
 
@@ -107,10 +118,9 @@ public class AuthController {
             // Trả về cả user và profile nếu cần
             return ResponseEntity.ok(new AuthResponse(jwt, user, profile));
         } catch (Exception e) {
-            System.out.println("Login failed for user: " + loginRequest.getUsername() + ", Error: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Login failed for user: {}", loginRequest.getUsername(), e);
             return ResponseEntity.badRequest()
-                .body(new ApiResponse(false, "Tên đăng nhập hoặc mật khẩu không đúng! Error: " + e.getMessage()));
+                .body(Map.of("success", false, "message", "Tên đăng nhập hoặc mật khẩu không đúng!"));
         }
     }
 

@@ -53,64 +53,22 @@ class SmartNavigation {
     const actions = {
       dashboard: `
         <div class="btn-group-vertical" role="group">
-          <button type="button" class="btn btn-success btn-sm" onclick="SmartNavigation.goTo('/transactions')">
-            <i class="fas fa-plus"></i> Thêm giao dịch
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/budgets')">
-            <i class="fas fa-chart-pie"></i> Xem ngân sách
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/goals')">
-            <i class="fas fa-target"></i> Xem mục tiêu
-          </button>
         </div>
       `,
       transactions: `
         <div class="btn-group-vertical" role="group">
-          <button type="button" class="btn btn-success btn-sm" onclick="SmartNavigation.openTransactionModal()">
-            <i class="fas fa-plus"></i> Thêm nhanh
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/dashboard')">
-            <i class="fas fa-chart-line"></i> Xem thống kê
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/budgets')">
-            <i class="fas fa-balance-scale"></i> Kiểm tra ngân sách
-          </button>
         </div>
       `,
       budgets: `
         <div class="btn-group-vertical" role="group">
-          <button type="button" class="btn btn-success btn-sm" onclick="SmartNavigation.openBudgetModal()">
-            <i class="fas fa-plus"></i> Thêm ngân sách
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/transactions')">
-            <i class="fas fa-list"></i> Xem giao dịch
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/categories')">
-            <i class="fas fa-tags"></i> Quản lý danh mục
-          </button>
         </div>
       `,
       goals: `
         <div class="btn-group-vertical" role="group">
-          <button type="button" class="btn btn-success btn-sm" onclick="SmartNavigation.openGoalModal()">
-            <i class="fas fa-plus"></i> Thêm mục tiêu
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/transactions')">
-            <i class="fas fa-piggy-bank"></i> Thêm tiết kiệm
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/dashboard')">
-            <i class="fas fa-chart-line"></i> Xem tiến độ
-          </button>
         </div>
       `,
       wallets: `
         <div class="btn-group-vertical" role="group">
-          <button type="button" class="btn btn-success btn-sm" onclick="SmartNavigation.openWalletModal()">
-            <i class="fas fa-plus"></i> Thêm ví
-          </button>
-          <button type="button" class="btn btn-outline-success btn-sm" onclick="SmartNavigation.goTo('/transactions')">
-            <i class="fas fa-exchange-alt"></i> Chuyển tiền
-          </button>
         </div>
       `
     };

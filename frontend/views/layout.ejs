@@ -191,10 +191,24 @@
         });
         
         if (response.ok) {
-          const user = await response.json();
-          document.getElementById('userName').textContent = user.fullName || user.username;
-          document.getElementById('userRole').textContent = user.role;
-          document.getElementById('userAvatar').src = user.imageUrl || 'https://via.placeholder.com/40/ffffff/198754?text=U';
+          const data = await response.json();
+          if (data.success && data.user) {
+            const user = data.user;
+            const profile = data.profile || {};
+            
+            // Combine user and profile data
+            const combinedData = { ...user, ...profile };
+            
+            // Update user info globally using auth-utils
+            if (window.authUtils && window.authUtils.updateGlobalUserInfo) {
+              window.authUtils.updateGlobalUserInfo(combinedData);
+            } else {
+              // Fallback if auth-utils not loaded yet
+              document.getElementById('userName').textContent = combinedData.fullName || combinedData.username || 'Người dùng';
+              document.getElementById('userRole').textContent = combinedData.role || 'USER';
+              document.getElementById('userAvatar').src = combinedData.imageUrl || 'https://via.placeholder.com/40/ffffff/198754?text=U';
+            }
+          }
         } else if (response.status === 401) {
           // Token không hợp lệ
           logout();

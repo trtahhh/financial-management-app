@@ -52,8 +52,8 @@ public class FileController {
             Path filePath = uploadPath.resolve(filename);
             Files.copy(file.getInputStream(), filePath);
 
-            // Trả về URL của file
-            String fileUrl = "/api/files/uploads/" + filename;
+            // Trả về URL của file - sử dụng /uploads để frontend có thể proxy
+            String fileUrl = "/uploads/" + filename;
             
             return ResponseEntity.ok(
                 new ApiResponse(true, "Upload file thành công", fileUrl)
