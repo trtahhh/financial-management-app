@@ -172,7 +172,16 @@ function appendMessage(who, message) {
     
     const content = document.createElement('div');
     content.className = 'message-content';
-    content.textContent = message;
+    
+    // Format AI response để đẹp như ChatGPT
+    if (who === 'ai') {
+        // Chuyển đổi text thành HTML với format đẹp
+        const formattedMessage = formatAIResponse(message);
+        content.innerHTML = formattedMessage;
+    } else {
+        // User message giữ nguyên text
+        content.textContent = message;
+    }
     
     messageContainer.appendChild(avatar);
     messageContainer.appendChild(content);
@@ -185,6 +194,39 @@ function appendMessage(who, message) {
     
     // Add to chat history
     chatHistory.push({ who, message, timestamp: new Date() });
+}
+
+// Format AI response để đẹp như ChatGPT
+function formatAIResponse(message) {
+    if (!message) return '';
+    
+    let formatted = message;
+    
+    // Thay thế các dấu xuống dòng thành <br>
+    formatted = formatted.replace(/\n/g, '<br>');
+    
+    // Thêm style cho các ý chính (số thứ tự)
+    formatted = formatted.replace(/(\d+\.\s)/g, '<strong style="color: var(--chatgpt-text);">$1</strong>');
+    
+    // Thêm style cho các tiêu đề (dấu - hoặc *)
+    formatted = formatted.replace(/^[-*]\s+(.+)$/gm, '<strong style="color: var(--chatgpt-text); display: block; margin-top: 12px; margin-bottom: 8px;">$1</strong>');
+    
+    // Thêm style cho các từ khóa quan trọng
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong style="color: var(--chatgpt-text);">$1</strong>');
+    
+    // Thêm style cho các gạch chân
+    formatted = formatted.replace(/__(.+?)__/g, '<em style="color: var(--chatgpt-text-secondary);">$1</em>');
+    
+    // Thêm style cho các bullet points
+    formatted = formatted.replace(/^•\s+(.+)$/gm, '<div style="margin-left: 20px; margin-bottom: 8px;">• $1</div>');
+    
+    // Thêm style cho các đoạn văn
+    formatted = formatted.replace(/<br><br>/g, '</p><p style="margin: 16px 0; line-height: 1.6;">');
+    
+    // Wrap trong paragraph tags
+    formatted = '<p style="margin: 0; line-height: 1.6;">' + formatted + '</p>';
+    
+    return formatted;
 }
 
 // Show typing indicator - ChatGPT style
