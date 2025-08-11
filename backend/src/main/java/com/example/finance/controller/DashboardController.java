@@ -113,11 +113,19 @@ public class DashboardController {
             @RequestParam Long userId,
             @RequestParam String dateFrom,
             @RequestParam String dateTo) {
+        try {
+            LocalDate from = LocalDate.parse(dateFrom);
+            LocalDate to = LocalDate.parse(dateTo);
 
-        LocalDate from = LocalDate.parse(dateFrom);
-        LocalDate to = LocalDate.parse(dateTo);
-
-        Map<String, Object> dashboard = dashboardService.getDashboardDataByDate(userId, from, to);
-        return ResponseEntity.ok(dashboard);
+            Map<String, Object> dashboard = dashboardService.getDashboardDataByDate(userId, from, to);
+            return ResponseEntity.ok(dashboard);
+        } catch (Exception e) {
+            System.err.println("Error in /api/dashboard/data-by-date: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> err = new java.util.HashMap<>();
+            err.put("success", false);
+            err.put("message", e.getMessage());
+            return ResponseEntity.status(500).body(err);
+        }
     }
 }

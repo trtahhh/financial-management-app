@@ -138,22 +138,45 @@ public class DashboardService {
 
     public Map<String, Object> getDashboardDataByDate(Long userId, LocalDate startDate, LocalDate endDate) {
         Map<String, Object> dashboard = new HashMap<>();
+        try {
+            BigDecimal totalIncome = transactionService.getTotalByTypeAndDateRange(userId, "income", startDate, endDate);
+            BigDecimal totalExpense = transactionService.getTotalByTypeAndDateRange(userId, "expense", startDate, endDate);
+            BigDecimal netIncome = totalIncome.subtract(totalExpense);
 
-        BigDecimal totalIncome = transactionService.getTotalByTypeAndDateRange(userId, "income", startDate, endDate);
-        BigDecimal totalExpense = transactionService.getTotalByTypeAndDateRange(userId, "expense", startDate, endDate);
-        BigDecimal netIncome = totalIncome.subtract(totalExpense);
-
-        dashboard.put("totalIncome", totalIncome);
-        dashboard.put("totalExpense", totalExpense);
-        dashboard.put("netIncome", netIncome);
+            dashboard.put("totalIncome", totalIncome);
+            dashboard.put("totalExpense", totalExpense);
+            dashboard.put("netIncome", netIncome);
 
         dashboard.put("expensesByCategory", transactionService.getExpensesByCategoryByDate(userId, startDate, endDate));
-        dashboard.put("budgetProgress", budgetService.getBudgetVsActualByDate(userId, startDate, endDate));
-        dashboard.put("goalProgress", goalService.getGoalProgress(userId));
-        dashboard.put("totalBalance", walletService.getTotalBalance(userId));
-        dashboard.put("recentTransactions", transactionService.getRecentTransactionsByDate(userId, startDate, endDate, 10));
-        dashboard.put("notifications", notificationService.getUnreadNotifications(userId));
-
+        var budgetProgress = budgetService.getBudgetVsActualByDate(userId, startDate, endDate);
+        dashboard.put("budgetProgress", budgetProgress);
+        // Derive warnings for date range from progress list
+        List<Map<String, Object>> warnings = budgetProgress.stream()
+                .filter(item -> {
+                    String status = (String) item.get("status");
+                    return "WARNING".equals(status) || "EXCEEDED".equals(status);
+                })
+                .map(item -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("categoryId", item.get("categoryId"));
+                    m.put("categoryName", item.get("categoryName"));
+                    m.put("budgetAmount", item.get("budgetAmount"));
+                    m.put("spentAmount", item.get("spentAmount"));
+                    m.put("usagePercent", item.get("usagePercent"));
+                    m.put("status", item.get("status"));
+                    return m;
+                })
+                .toList();
+        dashboard.put("budgetWarnings", warnings);
+            dashboard.put("goalProgress", goalService.getGoalProgress(userId));
+            dashboard.put("totalBalance", walletService.getTotalBalance(userId));
+            dashboard.put("recentTransactions", transactionService.getRecentTransactionsByDate(userId, startDate, endDate, 10));
+            dashboard.put("notifications", notificationService.getUnreadNotifications(userId));
+        } catch (Exception e) {
+            System.err.println("DashboardService.getDashboardDataByDate error: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
         return dashboard;
     }
 }

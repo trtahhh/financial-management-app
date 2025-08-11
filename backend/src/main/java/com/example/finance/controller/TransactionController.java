@@ -107,11 +107,7 @@ public class TransactionController {
                     .body(Map.of("success", false, "message", "Amount must be greater than 0"));
             }
             
-            // Validate amount range (prevent unrealistic values)
-            if (dto.getAmount().compareTo(new BigDecimal("999999999")) > 0) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Amount is too large"));
-            }
+            // Remove hard cap; rely on DB DECIMAL(18,2) constraints instead
             
             // Validate type
             if (dto.getType() == null || (!dto.getType().equals("income") && !dto.getType().equals("expense"))) {

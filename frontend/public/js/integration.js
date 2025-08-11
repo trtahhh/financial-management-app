@@ -267,41 +267,8 @@ class GoalsIntegration {
  */
 class WalletIntegration {
   static async updateBalanceFromTransaction(transaction) {
-    const balanceChange = transaction.type === 'THU' ? transaction.amount : -transaction.amount;
-    
-    try {
-      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/wallets/updateBalance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
-        },
-        body: JSON.stringify({
-          userId: JwtUtils.getCurrentUserId(),
-          balanceChange: balanceChange,
-          transactionId: transaction.id,
-          walletId: transaction.walletId || 1 // Default wallet
-        })
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log("✅ Wallet balance updated:", result);
-        
-        if (result.newBalance < 0) {
-          IntegrationNotifications.show(
-            `⚠️ <strong>Cảnh báo!</strong><br>Số dư ví ${result.walletName} đã âm: ${result.newBalance.toLocaleString('vi-VN')}đ`,
-            'warning',
-            8000
-          );
-        }
-        
-        return `Số dư ví cập nhật: ${result.newBalance.toLocaleString('vi-VN')}đ`;
-      }
-    } catch (error) {
-      console.error("❌ Failed to update wallet balance:", error);
-    }
-    
+    // BỎ gọi API cập nhật số dư ví từ client để tránh lệch và lỗi 405; backend đã xử lý sau khi lưu giao dịch
+    console.log('ℹ️ Skip wallet balance update (server handles it).');
     return null;
   }
   

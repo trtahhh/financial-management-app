@@ -603,22 +603,8 @@ function updateWalletBalance(transactionType, amount) {
     headers['Authorization'] = 'Bearer ' + token;
   }
   
-  fetch(`http://localhost:8080/api/wallets/updateBalance`, {
-    method: 'POST',
-    headers: headers,
-    mode: 'cors',
-    body: JSON.stringify({
-      userId: getCurrentUserId(),
-      balanceChange: balanceChange
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("✅ Wallet balance updated:", data);
-  })
-  .catch(err => {
-    console.error("❌ Failed to update wallet balance:", err);
-  });
+  // Backend đã tự cập nhật số dư ví khi lưu giao dịch, không cần gọi API riêng
+  console.log('ℹ️ Skip client-side wallet update; handled by backend. Change:', balanceChange);
 }
 
 /**

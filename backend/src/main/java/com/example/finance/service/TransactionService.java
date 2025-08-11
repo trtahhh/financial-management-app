@@ -503,6 +503,7 @@ public class TransactionService {
     /**
      * Lấy giao dịch gần đây trong khoảng ngày
      */
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getRecentTransactionsByDate(Long userId, LocalDate startDate, LocalDate endDate, int limit) {
         List<Transaction> transactions = repo.findByUserIdAndDateBetweenOrderByCreatedAtDesc(userId, startDate, endDate)
                 .stream()
@@ -516,8 +517,16 @@ public class TransactionService {
             map.put("type", t.getType());
             map.put("note", t.getNote());
             map.put("date", t.getDate());
-            map.put("categoryName", t.getCategory() != null ? t.getCategory().getName() : "");
-            map.put("walletName", t.getWallet() != null ? t.getWallet().getName() : "");
+            try {
+                map.put("categoryName", t.getCategory() != null ? t.getCategory().getName() : "Không có danh mục");
+            } catch (Exception e) {
+                map.put("categoryName", "Không có danh mục");
+            }
+            try {
+                map.put("walletName", t.getWallet() != null ? t.getWallet().getName() : "Không có ví");
+            } catch (Exception e) {
+                map.put("walletName", "Không có ví");
+            }
             result.add(map);
         }
         return result;

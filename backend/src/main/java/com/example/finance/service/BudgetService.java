@@ -163,26 +163,21 @@ public class BudgetService {
         List<Map<String, Object>> budgetVsActual = getBudgetVsActual(userId, month, year);
         
         // Chỉ lấy những budget có warning hoặc exceeded
+        // budgetVsActual là List<Map<String,Object>>, không cast về Budget
         return budgetVsActual.stream()
-                .filter(budget -> {
-                    String status = (String) budget.get("status");
+                .filter(item -> {
+                    String status = (String) item.get("status");
                     return "WARNING".equals(status) || "EXCEEDED".equals(status);
                 })
-                .map(budget -> {
+                .map(item -> {
                     Map<String, Object> warning = new HashMap<>();
-                    warning.put("categoryId", ((Budget) budget).getCategory().getId());
-                    warning.put("categoryName", budget.get("categoryName"));
-                    warning.put("budgetAmount", budget.get("budgetAmount"));
-                    warning.put("spentAmount", budget.get("spentAmount"));
-                    warning.put("percentage", budget.get("usagePercent"));
-                    warning.put("status", budget.get("status"));
-                    
-                    if ("EXCEEDED".equals(budget.get("status"))) {
-                        warning.put("message", "Đã vượt ngân sách!");
-                    } else {
-                        warning.put("message", "Sắp vượt ngân sách!");
-                    }
-                    
+                    warning.put("categoryId", item.get("categoryId"));
+                    warning.put("categoryName", item.get("categoryName"));
+                    warning.put("budgetAmount", item.get("budgetAmount"));
+                    warning.put("spentAmount", item.get("spentAmount"));
+                    warning.put("usagePercent", item.get("usagePercent"));
+                    warning.put("status", item.get("status"));
+                    warning.put("message", "EXCEEDED".equals(item.get("status")) ? "Đã vượt ngân sách!" : "Sắp vượt ngân sách!");
                     return warning;
                 })
                 .toList();
@@ -227,8 +222,14 @@ public class BudgetService {
 
             Map<String, Object> result = new HashMap<>();
             result.put("budgetId", budget.getId());
-            result.put("categoryName", budget.getCategory().getName());
-            result.put("categoryColor", budget.getCategory().getColor());
+            // Truy cập an toàn thuộc tính category (đã JOIN FETCH nhưng vẫn phòng hờ)
+            try {
+                result.put("categoryName", budget.getCategory() != null ? budget.getCategory().getName() : "");
+                result.put("categoryColor", budget.getCategory() != null ? budget.getCategory().getColor() : "#6c757d");
+            } catch (Exception e) {
+                result.put("categoryName", "");
+                result.put("categoryColor", "#6c757d");
+            }
             result.put("budgetAmount", budget.getAmount());
             result.put("spentAmount", actualSpent);
             result.put("usagePercent", usagePercent.doubleValue());

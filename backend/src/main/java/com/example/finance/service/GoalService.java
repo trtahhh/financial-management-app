@@ -133,21 +133,21 @@ public class GoalService {
             goalData.put("goalName", goal.getName());
             goalData.put("targetAmount", goal.getTargetAmount());
             
-            // Sử dụng currentAmount từ goal entity
+            // Sử dụng currentAmount từ goal entity (nếu cần hiển thị nơi khác)
             BigDecimal currentAmount = goal.getCurrentAmount() != null ? goal.getCurrentAmount() : BigDecimal.ZERO;
             goalData.put("currentAmount", currentAmount);
             goalData.put("currentBalance", totalBalance);
             
-            // Tính phần trăm tiến độ dựa trên currentAmount
+            // Đồng bộ với trang Mục tiêu: tính % dựa trên tổng số dư tất cả ví so với target của từng goal
             BigDecimal progressPercentage = goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0 ? 
-                    currentAmount.divide(goal.getTargetAmount(), 4, java.math.RoundingMode.HALF_UP)
+                    totalBalance.divide(goal.getTargetAmount(), 4, java.math.RoundingMode.HALF_UP)
                             .multiply(BigDecimal.valueOf(100)) : BigDecimal.ZERO;
             
             goalData.put("progressPercentage", progressPercentage.doubleValue());
             
-            // Xác định trạng thái
+            // Xác định trạng thái theo tiến độ mới
             String status = "in-progress";
-            if (currentAmount.compareTo(goal.getTargetAmount()) >= 0) {
+            if (progressPercentage.compareTo(BigDecimal.valueOf(100)) >= 0) {
                 status = "completed";
             } else if (progressPercentage.compareTo(BigDecimal.valueOf(80)) >= 0) {
                 status = "near-completion";
