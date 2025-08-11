@@ -371,13 +371,17 @@ public class TransactionService {
             // Safe null check for lazy-loaded entities
             try {
                 map.put("categoryName", t.getCategory() != null ? t.getCategory().getName() : "Không có danh mục");
+                map.put("categoryId", t.getCategory() != null ? t.getCategory().getId() : null);
             } catch (Exception e) {
                 map.put("categoryName", "Không có danh mục");
+                map.put("categoryId", null);
             }
             try {
                 map.put("walletName", t.getWallet() != null ? t.getWallet().getName() : "Không có ví");
+                map.put("walletId", t.getWallet() != null ? t.getWallet().getId() : null);
             } catch (Exception e) {
                 map.put("walletName", "Không có ví");
+                map.put("walletId", null);
             }
             return map;
         }).toList();

@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load initial data
   loadTransactions();
   loadCategories();
+  loadWallets();
 
   // Filter events
   if (filter) filter.addEventListener('change', applyFilters);
@@ -81,10 +82,11 @@ function loadTransactions() {
           id: t.id,
           date: t.date,
           type: t.type, // Use the type as is since backend returns 'income'/'expense'
-          category: t.category?.name || 'Khác',
-          categoryId: t.categoryId,
+          category: (t.category && t.category.name) ? t.category.name : (t.categoryName || 'Khác'),
+          categoryId: t.categoryId || t.categoryId || null,
           amount: t.amount,
-          note: t.note || ''
+          note: t.note || '',
+          walletId: t.walletId || null
         }));
       renderTable();
     })
@@ -129,6 +131,59 @@ function loadCategories() {
       console.error("🚨 Failed to load categories:", err);
       console.warn("Using default categories");
     });
+}
+
+function loadWallets() {
+  const url = `http://localhost:8080/api/wallets`;
+  console.log("📡 Loading wallets from:", url);
+  
+  const token = localStorage.getItem('authToken');
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  
+  fetch(url, { 
+    method: 'GET',
+    headers: headers,
+    mode: 'cors'
+  })
+    .then(res => {
+      if (!res.ok) {
+        return res.text().then(text => { 
+          throw new Error(`HTTP ${res.status}: ${text}`); 
+        });
+      }
+      return res.json();
+    })
+    .then(data => {
+      updateWalletDropdowns(data);
+    })
+    .catch(err => {
+      console.error("🚨 Failed to load wallets:", err);
+    });
+}
+
+function updateWalletDropdowns(wallets) {
+  const walletSelects = document.querySelectorAll('select[name="wallet"]');
+  walletSelects.forEach(select => {
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Chọn ví';
+    
+    select.innerHTML = '';
+    select.appendChild(defaultOption);
+    
+    wallets.forEach(w => {
+      const option = document.createElement('option');
+      option.value = String(w.id);
+      option.dataset.walletId = w.id;
+      option.textContent = w.name;
+      select.appendChild(option);
+    });
+  });
 }
 
 function updateCategoryDropdowns(categories) {
@@ -256,6 +311,11 @@ function editTransaction(id) {
   form.querySelector('select[name="category"]').value = transaction.category;
   form.querySelector('input[name="amount"]').value = transaction.amount;
   form.querySelector('textarea[name="note"]').value = transaction.note || '';
+  // If wallet loaded, try to set value
+  const walletSelect = form.querySelector('select[name="wallet"]');
+  if (walletSelect && transaction.walletId) {
+    walletSelect.value = String(transaction.walletId);
+  }
   
   const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
   modal.show();
@@ -292,14 +352,19 @@ function saveTransaction() {
   const selectedOption = categorySelect.options[categorySelect.selectedIndex];
   const categoryId = selectedOption.dataset.categoryId;
   
+  // Wallet selection
+  const walletSelect = form.querySelector('select[name="wallet"]');
+  const selectedWallet = walletSelect ? walletSelect.options[walletSelect.selectedIndex] : null;
+  const walletId = selectedWallet ? (selectedWallet.dataset.walletId || selectedWallet.value) : null;
+  
   const transactionData = {
-  date: formData.get('date'),
-  type: formData.get('type') === 'income' ? 'income' : 'expense',
-  categoryId: categoryId ? parseInt(categoryId) : null,
-  amount: amount,
-  note: formData.get('note') || '',
-  walletId: 1 // Default wallet ID
-};
+    date: formData.get('date'),
+    type: formData.get('type') === 'income' ? 'income' : 'expense',
+    categoryId: categoryId ? parseInt(categoryId) : null,
+    amount: amount,
+    note: formData.get('note') || '',
+    walletId: walletId ? parseInt(walletId) : null
+  };
   
   console.log("📤 Sending transaction data:", transactionData);
   

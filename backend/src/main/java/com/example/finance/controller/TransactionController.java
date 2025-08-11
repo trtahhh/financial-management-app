@@ -1,6 +1,8 @@
 package com.example.finance.controller;
 
 import com.example.finance.dto.TransactionDTO;
+import com.example.finance.dto.CategoryDTO;
+import com.example.finance.dto.WalletDTO;
 import com.example.finance.dto.WalletStatDTO;
 import com.example.finance.service.TransactionService;
 import com.example.finance.service.UserService;
@@ -55,6 +57,29 @@ public class TransactionController {
                     dto.setType((String) map.get("type"));
                     dto.setDate(LocalDate.parse(map.get("date").toString()));
                     dto.setNote((String) map.get("note"));
+                    // IDs for frontend usage (edit, etc.)
+                    if (map.get("categoryId") != null) {
+                        dto.setCategoryId(((Number) map.get("categoryId")).longValue());
+                    }
+                    if (map.get("walletId") != null) {
+                        dto.setWalletId(((Number) map.get("walletId")).longValue());
+                    }
+
+                    // Map category name if available so frontend can display it
+                    Object categoryName = map.get("categoryName");
+                    if (categoryName != null) {
+                        CategoryDTO categoryDTO = new CategoryDTO();
+                        categoryDTO.setName(categoryName.toString());
+                        dto.setCategory(categoryDTO);
+                    }
+
+                    // Map wallet name if available (may be used by frontend later)
+                    Object walletName = map.get("walletName");
+                    if (walletName != null) {
+                        WalletDTO walletDTO = new WalletDTO();
+                        walletDTO.setName(walletName.toString());
+                        dto.setWallet(walletDTO);
+                    }
                     return dto;
                 })
                 .toList();
