@@ -150,22 +150,7 @@
             <version>20240303</version>
         </dependency>
 
-        <!-- Spring AI OpenAI Starter -->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
-            <version>1.0.0-M1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-function-context</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-function-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+
     </dependencies>
     <build>
         <plugins>

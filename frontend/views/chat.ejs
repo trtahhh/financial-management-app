@@ -1,184 +1,801 @@
-<main class="container-fluid py-4">
-  <div class="row justify-content-center">
-    <div class="col-lg-10">
-      <!-- Header Section -->
-      <div class="mb-4">
-        <h3 class="text-success fw-bold">Trợ lý AI</h3>
-        <p class="text-muted">Hỗ trợ tư vấn tài chính và trả lời các câu hỏi 24/7</p>
-      </div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Quản lý Tài chính</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --chatgpt-bg: #343541;
+            --chatgpt-sidebar: #202123;
+            --chatgpt-text: #ececf1;
+            --chatgpt-text-secondary: #d1d5db;
+            --chatgpt-border: #4a4b53;
+            --chatgpt-hover: #40414f;
+            --chatgpt-input: #40414f;
+            --chatgpt-button: #19c37d;
+            --chatgpt-button-hover: #1a8870;
+        }
 
-      <div class="card shadow border-0">
-        <div class="card-body p-0">
-          <div id="chat-pane" class="p-4" style="height:500px;overflow-y:auto;background: #f8f9fa;">
-            <div class="welcome-message text-center py-4">
-              <h5 class="text-success mb-3">Xin chào! Tôi là trợ lý AI của bạn</h5>
-              <p class="text-muted mb-4">Hãy hỏi tôi bất cứ điều gì về:</p>
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <div class="card border-0 bg-white shadow-sm h-100">
-                    <div class="card-body text-center py-3">
-                      <h6 class="text-success mb-2">Tài chính cá nhân</h6>
-                      <small class="text-muted">Phân tích chi tiêu, tiết kiệm, ngân sách</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <div class="card border-0 bg-white shadow-sm h-100">
-                    <div class="card-body text-center py-3">
-                      <h6 class="text-success mb-2">Tư vấn đầu tư</h6>
-                      <small class="text-muted">Kế hoạch đầu tư, quản lý rủi ro</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <div class="card border-0 bg-white shadow-sm h-100">
-                    <div class="card-body text-center py-3">
-                      <h6 class="text-success mb-2">Kiến thức tổng quát</h6>
-                      <small class="text-muted">Công nghệ, giáo dục, sức khỏe</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <div class="card border-0 bg-white shadow-sm h-100">
-                    <div class="card-body text-center py-3">
-                      <h6 class="text-success mb-2">Hỗ trợ 24/7</h6>
-                      <small class="text-muted">Tư vấn mọi lúc, mọi nơi</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        body {
+            background: var(--chatgpt-bg);
+            color: var(--chatgpt-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 200px);
+            max-width: 100%;
+            margin: 0;
+            background: var(--chatgpt-bg);
+        }
+
+        /* Sidebar - Giống ChatGPT */
+        .chat-sidebar {
+            width: 280px;
+            background: var(--chatgpt-sidebar);
+            border-right: 1px solid var(--chatgpt-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--chatgpt-border);
+        }
+
+        .sidebar-header h3 {
+            color: var(--chatgpt-text);
+            font-size: 1.2rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .new-chat-btn {
+            width: calc(100% - 40px);
+            padding: 12px 16px;
+            background: var(--chatgpt-button);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 20px;
+            margin-top: 0;
+            font-weight: 500;
+        }
+
+        .new-chat-btn:hover {
+            background: var(--chatgpt-button-hover);
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 0 20px;
+        }
+
+        .chat-history-item {
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--chatgpt-text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-history-item:hover {
+            background: var(--chatgpt-hover);
+        }
+
+        .chat-history-item i {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--chatgpt-border);
+        }
+
+        .sidebar-footer button {
+            width: 100%;
+            padding: 10px 16px;
+            background: transparent;
+            color: var(--chatgpt-text-secondary);
+            border: 1px solid var(--chatgpt-border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sidebar-footer button:hover {
+            background: var(--chatgpt-hover);
+            border-color: var(--chatgpt-text);
+        }
+
+        /* Main Chat Area - Giống ChatGPT */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--chatgpt-bg);
+            min-width: 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .chat-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--chatgpt-border);
+            background: var(--chatgpt-bg);
+            border-radius: 0 8px 0 0;
+        }
+
+        .chat-header h2 {
+            color: var(--chatgpt-text);
+            font-size: 1.6rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .chat-header .subtitle {
+            color: var(--chatgpt-text-secondary);
+            margin-top: 8px;
+            font-size: 0.95rem;
+        }
+
+        .ai-status-badge {
+            display: inline-block;
+            background: var(--chatgpt-button);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+
+        /* Chat Messages - Giống ChatGPT */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .message {
+            padding: 20px;
+            border-bottom: 1px solid var(--chatgpt-border);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .message.user {
+            background: var(--chatgpt-bg);
+        }
+
+        .message.ai {
+            background: #444654;
+        }
+
+        .message-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: var(--chatgpt-button);
+            color: white;
+        }
+
+        .message.ai .message-avatar {
+            background: #10a37f;
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 1rem;
+            max-width: 700px;
+        }
+
+        .message.user .message-content {
+            color: var(--chatgpt-text);
+        }
+
+        .message.ai .message-content {
+            color: var(--chatgpt-text);
+        }
+
+        /* Welcome Message - Giống ChatGPT */
+        .welcome-message {
+            text-align: center;
+            padding: 60px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .welcome-message h1 {
+            color: var(--chatgpt-text);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .welcome-message p {
+            color: var(--chatgpt-text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .example-card {
+            background: var(--chatgpt-hover);
+            border: 1px solid var(--chatgpt-border);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .example-card:hover {
+            background: var(--chatgpt-border);
+            border-color: var(--chatgpt-text);
+            transform: translateY(-1px);
+        }
+
+        .example-card h4 {
+            color: var(--chatgpt-text);
+            font-size: 1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .example-card p {
+            color: var(--chatgpt-text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .capability-card {
+            background: var(--chatgpt-hover);
+            border: 1px solid var(--chatgpt-border);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .capability-card i {
+            font-size: 1.6rem;
+            color: var(--chatgpt-button);
+            margin-bottom: 14px;
+        }
+
+        .capability-card h5 {
+            color: var(--chatgpt-text);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .capability-card p {
+            color: var(--chatgpt-text-secondary);
+            font-size: 0.8rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Chat Input - Giống ChatGPT */
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid var(--chatgpt-border);
+            background: var(--chatgpt-bg);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .input-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 16px 50px 16px 20px;
+            background: var(--chatgpt-input);
+            border: 1px solid var(--chatgpt-border);
+            border-radius: 14px;
+            color: var(--chatgpt-text);
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            min-height: 56px;
+            max-height: 200px;
+        }
+
+        .message-input:focus {
+            border-color: var(--chatgpt-button);
+        }
+
+        .message-input::placeholder {
+            color: var(--chatgpt-text-secondary);
+        }
+
+        .send-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: var(--chatgpt-button);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-button:hover {
+            background: var(--chatgpt-button-hover);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Typing Indicator - Giống ChatGPT */
+        .typing-indicator {
+            display: none;
+            padding: 20px;
+            border-bottom: 1px solid var(--chatgpt-border);
+            background: #444654;
+        }
+
+        .typing-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .typing-avatar {
+            width: 32px;
+            height: 32px;
+            background: #10a37f;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--chatgpt-text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        /* Scrollbar - Giống ChatGPT */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--chatgpt-border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--chatgpt-text-secondary);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1400px) {
+            .chat-sidebar {
+                width: 260px;
+            }
+            
+            .message-container {
+                max-width: 750px;
+            }
+            
+            .input-wrapper {
+                max-width: 750px;
+            }
+            
+            .welcome-message {
+                max-width: 850px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .chat-sidebar {
+                width: 240px;
+            }
+            
+            .message-container {
+                max-width: 700px;
+            }
+            
+            .input-wrapper {
+                max-width: 700px;
+            }
+            
+            .welcome-message {
+                max-width: 800px;
+            }
+            
+            .examples-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+            
+            .capabilities-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: calc(100vh - 150px);
+            }
+            
+            .chat-sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s;
+                width: 280px;
+            }
+
+            .chat-sidebar.open {
+                left: 0;
+            }
+
+            .sidebar-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1001;
+                background: var(--chatgpt-button);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 10px;
+                cursor: pointer;
+            }
+
+            .chat-main {
+                margin-left: 0;
+            }
+
+            .chat-header {
+                padding: 16px 20px;
+            }
+
+            .chat-header h2 {
+                font-size: 1.4rem;
+            }
+
+            .welcome-message {
+                padding: 40px 20px;
+            }
+
+            .welcome-message h1 {
+                font-size: 1.6rem;
+            }
+
+            .examples-grid,
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .example-card,
+            .capability-card {
+                padding: 18px;
+                min-height: 100px;
+            }
+
+            .message {
+                padding: 16px 20px;
+            }
+
+            .message-container {
+                gap: 16px;
+            }
+
+            .chat-input-container {
+                padding: 16px 20px;
+            }
+
+            .typing-indicator {
+                padding: 16px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                height: calc(100vh - 120px);
+            }
+            
+            .chat-header {
+                padding: 14px 16px;
+            }
+
+            .chat-header h2 {
+                font-size: 1.2rem;
+            }
+
+            .welcome-message {
+                padding: 30px 16px;
+            }
+
+            .welcome-message h1 {
+                font-size: 1.4rem;
+            }
+
+            .examples-grid,
+            .capabilities-grid {
+                gap: 12px;
+            }
+
+            .example-card,
+            .capability-card {
+                padding: 16px;
+                min-height: 90px;
+            }
+
+            .message {
+                padding: 14px 16px;
+            }
+
+            .chat-input-container {
+                padding: 14px 16px;
+            }
+
+            .typing-indicator {
+                padding: 14px 16px;
+            }
+        }
+
+        .sidebar-toggle {
+            display: none;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--chatgpt-button);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar - Giống ChatGPT -->
+        <div class="chat-sidebar" id="chat-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-robot me-2"></i>AI Tài chính</h3>
             </div>
-          </div>
-          
-          <div class="card-footer bg-white border-top">
-            <div class="row g-3">
-              <div class="col">
-                <textarea id="chat-input" class="form-control border-0 bg-light" rows="2" 
-                          placeholder="Ví dụ: Tôi nên tiết kiệm bao nhiều mỗi tháng?"
-                          style="resize: none;"></textarea>
-              </div>
-              <div class="col-auto d-flex align-items-end">
-                <button id="chat-send" class="btn btn-success px-4">
-                  Gửi
+            
+            <button class="new-chat-btn" onclick="newChat()">
+                <i class="fas fa-plus me-2"></i>Cuộc trò chuyện mới
+            </button>
+            
+            <div class="chat-history" id="chat-history">
+                <!-- Chat history will be populated here -->
+            </div>
+            
+            <div class="sidebar-footer">
+                <button onclick="clearChat()">
+                    <i class="fas fa-trash me-2"></i>Xóa chat
                 </button>
-              </div>
             </div>
-            <div class="mt-3">
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Xin chào')">Xin chào</button>
-                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Thời tiết hôm nay thế nào?')">Thời tiết</button>
-                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Làm thế nào để tiết kiệm tiền?')">Tiết kiệm</button>
-                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('Tôi muốn học về đầu tư')">Đầu tư</button>
-              </div>
-              <small class="text-muted">
-                Tôi có thể trả lời về nhiều chủ đề: tài chính, công nghệ, giáo dục, sức khỏe...
-              </small>
-            </div>
-          </div>
         </div>
-      </div>
+
+        <!-- Main Chat Area - Giống ChatGPT -->
+        <div class="chat-main">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <h2>Trợ lý AI Tài chính</h2>
+                <div class="subtitle">Hỗ trợ tư vấn tài chính và trả lời các câu hỏi 24/7</div>
+                <div class="ai-status-badge" id="ai-status-badge">
+                    <i class="fas fa-circle me-1"></i>Đang kiểm tra...
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Message - Giống ChatGPT -->
+                <div class="welcome-message">
+                    <h1>Chào mừng đến với AI Tài chính</h1>
+                    <p>Tôi có thể giúp bạn với các vấn đề về tài chính, đầu tư, tiết kiệm và quản lý ngân sách.</p>
+                    
+                    <div class="examples-grid">
+                        <div class="example-card" onclick="sendSuggestion('Làm thế nào để tiết kiệm tiền hiệu quả?')">
+                            <h4>💰 Tiết kiệm thông minh</h4>
+                            <p>Chiến lược tiết kiệm và quản lý chi tiêu hiệu quả</p>
+                        </div>
+                        <div class="example-card" onclick="sendSuggestion('Tôi nên đầu tư như thế nào?')">
+                            <h4>📈 Hướng dẫn đầu tư</h4>
+                            <p>Kiến thức cơ bản về đầu tư cho người mới bắt đầu</p>
+                        </div>
+                        <div class="example-card" onclick="sendSuggestion('Cách lập ngân sách gia đình?')">
+                            <h4>🏠 Ngân sách gia đình</h4>
+                            <p>Quản lý tài chính gia đình một cách khoa học</p>
+                        </div>
+                        <div class="example-card" onclick="sendSuggestion('Quản lý nợ thông minh ra sao?')">
+                            <h4>💳 Quản lý nợ</h4>
+                            <p>Chiến lược trả nợ và quản lý tín dụng hiệu quả</p>
+                        </div>
+                    </div>
+                    
+                    <div class="capabilities-grid">
+                        <div class="capability-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h5>Phân tích tài chính</h5>
+                            <p>Đánh giá tình hình thu chi</p>
+                        </div>
+                        <div class="capability-card">
+                            <i class="fas fa-piggy-bank"></i>
+                            <h5>Lập kế hoạch</h5>
+                            <p>Kế hoạch tài chính dài hạn</p>
+                        </div>
+                        <div class="capability-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h5>Quản lý rủi ro</h5>
+                            <p>Đánh giá và giảm thiểu rủi ro</p>
+                        </div>
+                        <div class="capability-card">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h5>Giáo dục tài chính</h5>
+                            <p>Kiến thức tài chính cơ bản</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="typing-container">
+                    <div class="typing-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input - Giống ChatGPT -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="message-input" 
+                        id="message-input" 
+                        placeholder="Nhập câu hỏi của bạn..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="send-button" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</main>
 
-<style>
-  .chat-message {
-    margin-bottom: 1rem;
-    animation: fadeInUp 0.3s ease;
-  }
-  
-  .user-message {
-    text-align: right;
-  }
-  
-  .user-bubble {
-    display: inline-block;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    padding: 12px 18px;
-    border-radius: 18px 18px 4px 18px;
-    max-width: 70%;
-    word-wrap: break-word;
-    box-shadow: 0 2px 8px rgba(40,167,69,0.3);
-  }
-  
-  .ai-message {
-    text-align: left;
-  }
-  
-  .ai-bubble {
-    display: inline-block;
-    background: white;
-    color: #333;
-    padding: 12px 18px;
-    border-radius: 18px 18px 18px 4px;
-    max-width: 70%;
-    word-wrap: break-word;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  .ai-avatar {
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 14px;
-    margin-right: 8px;
-    vertical-align: top;
-  }
-  
-  .typing-indicator {
-    display: inline-block;
-    padding: 12px 18px;
-    background: white;
-    border-radius: 18px;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  .typing-dots {
-    display: inline-block;
-  }
-  
-  .typing-dots span {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #28a745;
-    margin: 0 2px;
-    animation: typing 1.4s infinite ease-in-out;
-  }
-  
-  .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-  .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-  
-  @keyframes typing {
-    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-    40% { transform: scale(1); opacity: 1; }
-  }
-  
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  #chat-input:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 0 0.2rem rgba(40,167,69,0.25);
-  }
-</style>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="/js/chat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/chat.js"></script>
+</body>
+</html>

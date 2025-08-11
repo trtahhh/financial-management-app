@@ -29,7 +29,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints (must match JwtFilter.PUBLIC_ENDPOINTS)
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/register", 
-                               "/api/test/generate-hash", "/actuator/health", "/actuator/info").permitAll()
+                               "/api/test/generate-hash", "/actuator/health", "/actuator/info",
+                               "/api/chat/status").permitAll()
                 // Allow public access to uploaded files
                 .requestMatchers("/api/files/uploads/**").permitAll()
                 // Protected endpoints
