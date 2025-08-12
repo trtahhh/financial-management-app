@@ -26,18 +26,17 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final BudgetMapper budgetMapper;
     private final CategoryRepository categoryRepository;
-    private final TransactionService transactionService;
+    private final BudgetCalculationService budgetCalculationService;
 
-
-    @Cacheable("budgets")
-    public List<BudgetDTO> getAllBudgets() {
-        List<Budget> budgets = budgetRepository.findAllByIsDeletedFalse();
+    @Cacheable(value = "budgets", key = "#userId")
+    public List<BudgetDTO> getAllBudgets(Long userId) {
+        List<Budget> budgets = budgetRepository.findByUserIdAndIsDeletedFalse(userId);
         List<BudgetDTO> budgetDTOs = budgetMapper.toDTOs(budgets);
         
         // Calculate progress for each budget
         for (BudgetDTO budget : budgetDTOs) {
-            BigDecimal usedAmount = transactionService.sumByCategoryAndMonth(
-                budget.getCategoryId(), budget.getMonth(), budget.getYear());
+            BigDecimal usedAmount = budgetCalculationService.calculateSpentAmount(
+                userId, budget.getCategoryId(), budget.getMonth(), budget.getYear());
             
             // Set spent amount
             budget.setSpentAmount(usedAmount);
@@ -52,6 +51,14 @@ public class BudgetService {
         }
         
         return budgetDTOs;
+    }
+
+    /**
+     * Clear cache cho user cụ thể khi có thay đổi transaction
+     */
+    @CacheEvict(value = "budgets", key = "#userId")
+    public void clearBudgetCache(Long userId) {
+        // Method này chỉ để clear cache, không cần logic gì
     }
 
     @Cacheable(value = "budgets", key = "#id")
@@ -124,7 +131,7 @@ public class BudgetService {
         
         return budgets.stream().map(budget -> {
             // Tính tổng chi tiêu thực tế
-            BigDecimal actualSpent = transactionService.getTotalSpentByCategory(
+            BigDecimal actualSpent = budgetCalculationService.calculateSpentAmount(
                     userId, budget.getCategory().getId(), month, year);
             
             if (actualSpent == null) actualSpent = BigDecimal.ZERO;
@@ -202,8 +209,8 @@ public class BudgetService {
         
         return budgets.stream().map(budget -> {
             // Tính tổng chi tiêu thực tế trong khoảng ngày
-            BigDecimal actualSpent = transactionService.getTotalSpentByCategoryAndDateRange(
-                    userId, budget.getCategory().getId(), startDate, endDate);
+            BigDecimal actualSpent = budgetCalculationService.calculateSpentAmount(
+                    userId, budget.getCategory().getId(), startMonth, startYear);
 
             if (actualSpent == null) actualSpent = BigDecimal.ZERO;
 

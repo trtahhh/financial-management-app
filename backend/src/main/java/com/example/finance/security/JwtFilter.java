@@ -32,11 +32,14 @@ public class JwtFilter extends OncePerRequestFilter {
     private static final List<String> PUBLIC_ENDPOINTS = Arrays.asList(
         "/api/auth/login",
         "/api/auth/register", 
+        "/api/auth/verify-email",
         "/api/register",
         "/api/files/uploads",
         "/api/chat/status",
         "/actuator/health",
-        "/actuator/info"
+        "/actuator/info",
+        "/api/auth/forgot-password",
+        "/api/auth/reset-password"
     );
 
     @Override

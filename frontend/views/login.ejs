@@ -32,6 +32,11 @@
                 <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
               </div>
               <button type="submit" class="btn btn-success w-100 mb-3">Đăng nhập</button>
+              <div class="text-center mt-3">
+                <a href="#" onclick="showForgotPasswordModal()" class="text-decoration-none">
+                    Quên mật khẩu?
+                </a>
+            </div>
             </form>
             
             <div class="text-center">
@@ -43,6 +48,141 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Quên mật khẩu -->
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quên mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="forgotPasswordForm">
+                    <div class="mb-3">
+                        <label for="forgotUsername" class="form-label">Tên đăng nhập</label>
+                        <input type="text" class="form-control" id="forgotUsername" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="forgotEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="forgotEmail" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Gửi email đặt lại mật khẩu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Modal Đặt lại mật khẩu -->
+  <div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Đặt lại mật khẩu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <form id="resetPasswordForm">
+                <div class="mb-3">
+                    <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                    <input type="password" class="form-control" id="newPassword" required minlength="6">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                    <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Đặt lại mật khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    // Hàm hiển thị modal quên mật khẩu
+    function showForgotPasswordModal() {
+        const modal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+        modal.show();
+    }
+    
+    // Xử lý form quên mật khẩu
+    document.getElementById('forgotPasswordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('forgotUsername').value;
+        const email = document.getElementById('forgotEmail').value;
+        
+        try {
+            const response = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(result.message);
+                // Đóng modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
+                modal.hide();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('Lỗi kết nối: ' + error.message);
+        }
+    });
+    
+    // Xử lý form đặt lại mật khẩu
+    document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (newPassword !== confirmPassword) {
+            alert('Mật khẩu xác nhận không khớp!');
+            return;
+        }
+        
+        // Lấy token từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+            alert('Token không hợp lệ!');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token, newPassword })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(result.message);
+                // Chuyển về trang login
+                window.location.href = '/login';
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('Lỗi kết nối: ' + error.message);
+        }
+    });
+    </script>
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>

@@ -11,7 +11,8 @@ function getUserIdFromToken() {
     // Decode JWT token (payload part only)
     const payload = token.split('.')[1];
     const decoded = JSON.parse(atob(payload));
-    return decoded.userId || null;
+    console.log("🔍 JWT payload:", decoded);
+    return decoded.userId || decoded.sub || null;
   } catch (error) {
     console.error('Error extracting userId from token:', error);
     return null;
@@ -24,22 +25,46 @@ document.addEventListener('DOMContentLoaded', function () {
   
   // Set default dates: from first day of current month to TODAY
   const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentYear = now.getFullYear(); 
+  const currentMonth = now.getMonth(); // 0-11 (August = 7)
+  
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const today = new Date(currentYear, currentMonth, now.getDate());
+  
+  // Đảm bảo date range chỉ trong 1 tháng
+  if (today.getMonth() !== firstDay.getMonth()) {
+    today = new Date(currentYear, currentMonth, 1);
+    today.setMonth(currentMonth + 1);
+    today.setDate(0); // Last day of current month
+  }
+  
   if (dateFromInput) {
     dateFromInput.value = firstDay.toISOString().split('T')[0];
   }
   if (dateToInput) {
-    dateToInput.value = new Date().toISOString().split('T')[0];
+    dateToInput.value = today.toISOString().split('T')[0];
   }
+  
+  console.log("📅 Date range set to:", firstDay.toISOString().split('T')[0], "→", today.toISOString().split('T')[0]);
 
   // Lấy dữ liệu dashboard theo đúng khoảng ngày được chọn (from/to)
   function fetchDashboardData() {
-    const userId = getUserIdFromToken();
     const from = document.getElementById('dash-date-from')?.value;
     const to = document.getElementById('dash-date-to')?.value;
-    // Nếu phạm vi vượt qua 1 tháng, backend vẫn tính tổng đúng theo khoảng ngày
-    const url = `http://localhost:8080/api/dashboard/data-by-date?userId=${encodeURIComponent(userId)}&dateFrom=${encodeURIComponent(from)}&dateTo=${encodeURIComponent(to)}`;
-    console.log("📡 Fetching dashboard data (by date range) from:", url);
+    
+    console.log("📅 Date range from frontend:", from, "→", to);
+    
+    // Sử dụng endpoint đúng từ backend
+    let url;
+    if (from && to) {
+      // Nếu có date range, dùng data-by-date
+      const userId = getUserIdFromToken();
+      url = `http://localhost:8080/api/dashboard/data-by-date?userId=${encodeURIComponent(userId)}&dateFrom=${encodeURIComponent(from)}&dateTo=${encodeURIComponent(to)}`;
+    } else {
+      // Nếu không có date range, dùng endpoint chính
+      url = `http://localhost:8080/api/dashboard/data`;
+    }
+    console.log("📡 Fetching dashboard data from:", url);
     
     const token = localStorage.getItem('authToken');
     const headers = {
@@ -357,6 +382,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function loadDashboard() {
     console.log("🔄 Đang load dữ liệu dashboard...");
+    console.log("🔍 User ID from token:", getUserIdFromToken());
+    console.log("🔍 Auth token exists:", !!localStorage.getItem('authToken'));
     
     fetchDashboardData()
       .then(dashboardData => {

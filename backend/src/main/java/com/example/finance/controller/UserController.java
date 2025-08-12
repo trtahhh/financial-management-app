@@ -247,9 +247,8 @@ public class UserController {
                 }
                 existingProfile.setImageUrl(imageUrl);
             }
-
             // Lưu profile vào database bằng UserService để tránh lỗi Hibernate
-            UserProfile savedProfile = userService.saveProfile(existingProfile);
+            UserProfile savedProfile = userService.saveProfile(userId, profileData);
 
             log.info("Profile updated successfully for userId: {}", userId);
             log.info("Updated profile data: {}", savedProfile);

@@ -3,7 +3,6 @@ package com.example.finance.controller;
 import com.example.finance.service.DashboardService;
 import com.example.finance.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

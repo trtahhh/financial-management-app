@@ -27,8 +27,12 @@ public class BudgetController {
     @GetMapping
     public ResponseEntity<?> getAll() {
         try {
-            List<BudgetDTO> budgets = service.getAllBudgets();
-            log.info("Retrieved {} budgets", budgets.size());
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            List<BudgetDTO> budgets = service.getAllBudgets(userId);
+            log.info("Retrieved {} budgets for user {}", budgets.size(), userId);
             return ResponseEntity.ok(budgets);
         } catch (Exception e) {
             log.error("Error getting budgets", e);

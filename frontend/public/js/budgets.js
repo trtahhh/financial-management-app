@@ -51,11 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
           `<tr data-id="${b.id}">
             <td>${b.month}</td>
             <td>${b.year}</td>
-            <td>${categoryMap[b.categoryId] || 'Không xác định'}</td>
+            <td>${categoryMap[b.category_id] || 'Không xác định'}</td>
             <td>${b.amount?.toLocaleString('vi-VN')} VND</td>
             <td>
               <div class="d-flex flex-column">
-                <span class="fw-bold">${(b.usedAmount || 0).toLocaleString('vi-VN')} VND</span>
+                <span class="fw-bold">${(b.spentAmount || 0).toLocaleString('vi-VN')} VND</span>
                 <div class="progress mt-1" style="height: 8px;">
                   <div class="progress-bar ${(b.progress||0) >= 100 ? 'bg-danger' : (b.progress||0) >= 80 ? 'bg-warning' : 'bg-success'}" 
                        role="progressbar" 
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
           editing = id;
           f.month.value = b.month;
           f.year.value = b.year;
-          f.category_id.value = b.categoryId;
+          f.category_id.value = b.category_id;
           f.amount.value = b.amount;
           title.textContent = 'Sửa ngân sách';
           m.show();
@@ -119,11 +119,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const data = {
       month: +f.month.value,
       year: +f.year.value,
-      categoryId: +f.category_id.value,
+      category_id: +f.category_id.value,
       amount: +f.amount.value
     };
     
-    if (!data.categoryId) {
+    if (!data.category_id) {
       alert('Vui lòng chọn danh mục');
       return;
     }

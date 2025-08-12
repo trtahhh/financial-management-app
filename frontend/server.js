@@ -63,6 +63,25 @@ app.get('/', (req, res) => res.render('home', { layout: false }));
 app.get('/home', (req, res) => res.render('home', { layout: false }));
 app.get('/login', (req, res) => res.render('login', { layout: false }));
 app.get('/register', (req, res) => res.render('register', { layout: false }));
+app.get('/reset-password', (req, res) => res.render('reset-password', { layout: false }));
+
+// Route xác thực email
+app.get('/verify-email', (req, res) => {
+  const token = req.query.token;
+  if (!token) {
+    return res.render('error', { 
+      layout: false, 
+      message: 'Token xác thực không hợp lệ!',
+      error: 'Missing verification token'
+    });
+  }
+  
+  res.render('verify-email', { 
+    layout: false, 
+    token: token,
+    title: 'Xác thực Email'
+  });
+});
 
 // Trang cần đăng nhập (sử dụng layout có sidebar)
 app.get('/dashboard', (req, res) => res.render('dashboard', { title: 'Thống kê tài chính' }));

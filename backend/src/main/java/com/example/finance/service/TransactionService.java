@@ -12,11 +12,9 @@ import com.example.finance.repository.TransactionRepository;
 import com.example.finance.repository.UserRepository;
 import com.example.finance.repository.WalletRepository;
 import com.example.finance.dto.WalletStatDTO;
-import com.example.finance.repository.BudgetRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -47,17 +45,14 @@ public class TransactionService {
     private static final String FILE_UPLOAD_ERROR = "Error uploading file for transaction";
     private static final String TRANSACTION_NOT_FOUND = "Transaction not found with id: ";
     
-    @Autowired
-    private NotificationService notificationService;
-    @Autowired
-    private BudgetRepository budgetRepository;
-
-
     private final TransactionRepository      repo;
     private final TransactionMapperImpl      mapper;
     private final UserRepository             userRepo;
     private final WalletRepository           walletRepo;
     private final CategoryRepository         categoryRepo;
+    private final NotificationService        notificationService;
+    private final BudgetAlertService        budgetAlertService;
+    private final BudgetService             budgetService;
 
     @Transactional
     public TransactionDTO save(TransactionDTO dto, MultipartFile file) {
@@ -141,7 +136,16 @@ public class TransactionService {
                 updateWalletBalance(saved.getWallet().getId());
             }
 
-            checkOverBudget(saved);
+            // Kiểm tra budget alert cho expense transactions
+            if ("expense".equals(saved.getType())) {
+                log.info("💰 Checking budget alert for expense transaction: ID={}, Amount={}, Category={}, Date={}", 
+                    saved.getId(), saved.getAmount(), saved.getCategory().getName(), saved.getDate());
+                budgetAlertService.checkBudgetAlert(saved);
+                log.info("✅ Budget alert check completed for transaction ID: {}", saved.getId());
+                
+                // Clear budget cache để frontend hiển thị đúng số tiền đã chi
+                budgetService.clearBudgetCache(saved.getUser().getId());
+            }
 
             if (saved.getWallet() != null && saved.getWallet().getBalance() != null) {
                 if (saved.getWallet().getBalance().compareTo(new BigDecimal("50000")) < 0) {
@@ -199,6 +203,11 @@ public class TransactionService {
         // Cập nhật số dư ví sau khi xóa giao dịch
         if (walletId != null) {
             updateWalletBalance(walletId);
+        }
+        
+        // Clear budget cache để frontend hiển thị đúng số tiền đã chi
+        if (transaction.getUser() != null) {
+            budgetService.clearBudgetCache(transaction.getUser().getId());
         }
     }
 
@@ -260,27 +269,18 @@ public class TransactionService {
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private void checkOverBudget(Transaction transaction) {
-        if (transaction == null || transaction.getUser() == null || transaction.getCategory() == null) return;
-        Long userId = transaction.getUser().getId();
-        Long categoryId = transaction.getCategory().getId();
-        int month = transaction.getDate().getMonthValue();
-        int year = transaction.getDate().getYear();
-
-        var budgets = budgetRepository.findByUserIdAndMonthAndYear(userId, month, year).stream()
-                .filter(b -> b.getCategory().getId().equals(categoryId))
-                .toList();
-        if (budgets.isEmpty()) return; 
-
-        BigDecimal totalSpending = repo.sumByUserCategoryMonth(userId, categoryId, month, year);
-        for (var budget : budgets) {
-            if (totalSpending.compareTo(budget.getAmount()) > 0) {
-                if (!notificationService.existsOverBudget(userId, categoryId, month, year)) {
-                    notificationService.createOverBudgetNotification(userId, categoryId, budget.getId(), totalSpending, budget.getAmount(), month, year);
-                }
-            }
-        }
+    public BigDecimal sumByCategoryAndMonth(Long userId, Long categoryId, int month, int year) {
+        YearMonth ym = YearMonth.of(year, month);
+        var list = repo.findAllByDateBetween(ym.atDay(1), ym.atEndOfMonth());
+        return list.stream()
+                   .filter(t -> t.getUser() != null && t.getUser().getId().equals(userId)) // Filter by user ID
+                   .filter(t -> t.getCategory() != null && t.getCategory().getId().equals(categoryId))
+                   .filter(t -> "expense".equals(t.getType())) // Only count expenses
+                   .map(Transaction::getAmount)
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+
 
 
 
