@@ -191,4 +191,43 @@ public class NotificationService {
                 })
                 .toList();
     }
+
+    /**
+     * Kiểm tra xem đã có notification cho goal với type cụ thể chưa
+     */
+    public boolean existsGoalNotificationByType(Long userId, Long goalId, String type) {
+        return notificationRepository.existsByUserIdAndGoalIdAndTypeAndIsDeletedFalse(userId, goalId, type);
+    }
+
+    /**
+     * Lấy số lượng notification chưa đọc của user
+     */
+    public Long countUnreadNotifications(Long userId) {
+        return notificationRepository.countByUserIdAndIsReadFalseAndIsDeletedFalse(userId);
+    }
+
+    /**
+     * Đánh dấu tất cả notification của user là đã đọc
+     */
+    public void markAllAsRead(Long userId) {
+        List<Notification> notifications = notificationRepository
+                .findByUserIdAndIsReadFalseAndIsDeletedFalse(userId);
+        
+        notifications.forEach(notification -> {
+            notification.setIsRead(true);
+            notificationRepository.save(notification);
+        });
+    }
+
+    /**
+     * Xóa tất cả notifications liên quan đến một goal cụ thể
+     */
+    public void deleteAllNotificationsByGoalId(Long goalId) {
+        List<Notification> notifications = notificationRepository.findByGoalId(goalId);
+        
+        if (!notifications.isEmpty()) {
+            // Hard delete thay vì soft delete để tránh constraint violation
+            notificationRepository.deleteAll(notifications);
+        }
+    }
 }

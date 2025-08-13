@@ -1,9 +1,69 @@
 <main class="container py-4">
   <h2 class="mb-4">Mục tiêu tài chính</h2>
-  <div id="goal-list"></div>
-  <button id="goal-add-btn" class="btn btn-success mt-3">+ Thêm mục tiêu</button>
+  
+  <!-- Goal Statistics -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center">
+          <h5 class="card-title">Mục tiêu đang thực hiện</h5>
+          <h3 id="active-goals-count">0</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-success text-white">
+        <div class="card-body text-center">
+          <h5 class="card-title">Mục tiêu đã hoàn thành</h5>
+          <h3 id="completed-goals-count">0</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-info text-white">
+        <div class="card-body text-center">
+          <h5 class="card-title">Tổng tiền tiết kiệm</h5>
+          <h3 id="total-saved-amount">0 VNĐ</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goal Progress -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Tiến độ mục tiêu</h5>
+    </div>
+    <div class="card-body">
+      <div id="goal-progress-list"></div>
+    </div>
+  </div>
+
+  <!-- Active Goals -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Mục tiêu đang thực hiện</h5>
+      <button id="goal-add-btn" class="btn btn-success btn-sm">+ Thêm mục tiêu</button>
+    </div>
+    <div class="card-body">
+      <div id="goal-list"></div>
+    </div>
+  </div>
+
+  <!-- Completed Goals -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Mục tiêu đã hoàn thành</h5>
+    </div>
+    <div class="card-body">
+      <div id="completed-goals-list"></div>
+    </div>
+  </div>
+
   <div class="alert alert-info mt-4" id="predict"></div>
 </main>
+
+<!-- Goal Modal -->
 <div id="goal-modal" class="modal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -35,4 +95,5 @@
     </div>
   </div>
 </div>
+
 <script src="/js/goals.js"></script>

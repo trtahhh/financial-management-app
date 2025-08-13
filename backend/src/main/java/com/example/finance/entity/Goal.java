@@ -48,6 +48,15 @@ public class Goal {
     
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
+    
+    @Column(name = "is_executed")
+    private Boolean isExecuted = false;
+    
+    @Column(name = "executed_at")
+    private LocalDateTime executedAt;
+    
+    @Column(name = "executed_transaction_id")
+    private Long executedTransactionId;
 
     @Override
     public boolean equals(Object o) {

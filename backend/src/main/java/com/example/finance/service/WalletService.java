@@ -143,6 +143,15 @@ public class WalletService {
         
         wallet.setBalance(newBalance);
         repo.save(wallet);
+        
+        // Tạm thời comment out để tránh circular dependency
+        // TODO: Implement goal status check through event system or async
+        // try {
+        //     goalService.checkAndUpdateGoalStatus(wallet.getUser().getId());
+        //     System.out.println("✅ Goal status check completed for user ID: " + wallet.getUser().getId());
+        // } catch (Exception e) {
+        //     System.err.println("⚠️ Goal status check failed for user ID: " + wallet.getUser().getId() + " - Error: " + e.getMessage());
+        // }
     }
 
     /**

@@ -68,9 +68,38 @@ public class EmailService {
             helper.setText(htmlContent, true);
             
             mailSender.send(message);
+            log.info("Email sent successfully to: {} with subject: {}", to, subject);
         } catch (MessagingException e) {
+            log.error("Error sending email to: {} with subject: {}", to, subject, e);
             throw new RuntimeException("Không thể gửi email: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Gửi email mục tiêu (public method)
+     */
+    public void sendEmail(String to, String subject, String htmlContent) {
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Gửi email thông báo mục tiêu hoàn thành
+     */
+    public void sendGoalCompletionEmail(String to, String username, String goalName, double targetAmount, String completionTime) {
+        String subject = "🎉 Chúc mừng! Bạn đã hoàn thành mục tiêu tài chính";
+        String htmlContent = generateGoalCompletionEmailTemplate(username, goalName, targetAmount, completionTime);
+        
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    /**
+     * Gửi email thông báo đạt mốc mục tiêu
+     */
+    public void sendGoalMilestoneEmail(String to, String username, String goalName, int milestone, double progress, double currentAmount, double remainingAmount) {
+        String subject = String.format("🎯 Mục tiêu '%s' đã đạt %d%%!", goalName, milestone);
+        String htmlContent = generateGoalMilestoneEmailTemplate(username, goalName, milestone, progress, currentAmount, remainingAmount);
+        
+        sendHtmlEmail(to, subject, htmlContent);
     }
 
     /**
@@ -239,5 +268,99 @@ public class EmailService {
             </body>
             </html>
             """.formatted(username, budgetName, currentAmount, limitAmount, percentage);
+    }
+
+    /**
+     * Tạo template email hoàn thành mục tiêu
+     */
+    private String generateGoalCompletionEmailTemplate(String username, String goalName, double targetAmount, String completionTime) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Mục tiêu hoàn thành</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #4CAF50 0%%, #388E3C 100%%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .button { display: inline-block; background: #4CAF50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🎉 Financial Management App</h1>
+                        <p>Mục tiêu của bạn đã hoàn thành!</p>
+                    </div>
+                    <div class="content">
+                        <h2>Xin chào %s!</h2>
+                        <p>Chúc mừng! Bạn đã hoàn thành mục tiêu tài chính của mình: <strong>%s</strong>.</p>
+                        <p>Số tiền đã đạt được: %.2f VND</p>
+                        <p>Thời gian hoàn thành: %s</p>
+                        
+                        <div style="text-align: center;">
+                            <a href="#" class="button">Xem chi tiết mục tiêu</a>
+                        </div>
+                        
+                        <p>Trân trọng,<br>Đội ngũ Financial Management App</p>
+                    </div>
+                    <div class="footer">
+                        <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(username, goalName, targetAmount, completionTime);
+    }
+
+    /**
+     * Tạo template email đạt mốc mục tiêu
+     */
+    private String generateGoalMilestoneEmailTemplate(String username, String goalName, int milestone, double progress, double currentAmount, double remainingAmount) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Đạt mốc mục tiêu</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #2196F3 0%%, #1976D2 100%%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .button { display: inline-block; background: #2196F3; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🎯 Financial Management App</h1>
+                        <p>Mục tiêu của bạn đã đạt mốc!</p>
+                    </div>
+                    <div class="content">
+                        <h2>Xin chào %s!</h2>
+                        <p>Mục tiêu <strong>%s</strong> đã đạt được %d%%.</p>
+                        <p>Số tiền đã đạt được: %.2f VND</p>
+                        <p>Số tiền còn lại: %.2f VND</p>
+                        
+                        <div style="text-align: center;">
+                            <a href="#" class="button">Xem chi tiết mục tiêu</a>
+                        </div>
+                        
+                        <p>Trân trọng,<br>Đội ngũ Financial Management App</p>
+                    </div>
+                    <div class="footer">
+                        <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(username, goalName, milestone, progress, currentAmount, remainingAmount);
     }
 }

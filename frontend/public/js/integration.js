@@ -296,6 +296,149 @@ class WalletIntegration {
 }
 
 /**
+ * 🎯 GOAL NOTIFICATION MANAGER - Quản lý thông báo mục tiêu
+ */
+class GoalNotificationManager {
+  static async checkGoalProgress() {
+    try {
+      const userId = JwtUtils.getCurrentUserId();
+      if (!userId) return;
+
+      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/goals/progress`, {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+        }
+      });
+
+      if (response.ok) {
+        const goals = await response.json();
+        
+        goals.forEach(goal => {
+          if (goal.status === 'completed' && !this.isGoalCompletedNotified(goal.goalId)) {
+            this.showGoalCompletedNotification(goal);
+            this.markGoalAsCompletedNotified(goal.goalId);
+          } else if (goal.status === 'near-completion' && !this.isGoalMilestoneNotified(goal.goalId, '80')) {
+            this.showGoalMilestoneNotification(goal, 80);
+            this.markGoalMilestoneAsNotified(goal.goalId, '80');
+          } else if (goal.status === 'in-progress' && goal.progressPercentage >= 50 && !this.isGoalMilestoneNotified(goal.goalId, '50')) {
+            this.showGoalMilestoneNotification(goal, 50);
+            this.markGoalMilestoneAsNotified(goal.goalId, '50');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error checking goal progress:', error);
+    }
+  }
+
+  static showGoalCompletedNotification(goal) {
+    const message = `🎉 Chúc mừng! Bạn đã hoàn thành mục tiêu "${goal.goalName}"!`;
+    
+    // Hiển thị thông báo thành công
+    IntegrationNotifications.show(message, 'success', 8000);
+    
+    // Hiển thị toast notification đặc biệt
+    this.showGoalCompletionToast(goal);
+  }
+
+  static showGoalMilestoneNotification(goal, percentage) {
+    const message = `🎯 Mục tiêu "${goal.goalName}" đã đạt ${percentage}%! Tiếp tục phấn đấu!`;
+    IntegrationNotifications.show(message, 'info', 6000);
+  }
+
+  static showGoalCompletionToast(goal) {
+    const toast = document.createElement('div');
+    toast.className = 'goal-completion-toast';
+    toast.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 10000;
+      text-align: center;
+      max-width: 400px;
+      animation: goalCompletionPulse 2s ease-in-out;
+    `;
+
+    toast.innerHTML = `
+      <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
+      <h3 style="margin-bottom: 15px; font-weight: bold;">Chúc mừng!</h3>
+      <p style="margin-bottom: 20px; font-size: 16px;">Bạn đã hoàn thành mục tiêu:</p>
+      <h4 style="margin-bottom: 15px; color: #ffd700; font-weight: bold;">"${goal.goalName}"</h4>
+      <p style="margin-bottom: 20px; font-size: 14px;">Số tiền tiết kiệm: ${this.formatCurrency(goal.targetAmount)}</p>
+      <button onclick="this.parentElement.remove()" style="
+        background: rgba(255,255,255,0.2);
+        border: 2px solid white;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+      ">Tuyệt vời!</button>
+    `;
+
+    // Thêm CSS animation
+    if (!document.getElementById('goal-completion-styles')) {
+      const style = document.createElement('style');
+      style.id = 'goal-completion-styles';
+      style.textContent = `
+        @keyframes goalCompletionPulse {
+          0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+          50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+          100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+
+    // Tự động ẩn sau 5 giây
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 5000);
+  }
+
+  static formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  }
+
+  static isGoalCompletedNotified(goalId) {
+    const key = `goal_completed_${goalId}`;
+    return localStorage.getItem(key) === 'true';
+  }
+
+  static markGoalAsCompletedNotified(goalId) {
+    const key = `goal_completed_${goalId}`;
+    localStorage.setItem(key, 'true');
+  }
+
+  static isGoalMilestoneNotified(goalId, milestone) {
+    const key = `goal_milestone_${goalId}_${milestone}`;
+    return localStorage.getItem(key) === 'true';
+  }
+
+  static markGoalMilestoneAsNotified(goalId, milestone) {
+    const key = `goal_milestone_${goalId}_${milestone}`;
+    localStorage.setItem(key, 'true');
+  }
+
+  static async refreshGoalNotifications() {
+    await this.checkGoalProgress();
+  }
+}
+
+/**
  * 🔄 MAIN INTEGRATION ORCHESTRATOR - Điều phối chính
  */
 class FinancialIntegration {
@@ -391,6 +534,96 @@ class FinancialIntegration {
     } catch (error) {
       console.error("🚨 Failed to load integrated dashboard data:", error);
       throw error;
+    }
+  }
+}
+
+/**
+ * 🔄 INTEGRATION INITIALIZATION - Khởi tạo hệ thống tích hợp
+ */
+class IntegrationSystem {
+  static init() {
+    // Khởi tạo các module
+    this.initNotifications();
+    this.initGoalTracking();
+    this.initAutoRefresh();
+    
+    console.log('🚀 Integration System initialized successfully');
+  }
+
+  static initNotifications() {
+    // Kiểm tra thông báo mỗi 30 giây
+    setInterval(() => {
+      this.checkNotifications();
+    }, 30000);
+    
+    // Kiểm tra ngay khi khởi tạo
+    this.checkNotifications();
+  }
+
+  static initGoalTracking() {
+    // Kiểm tra tiến độ mục tiêu mỗi phút
+    setInterval(() => {
+      GoalNotificationManager.checkGoalProgress();
+    }, 60000);
+    
+    // Kiểm tra ngay khi khởi tạo
+    GoalNotificationManager.checkGoalProgress();
+  }
+
+  static initAutoRefresh() {
+    if (INTEGRATION_CONFIG.AUTO_REFRESH_DASHBOARD) {
+      // Tự động refresh dashboard mỗi 5 phút
+      setInterval(() => {
+        if (window.location.pathname === '/dashboard') {
+          this.refreshDashboard();
+        }
+      }, 300000);
+    }
+  }
+
+  static async checkNotifications() {
+    try {
+      const userId = JwtUtils.getCurrentUserId();
+      if (!userId) return;
+
+      const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/notifications/${userId}/unread-count`, {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.updateNotificationBadge(data.unreadCount);
+      }
+    } catch (error) {
+      console.error('Error checking notifications:', error);
+    }
+  }
+
+  static updateNotificationBadge(count) {
+    // Cập nhật badge thông báo trên header
+    const badge = document.getElementById('notification-badge');
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline' : 'none';
+    }
+  }
+
+  static async refreshDashboard() {
+    try {
+      // Refresh các component dashboard
+      if (window.dashboardUtils && window.dashboardUtils.refreshData) {
+        window.dashboardUtils.refreshData();
+      }
+      
+      // Refresh thông báo mục tiêu
+      await GoalNotificationManager.refreshGoalNotifications();
+      
+      console.log('🔄 Dashboard refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
     }
   }
 }

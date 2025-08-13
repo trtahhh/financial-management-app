@@ -16,6 +16,8 @@ import java.util.Optional;
 import java.util.Map;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -98,8 +100,20 @@ public class UserService {
             return userProfileRepository.save(existingProfile);
             
         } catch (Exception e) {
-            log.error("Error updating profile for userId: {}", userId, e);
-            throw new RuntimeException("Lỗi lưu profile: " + e.getMessage());
+            log.error("Error saving profile for user ID: {}", userId, e);
+            throw new RuntimeException("Failed to save profile: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Lấy danh sách user có mục tiêu đang hoạt động
+     */
+    public List<User> getUsersWithActiveGoals() {
+        try {
+            return userRepository.findUsersWithActiveGoals();
+        } catch (Exception e) {
+            log.error("Error getting users with active goals", e);
+            return new ArrayList<>();
         }
     }
 

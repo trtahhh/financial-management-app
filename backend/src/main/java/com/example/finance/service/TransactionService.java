@@ -134,6 +134,15 @@ public class TransactionService {
             // Cập nhật số dư ví sau khi tạo giao dịch
             if (saved.getWallet() != null) {
                 updateWalletBalance(saved.getWallet().getId());
+                
+                // Tạm thời comment out để tránh circular dependency
+                // TODO: Implement goal status check through event system or async
+                // try {
+                //     goalService.checkAndUpdateGoalStatus(saved.getUser().getId());
+                //     log.info("✅ Goal status check completed for user ID: {}", saved.getUser().getId());
+                // } catch (Exception e) {
+                //     log.warn("⚠️ Goal status check failed for user ID: {} - Error: {}", saved.getUser().getId(), e.getMessage());
+                // }
             }
 
             // Kiểm tra budget alert cho expense transactions

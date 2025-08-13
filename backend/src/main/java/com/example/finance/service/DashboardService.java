@@ -1,182 +1,407 @@
 package com.example.finance.service;
 
+import com.example.finance.dto.SummaryDTO;
+import com.example.finance.entity.Transaction;
+import com.example.finance.entity.Wallet;
+import com.example.finance.repository.TransactionRepository;
+import com.example.finance.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
 
-    private final TransactionService transactionService;
-    private final BudgetService budgetService;
-    private final GoalService goalService;
-    private final WalletService walletService;
-    private final NotificationService notificationService;
+    private final TransactionRepository transactionRepository;
+    private final WalletRepository walletRepository;
+    // Tạm thời comment out GoalService để tránh circular dependency
+    // private final GoalService goalService;
 
-    @Cacheable(value = "dashboard", key = "#userId + '_' + #month + '_' + #year")
-    public Map<String, Object> getDashboardData(Long userId, Integer month, Integer year) {
-        Map<String, Object> dashboard = new HashMap<>();
+    public SummaryDTO getDashboardData(Long userId, LocalDate dateFrom, LocalDate dateTo) {
+        log.info("Getting dashboard data for user: {} from {} to {}", userId, dateFrom, dateTo);
         
-        // 1. Thống kê tài chính tháng hiện tại
-        Map<String, Object> monthlyStats = getMonthlyStats(userId, month, year);
-        dashboard.put("monthlyStats", monthlyStats);
-        
-        // 2. Tổng số dư tất cả ví
-        BigDecimal totalBalance = walletService.getTotalBalance(userId);
-        dashboard.put("totalBalance", totalBalance);
-        
-        // 3. Tiến độ ngân sách
-        List<Map<String, Object>> budgetProgress = budgetService.getBudgetVsActual(userId, month, year);
-        dashboard.put("budgetProgress", budgetProgress);
-        
-        // 4. Cảnh báo ngân sách
-        List<Map<String, Object>> budgetWarnings = budgetService.getBudgetWarnings(userId, month, year);
-        dashboard.put("budgetWarnings", budgetWarnings);
-        
-        // 5. Tiến độ mục tiêu
-        List<Map<String, Object>> goalProgress = goalService.getGoalProgress(userId);
-        dashboard.put("goalProgress", goalProgress);
-        
-        // 6. Chi tiêu theo danh mục
-        List<Map<String, Object>> expensesByCategory = transactionService.getExpensesByCategory(userId, month, year);
-        dashboard.put("expensesByCategory", expensesByCategory);
-        
-        // 7. Giao dịch gần đây
-        List<Map<String, Object>> recentTransactions = transactionService.getRecentTransactions(userId, 10);
-        dashboard.put("recentTransactions", recentTransactions);
-        
-        // 8. Thông báo chưa đọc
-        List<Map<String, Object>> unreadNotifications = notificationService.getUnreadNotifications(userId);
-        dashboard.put("notifications", unreadNotifications);
-        
-        // 9. Xu hướng chi tiêu 4 tuần gần đây
-        List<Map<String, Object>> spendingTrend = getWeeklySpendingTrend(userId, 4);
-        dashboard.put("spendingTrend", spendingTrend);
-        
-        // 10. Thống kê tổng quan
-        Map<String, Object> overview = getOverviewStats(userId);
-        dashboard.put("overview", overview);
-        
-        return dashboard;
-    }
-
-    private Map<String, Object> getMonthlyStats(Long userId, Integer month, Integer year) {
-        YearMonth yearMonth = YearMonth.of(year, month);
-        LocalDate startDate = yearMonth.atDay(1);
-        LocalDate endDate = yearMonth.atEndOfMonth();
-        
-        BigDecimal monthlyIncome = transactionService.getTotalByTypeAndDateRange(userId, "income", startDate, endDate);
-        BigDecimal monthlyExpense = transactionService.getTotalByTypeAndDateRange(userId, "expense", startDate, endDate);
-        BigDecimal netIncome = monthlyIncome.subtract(monthlyExpense);
-        
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("monthlyIncome", monthlyIncome);
-        stats.put("monthlyExpense", monthlyExpense);
-        stats.put("netIncome", netIncome);
-        stats.put("savingsRate", monthlyIncome.compareTo(BigDecimal.ZERO) > 0 ? 
-                netIncome.divide(monthlyIncome, 4, java.math.RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)) : BigDecimal.ZERO);
-        
-        return stats;
-    }
-
-    private List<Map<String, Object>> getWeeklySpendingTrend(Long userId, int weeks) {
-        // Implementation để lấy xu hướng chi tiêu theo tuần
-        return transactionService.getWeeklySpendingTrend(userId, weeks);
-    }
-
-    private Map<String, Object> getOverviewStats(Long userId) {
-        Map<String, Object> overview = new HashMap<>();
-        
-        // Tổng số giao dịch
-        Long totalTransactions = transactionService.countByUserId(userId);
-        overview.put("totalTransactions", totalTransactions);
-        
-        // Số mục tiêu đang hoạt động
-        Long activeGoals = goalService.countActiveGoals(userId);
-        overview.put("activeGoals", activeGoals);
-        
-        // Số ngân sách tháng này
-        Long activeBudgets = budgetService.countActiveBudgets(userId, LocalDate.now().getMonthValue(), LocalDate.now().getYear());
-        overview.put("activeBudgets", activeBudgets);
-        
-        // Số ví
-        Long totalWallets = walletService.countByUserId(userId);
-        overview.put("totalWallets", totalWallets);
-        
-        return overview;
+        try {
+            // Lấy giao dịch theo khoảng thời gian
+            List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenOrderByCreatedAtDesc(userId, dateFrom, dateTo);
+            log.info("Retrieved {} transactions for user {}", transactions.size(), userId);
+            
+            // Tính tổng thu chi
+            BigDecimal totalIncome = transactions.stream()
+                .filter(t -> "income".equals(t.getType()))
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal totalExpense = transactions.stream()
+                .filter(t -> "expense".equals(t.getType()))
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            // Tính số dư từ giao dịch (thu - chi) thay vì lấy từ ví
+            BigDecimal calculatedBalance = totalIncome.subtract(totalExpense);
+            
+            // Lấy ví tiền để hiển thị (không dùng để tính số dư)
+            List<Wallet> wallets = walletRepository.findByUserId(userId);
+            log.info("Found {} wallets for user {}", wallets.size(), userId);
+            
+            // Tạo SummaryDTO với dữ liệu đã tính
+            SummaryDTO dashboard = new SummaryDTO(
+                totalIncome.doubleValue(),
+                totalExpense.doubleValue(),
+                calculatedBalance.doubleValue() // Sử dụng số dư tính từ giao dịch
+            );
+            
+            log.info("Dashboard data calculated successfully for user: {} - Income: {}, Expense: {}, Calculated Balance: {}", 
+                userId, totalIncome, totalExpense, calculatedBalance);
+            return dashboard;
+            
+        } catch (Exception e) {
+            log.error("Error calculating dashboard data for user: {}", userId, e);
+            // Trả về dữ liệu mặc định nếu có lỗi
+            return new SummaryDTO(0.0, 0.0, 0.0);
+        }
     }
 
     /**
-     * API riêng cho mobile hoặc lightweight requests
+     * Lấy dữ liệu dashboard theo tháng/năm (giữ lại method cũ để tương thích)
      */
-    public Map<String, Object> getBasicStats(Long userId, Integer month, Integer year) {
-        Map<String, Object> basicStats = new HashMap<>();
-        
-        // Chỉ trả về stats cơ bản
-        Map<String, Object> monthlyStats = getMonthlyStats(userId, month, year);
-        basicStats.put("monthlyStats", monthlyStats);
-        
-        BigDecimal totalBalance = walletService.getTotalBalance(userId);
-        basicStats.put("totalBalance", totalBalance);
-        
-        Long totalTransactions = transactionService.countByUserId(userId);
-        basicStats.put("totalTransactions", totalTransactions);
-        
-        Long activeGoals = goalService.countActiveGoals(userId);
-        basicStats.put("activeGoals", activeGoals);
-        
-        return basicStats;
-    }
-
-    public Map<String, Object> getDashboardDataByDate(Long userId, LocalDate startDate, LocalDate endDate) {
+    public Map<String, Object> getDashboardDataByMonth(Long userId, Integer month, Integer year) {
         Map<String, Object> dashboard = new HashMap<>();
+        
         try {
-            BigDecimal totalIncome = transactionService.getTotalByTypeAndDateRange(userId, "income", startDate, endDate);
-            BigDecimal totalExpense = transactionService.getTotalByTypeAndDateRange(userId, "expense", startDate, endDate);
-            BigDecimal netIncome = totalIncome.subtract(totalExpense);
-
+            // Lấy tất cả giao dịch trong tháng
+            List<Transaction> monthTransactions = transactionRepository.findByUserIdAndMonthAndYear(userId, month, year);
+            log.info("Retrieved {} transactions for user {} in month {}/{}", monthTransactions.size(), userId, month, year);
+            
+            // Tính tổng thu chi từ transactions
+            BigDecimal totalIncome = monthTransactions.stream()
+                .filter(t -> "income".equals(t.getType()))
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal totalExpense = monthTransactions.stream()
+                .filter(t -> "expense".equals(t.getType()))
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            // Tính số dư từ giao dịch (thu - chi) thay vì lấy từ ví
+            BigDecimal calculatedBalance = totalIncome.subtract(totalExpense);
+            
+            // Lấy ví tiền để hiển thị
+            List<Wallet> wallets = walletRepository.findByUserId(userId);
+            
+            // Lấy giao dịch gần đây (5 giao dịch cuối cùng)
+            List<Transaction> recentTransactions = transactionRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .limit(5)
+                .collect(Collectors.toList());
+            
+            // Chuyển đổi giao dịch thành format phù hợp cho frontend
+            List<Map<String, Object>> formattedTransactions = recentTransactions.stream()
+                .map(tx -> {
+                    Map<String, Object> txMap = new HashMap<>();
+                    txMap.put("id", tx.getId());
+                    txMap.put("type", tx.getType());
+                    txMap.put("amount", tx.getAmount());
+                    txMap.put("date", tx.getDate());
+                    txMap.put("note", tx.getNote());
+                    txMap.put("categoryName", tx.getCategory() != null ? tx.getCategory().getName() : "Khác");
+                    txMap.put("walletName", tx.getWallet() != null ? tx.getWallet().getName() : "Không xác định");
+                    return txMap;
+                })
+                .collect(Collectors.toList());
+            
             dashboard.put("totalIncome", totalIncome);
             dashboard.put("totalExpense", totalExpense);
-            dashboard.put("netIncome", netIncome);
-
-        dashboard.put("expensesByCategory", transactionService.getExpensesByCategoryByDate(userId, startDate, endDate));
-        var budgetProgress = budgetService.getBudgetVsActualByDate(userId, startDate, endDate);
-        dashboard.put("budgetProgress", budgetProgress);
-        // Derive warnings for date range from progress list
-        List<Map<String, Object>> warnings = budgetProgress.stream()
-                .filter(item -> {
-                    String status = (String) item.get("status");
-                    return "WARNING".equals(status) || "EXCEEDED".equals(status);
-                })
-                .map(item -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("categoryId", item.get("categoryId"));
-                    m.put("categoryName", item.get("categoryName"));
-                    m.put("budgetAmount", item.get("budgetAmount"));
-                    m.put("spentAmount", item.get("spentAmount"));
-                    m.put("usagePercent", item.get("usagePercent"));
-                    m.put("status", item.get("status"));
-                    return m;
-                })
-                .toList();
-        dashboard.put("budgetWarnings", warnings);
-            dashboard.put("goalProgress", goalService.getGoalProgress(userId));
-            dashboard.put("totalBalance", walletService.getTotalBalance(userId));
-            dashboard.put("recentTransactions", transactionService.getRecentTransactionsByDate(userId, startDate, endDate, 10));
-            dashboard.put("notifications", notificationService.getUnreadNotifications(userId));
+            dashboard.put("netIncome", calculatedBalance);
+            dashboard.put("totalBalance", calculatedBalance); // Sử dụng số dư tính từ giao dịch
+            dashboard.put("recentTransactions", formattedTransactions);
+            dashboard.put("wallets", wallets);
+            
+            // Thêm dữ liệu cho biểu đồ
+            dashboard.put("expensesByCategory", getExpensesByCategory(userId, month, year));
+            dashboard.put("weeklyTrend", getWeeklyTrend(userId, month, year));
+            
+            // Tạm thời comment out goal progress để tránh circular dependency
+            dashboard.put("goalProgress", new ArrayList<>());
+            dashboard.put("activeGoalsCount", 0L);
+            dashboard.put("budgetProgress", new ArrayList<>());
+            dashboard.put("budgetWarnings", new ArrayList<>());
+            
+            log.info("Dashboard data by month calculated successfully for user: {} - Income: {}, Expense: {}, Calculated Balance: {}", 
+                userId, totalIncome, totalExpense, calculatedBalance);
+            
         } catch (Exception e) {
-            System.err.println("DashboardService.getDashboardDataByDate error: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
+            log.error("Error calculating dashboard data by month for user: {}", userId, e);
+            // Trả về dữ liệu mặc định nếu có lỗi
+            dashboard.put("totalIncome", BigDecimal.ZERO);
+            dashboard.put("totalExpense", BigDecimal.ZERO);
+            dashboard.put("netIncome", BigDecimal.ZERO);
+            dashboard.put("totalBalance", BigDecimal.ZERO);
+            dashboard.put("expensesByCategory", new ArrayList<>());
+            dashboard.put("weeklyTrend", new ArrayList<>());
+            dashboard.put("goalProgress", new ArrayList<>());
+            dashboard.put("activeGoalsCount", 0L);
+            dashboard.put("recentTransactions", new ArrayList<>());
+            dashboard.put("wallets", new ArrayList<>());
+            dashboard.put("budgetProgress", new ArrayList<>());
+            dashboard.put("budgetWarnings", new ArrayList<>());
         }
+        
         return dashboard;
+    }
+
+    /**
+     * Lấy dữ liệu dashboard theo khoảng thời gian (để hỗ trợ endpoint data-by-date)
+     */
+    public Map<String, Object> getDashboardDataByDate(Long userId, LocalDate dateFrom, LocalDate dateTo) {
+        Map<String, Object> dashboard = new HashMap<>();
+        
+        try {
+            // Lấy giao dịch theo khoảng thời gian
+            List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenOrderByCreatedAtDesc(userId, dateFrom, dateTo);
+            log.info("Retrieved {} transactions for user {} from {} to {}", transactions.size(), userId, dateFrom, dateTo);
+            
+            // Tính tổng thu chi từ transactions
+            BigDecimal totalIncome = transactions.stream()
+                .filter(t -> "income".equals(t.getType()))
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal totalExpense = transactions.stream()
+                .filter(t -> "expense".equals(t.getType()))
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            // Tính số dư từ giao dịch (thu - chi) thay vì lấy từ ví
+            BigDecimal calculatedBalance = totalIncome.subtract(totalExpense);
+            
+            // Lấy ví tiền để hiển thị
+            List<Wallet> wallets = walletRepository.findByUserId(userId);
+            
+            // Lấy giao dịch gần đây (5 giao dịch cuối cùng)
+            List<Transaction> recentTransactions = transactionRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .limit(5)
+                .collect(Collectors.toList());
+            
+            // Chuyển đổi giao dịch thành format phù hợp cho frontend
+            List<Map<String, Object>> formattedTransactions = recentTransactions.stream()
+                .map(tx -> {
+                    Map<String, Object> txMap = new HashMap<>();
+                    txMap.put("id", tx.getId());
+                    txMap.put("type", tx.getType());
+                    txMap.put("amount", tx.getAmount());
+                    txMap.put("date", tx.getDate());
+                    txMap.put("note", tx.getNote());
+                    txMap.put("categoryName", tx.getCategory() != null ? tx.getCategory().getName() : "Khác");
+                    txMap.put("walletName", tx.getWallet() != null ? tx.getWallet().getName() : "Không xác định");
+                    return txMap;
+                })
+                .collect(Collectors.toList());
+            
+            dashboard.put("totalIncome", totalIncome);
+            dashboard.put("totalExpense", totalExpense);
+            dashboard.put("netIncome", calculatedBalance);
+            dashboard.put("totalBalance", calculatedBalance); // Sử dụng số dư tính từ giao dịch
+            dashboard.put("recentTransactions", formattedTransactions);
+            dashboard.put("wallets", wallets);
+            
+            // Thêm dữ liệu cho biểu đồ
+            dashboard.put("expensesByCategory", getExpensesByCategoryByDate(userId, dateFrom, dateTo));
+            dashboard.put("weeklyTrend", getWeeklyTrendByDate(userId, dateFrom, dateTo));
+            
+            // Tạm thời comment out goal progress để tránh circular dependency
+            dashboard.put("goalProgress", new ArrayList<>());
+            dashboard.put("activeGoalsCount", 0L);
+            dashboard.put("budgetProgress", new ArrayList<>());
+            dashboard.put("budgetWarnings", new ArrayList<>());
+            
+            log.info("Dashboard data by date calculated successfully for user: {} - Income: {}, Expense: {}, Calculated Balance: {}", 
+                userId, totalIncome, totalExpense, calculatedBalance);
+            
+        } catch (Exception e) {
+            log.error("Error calculating dashboard data by date for user: {}", userId, e);
+            // Trả về dữ liệu mặc định nếu có lỗi
+            dashboard.put("totalIncome", BigDecimal.ZERO);
+            dashboard.put("totalExpense", BigDecimal.ZERO);
+            dashboard.put("netIncome", BigDecimal.ZERO);
+            dashboard.put("totalBalance", BigDecimal.ZERO);
+            dashboard.put("expensesByCategory", new ArrayList<>());
+            dashboard.put("weeklyTrend", new ArrayList<>());
+            dashboard.put("goalProgress", new ArrayList<>());
+            dashboard.put("activeGoalsCount", 0L);
+            dashboard.put("recentTransactions", new ArrayList<>());
+            dashboard.put("wallets", new ArrayList<>());
+            dashboard.put("budgetProgress", new ArrayList<>());
+            dashboard.put("budgetWarnings", new ArrayList<>());
+        }
+        
+        return dashboard;
+    }
+
+    /**
+     * Lấy dữ liệu chi tiêu theo category cho biểu đồ tròn
+     */
+    private List<Map<String, Object>> getExpensesByCategory(Long userId, Integer month, Integer year) {
+        try {
+            List<Object[]> results = transactionRepository.findExpensesByCategory(userId, month, year);
+            return results.stream().map(result -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("categoryName", result[0]);
+                map.put("categoryColor", result[1]);
+                map.put("totalAmount", result[2]);
+                map.put("transactionCount", result[3]);
+                return map;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting expenses by category for user: {}", userId, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Lấy dữ liệu chi tiêu theo category theo date range
+     */
+    private List<Map<String, Object>> getExpensesByCategoryByDate(Long userId, LocalDate dateFrom, LocalDate dateTo) {
+        try {
+            List<Object[]> results = transactionRepository.findExpensesByCategoryByDate(userId, dateFrom, dateTo);
+            return results.stream().map(result -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("categoryName", result[0]);
+                map.put("categoryColor", result[1]);
+                map.put("totalAmount", result[2]);
+                map.put("transactionCount", result[3]);
+                return map;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting expenses by category by date for user: {}", userId, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Lấy dữ liệu xu hướng theo tuần trong tháng
+     */
+    private List<Map<String, Object>> getWeeklyTrend(Long userId, Integer month, Integer year) {
+        try {
+            List<Map<String, Object>> trend = new ArrayList<>();
+            YearMonth yearMonth = YearMonth.of(year, month);
+            LocalDate startDate = yearMonth.atDay(1);
+            LocalDate endDate = yearMonth.atEndOfMonth();
+            
+            // Lấy tất cả giao dịch trong tháng
+            List<Transaction> monthTransactions = transactionRepository.findByUserIdAndMonthAndYear(userId, month, year);
+            
+            // Chia tháng thành 4 tuần
+            int daysInMonth = yearMonth.lengthOfMonth();
+            int weekSize = (int) Math.ceil(daysInMonth / 4.0);
+            
+            for (int week = 0; week < 4; week++) {
+                int weekStart = week * weekSize + 1;
+                int weekEnd = Math.min((week + 1) * weekSize, daysInMonth);
+                
+                LocalDate weekStartDate = LocalDate.of(year, month, weekStart);
+                LocalDate weekEndDate = LocalDate.of(year, month, weekEnd);
+                
+                // Tính thu chi theo tuần từ transactions
+                BigDecimal weeklyIncome = monthTransactions.stream()
+                    .filter(t -> "income".equals(t.getType()) && 
+                                !t.getDate().isBefore(weekStartDate) && 
+                                !t.getDate().isAfter(weekEndDate))
+                    .map(Transaction::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                BigDecimal weeklyExpense = monthTransactions.stream()
+                    .filter(t -> "expense".equals(t.getType()) && 
+                                !t.getDate().isBefore(weekStartDate) && 
+                                !t.getDate().isAfter(weekEndDate))
+                    .map(Transaction::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                Map<String, Object> weekData = new HashMap<>();
+                weekData.put("week", "Tuần " + (week + 1));
+                weekData.put("income", weeklyIncome);
+                weekData.put("expense", weeklyExpense);
+                weekData.put("net", weeklyIncome.subtract(weeklyExpense));
+                
+                trend.add(weekData);
+            }
+            
+            log.info("Weekly trend calculated for user {} in {}/{}: {} weeks", userId, month, year, trend.size());
+            return trend;
+            
+        } catch (Exception e) {
+            log.error("Error getting weekly trend for user: {}", userId, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Lấy dữ liệu xu hướng theo tuần theo date range
+     */
+    private List<Map<String, Object>> getWeeklyTrendByDate(Long userId, LocalDate dateFrom, LocalDate dateTo) {
+        try {
+            List<Map<String, Object>> trend = new ArrayList<>();
+            
+            // Lấy tất cả giao dịch trong khoảng thời gian
+            List<Transaction> rangeTransactions = transactionRepository.findByUserIdAndDateBetweenOrderByCreatedAtDesc(userId, dateFrom, dateTo);
+            
+            // Tính số tuần trong khoảng thời gian
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dateFrom, dateTo);
+            int weeks = (int) Math.ceil(daysBetween / 7.0);
+            
+            for (int week = 0; week < weeks; week++) {
+                LocalDate weekStartDate = dateFrom.plusDays(week * 7);
+                LocalDate weekEndDate = weekStartDate.plusDays(6);
+                if (weekEndDate.isAfter(dateTo)) {
+                    weekEndDate = dateTo;
+                }
+                
+                // Tạo biến final cho lambda
+                final LocalDate finalWeekStartDate = weekStartDate;
+                final LocalDate finalWeekEndDate = weekEndDate;
+                
+                // Tính thu chi theo tuần từ transactions
+                BigDecimal weeklyIncome = rangeTransactions.stream()
+                    .filter(t -> "income".equals(t.getType()) && 
+                                !t.getDate().isBefore(finalWeekStartDate) && 
+                                !t.getDate().isAfter(finalWeekEndDate))
+                    .map(Transaction::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                BigDecimal weeklyExpense = rangeTransactions.stream()
+                    .filter(t -> "expense".equals(t.getType()) && 
+                                !t.getDate().isBefore(finalWeekStartDate) && 
+                                !t.getDate().isAfter(finalWeekEndDate))
+                    .map(Transaction::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+                Map<String, Object> weekData = new HashMap<>();
+                weekData.put("week", "Tuần " + (week + 1) + " (" + weekStartDate.getDayOfMonth() + "/" + weekStartDate.getMonthValue() + ")");
+                weekData.put("income", weeklyIncome);
+                weekData.put("expense", weeklyExpense);
+                weekData.put("net", weeklyIncome.subtract(weeklyExpense));
+                
+                trend.add(weekData);
+            }
+            
+            log.info("Weekly trend by date calculated for user {} from {} to {}: {} weeks", userId, dateFrom, dateTo, trend.size());
+            return trend;
+            
+        } catch (Exception e) {
+            log.error("Error getting weekly trend by date for user: {}", userId, e);
+            return new ArrayList<>();
+        }
     }
 }

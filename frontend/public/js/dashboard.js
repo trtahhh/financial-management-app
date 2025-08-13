@@ -29,14 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const currentMonth = now.getMonth(); // 0-11 (August = 7)
   
   const firstDay = new Date(currentYear, currentMonth, 1);
-  const today = new Date(currentYear, currentMonth, now.getDate());
-  
-  // Đảm bảo date range chỉ trong 1 tháng
-  if (today.getMonth() !== firstDay.getMonth()) {
-    today = new Date(currentYear, currentMonth, 1);
-    today.setMonth(currentMonth + 1);
-    today.setDate(0); // Last day of current month
-  }
+  const today = new Date(); // Ngày hôm nay thực tế
   
   if (dateFromInput) {
     dateFromInput.value = firstDay.toISOString().split('T')[0];
@@ -184,10 +177,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function initCharts() {
-    Promise.all([fetchTransactions(), fetchCategories()])
-      .then(([transactions, categories]) => {
-        renderPieChart(transactions, categories);
-        renderBarChart(transactions);
+    // Sử dụng dữ liệu từ dashboard response thay vì fetch riêng
+    fetchDashboardData()
+      .then(data => {
+        console.log("📊 Dashboard data for charts:", data);
+        
+        // Render biểu đồ tròn với dữ liệu từ backend
+        if (data.expensesByCategory && data.expensesByCategory.length > 0) {
+          renderPieChartFromData(data.expensesByCategory);
+        } else {
+          renderPieChartFromTransactions();
+        }
+        
+        // Render biểu đồ cột với dữ liệu từ backend
+        if (data.weeklyTrend && data.weeklyTrend.length > 0) {
+          renderBarChartFromData(data.weeklyTrend);
+        } else {
+          renderBarChartFromTransactions();
+        }
       })
       .catch(err => {
         console.error("Error loading chart data:", err);
@@ -378,6 +385,154 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.textAlign = 'center';
       ctx.fillText(message, canvas.width / 2, canvas.height / 2);
     });
+  }
+
+  function renderPieChartFromData(expensesByCategory) {
+    console.log("📊 Rendering pie chart from backend data:", expensesByCategory);
+    
+    const ctx = document.getElementById('chart-pie').getContext('2d');
+    if (pieChart) pieChart.destroy();
+    
+    if (expensesByCategory.length === 0) {
+      showEmptyChart(ctx, 'Chưa có dữ liệu chi tiêu');
+      return;
+    }
+    
+    const labels = expensesByCategory.map(item => item.categoryName);
+    const data = expensesByCategory.map(item => item.totalAmount);
+    const colors = expensesByCategory.map(item => item.categoryColor || '#007bff');
+    
+    pieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 15,
+              usePointStyle: true,
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${Number(context.parsed).toLocaleString('vi-VN')} đ`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderBarChartFromData(weeklyTrend) {
+    console.log("📊 Rendering bar chart from backend data:", weeklyTrend);
+    
+    const ctx = document.getElementById('chart-bar').getContext('2d');
+    if (barChart) barChart.destroy();
+    
+    if (weeklyTrend.length === 0) {
+      showEmptyChart(ctx, 'Chưa có dữ liệu thu chi theo tuần');
+      return;
+    }
+    
+    const labels = weeklyTrend.map(item => item.week);
+    const incomeData = weeklyTrend.map(item => Number(item.income));
+    const expenseData = weeklyTrend.map(item => Number(item.expense));
+    
+    barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Thu nhập',
+            data: incomeData,
+            backgroundColor: '#28a745',
+            borderColor: '#28a745',
+            borderWidth: 1
+          },
+          {
+            label: 'Chi tiêu',
+            data: expenseData,
+            backgroundColor: '#dc3545',
+            borderColor: '#dc3545',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { usePointStyle: true, padding: 20 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} đ`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return value.toLocaleString('vi-VN') + ' đ';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderPieChartFromTransactions() {
+    // Fallback: sử dụng dữ liệu từ transactions nếu không có từ dashboard
+    Promise.all([fetchTransactions(), fetchCategories()])
+      .then(([transactions, categories]) => {
+        renderPieChart(transactions, categories);
+      })
+      .catch(err => {
+        console.error("Error loading fallback chart data:", err);
+        showChartError("Không thể tải dữ liệu biểu đồ");
+      });
+  }
+
+  function renderBarChartFromTransactions() {
+    // Fallback: sử dụng dữ liệu từ transactions nếu không có từ dashboard
+    fetchTransactions()
+      .then(transactions => {
+        renderBarChart(transactions);
+      })
+      .catch(err => {
+        console.error("Error loading fallback chart data:", err);
+        showChartError("Không thể tải dữ liệu biểu đồ");
+      });
+  }
+
+  function showEmptyChart(ctx, message) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = '#6c757d';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(message, ctx.canvas.width / 2, ctx.canvas.height / 2);
   }
 
   function loadDashboard() {
@@ -686,75 +841,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ticks: {
               callback: function(value) {
                 return value.toLocaleString('vi-VN') + ' đ';
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-  
-  function renderPieChartFromData(categoryExpenses) {
-    const ctx = document.getElementById('chart-pie')?.getContext('2d');
-    if (!ctx) {
-      console.error("❌ Không tìm thấy canvas chart-pie");
-      return;
-    }
-    
-    console.log("📊 Rendering pie chart with data:", categoryExpenses);
-    
-    // Destroy existing chart
-    if (pieChart) {
-      pieChart.destroy();
-    }
-    
-    const labels = Object.keys(categoryExpenses);
-    const amounts = Object.values(categoryExpenses);
-    
-    if (labels.length === 0) {
-      // Show empty state
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.fillStyle = '#6c757d';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Chưa có dữ liệu chi tiêu', ctx.canvas.width / 2, ctx.canvas.height / 2);
-      return;
-    }
-    
-    const colors = generateColors(labels.length);
-    
-    pieChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: amounts,
-          backgroundColor: colors,
-          borderWidth: 2,
-          borderColor: '#fff'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              padding: 15,
-              usePointStyle: true,
-              font: {
-                size: 12
-              }
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const value = context.parsed;
-                const total = amounts.reduce((sum, amt) => sum + amt, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
-                return `${context.label}: ${value.toLocaleString('vi-VN')} đ (${percentage}%)`;
               }
             }
           }

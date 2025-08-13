@@ -33,10 +33,16 @@ public class DashboardController {
         if (month == null) month = now.getMonthValue();
         if (year == null) year = now.getYear();
         
+        // Mặc định lấy từ đầu tháng đến ngày hôm nay
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = now; // Ngày hôm nay
+        
         System.out.println("=== DASHBOARD REQUEST ===");
         System.out.println("User ID: " + userId + ", Month: " + month + ", Year: " + year);
+        System.out.println("Date range: " + startDate + " to " + endDate);
         
-        Map<String, Object> dashboard = dashboardService.getDashboardData(userId, month, year);
+        // Sử dụng getDashboardDataByDate để lấy dữ liệu từ đầu tháng đến hôm nay
+        Map<String, Object> dashboard = dashboardService.getDashboardDataByDate(userId, startDate, endDate);
         System.out.println("Dashboard totalBalance: " + dashboard.get("totalBalance"));
         
         return ResponseEntity.ok(dashboard);
@@ -55,8 +61,12 @@ public class DashboardController {
         if (month == null) month = now.getMonthValue();
         if (year == null) year = now.getYear();
         
+        // Mặc định lấy từ đầu tháng đến ngày hôm nay
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = now; // Ngày hôm nay
+        
         // Chỉ trả về stats cơ bản, không cache
-        Map<String, Object> basicStats = dashboardService.getDashboardData(userId, month, year);
+        Map<String, Object> basicStats = dashboardService.getDashboardDataByDate(userId, startDate, endDate);
         return ResponseEntity.ok(basicStats);
     }
 
@@ -89,7 +99,11 @@ public class DashboardController {
             
             // Try to get data safely
             try {
-                Map<String, Object> fullDashboard = dashboardService.getDashboardData(userId, month, year);
+                // Mặc định lấy từ đầu tháng đến ngày hôm nay
+                LocalDate startDate = LocalDate.of(year, month, 1);
+                LocalDate endDate = now; // Ngày hôm nay
+                
+                Map<String, Object> fullDashboard = dashboardService.getDashboardDataByDate(userId, startDate, endDate);
                 dashboard.putAll(fullDashboard);
             } catch (Exception e) {
                 System.err.println("Error getting dashboard data: " + e.getMessage());
