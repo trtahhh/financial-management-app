@@ -170,23 +170,7 @@
         </div>
       </div>
       
-      <!-- Activity History -->
-      <div class="card profile-card mt-4">
-        <div class="card-header bg-white">
-          <h5 class="mb-0 text-success">
-            <i class="fas fa-history me-2"></i>
-            Hoạt động gần đây
-          </h5>
-        </div>
-        <div class="card-body">
-          <div id="activityList">
-            <div class="text-center text-muted py-4">
-              <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-              <p>Đang tải hoạt động...</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Activity History section removed -->
     </div>
   </div>
 </main>
@@ -264,19 +248,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
   
-  .activity-item {
-    padding: 20px;
-    border-left: 4px solid #198754;
-    background: white;
-    margin-bottom: 15px;
-    border-radius: 0 12px 12px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
-  }
-  
-  .activity-item:hover {
-    transform: translateX(5px);
-  }
+  /* Activity item styles removed */
   
   .profile-header {
     background: linear-gradient(135deg, #198754 0%, #20c997 100%);
@@ -333,7 +305,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     loadProfile();
     loadQuickStats();
-    loadActivityHistory();
+    // loadActivityHistory() removed
     
     // Set fields to readonly initially
     setFieldsReadonly(true);
@@ -830,90 +802,7 @@
     }
   }
 
-  async function loadActivityHistory() {
-    try {
-      const token = getAuthToken();
-      
-      // Get recent transactions (activity history)
-      const transactionsResponse = await fetch('/api/transactions', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      
-      let activities = [];
-      
-      if (transactionsResponse.ok) {
-        const transactions = await transactionsResponse.json();
-        
-        // Convert transactions to activity format (take latest 5)
-        activities = transactions.slice(0, 5).map(transaction => {
-          const amount = new Intl.NumberFormat('vi-VN').format(transaction.amount);
-          const timeAgo = formatTimeAgo(new Date(transaction.date));
-          
-          return {
-            type: 'transaction',
-            message: `${transaction.type === 'income' ? 'Thu nhập' : 'Chi tiêu'}: ${amount} VND`,
-            time: timeAgo,
-            icon: transaction.type === 'income' ? 'arrow-up' : 'arrow-down',
-            color: transaction.type === 'income' ? 'success' : 'danger'
-          };
-        });
-      }
-      
-      // If no transactions, show empty state
-      if (activities.length === 0) {
-        document.getElementById('activityList').innerHTML = `
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-history fa-2x mb-3"></i>
-            <p>Chưa có hoạt động nào</p>
-            <small>Các giao dịch của bạn sẽ hiển thị ở đây</small>
-          </div>
-        `;
-        return;
-      }
-
-      const activityHtml = activities.map(activity => `
-        <div class="activity-item">
-          <div class="d-flex align-items-center">
-            <div class="me-3">
-              <span class="badge bg-${activity.color} rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                <i class="fas fa-${activity.icon}"></i>
-              </span>
-            </div>
-            <div class="flex-grow-1">
-              <div class="fw-medium text-dark">${activity.message}</div>
-              <small class="text-muted">
-                <i class="fas fa-clock me-1"></i>
-                ${activity.time}
-              </small>
-            </div>
-          </div>
-        </div>
-      `).join('');
-
-      document.getElementById('activityList').innerHTML = activityHtml;
-    } catch (error) {
-      console.error('Lỗi tải lịch sử:', error);
-      document.getElementById('activityList').innerHTML = '<p class="text-muted text-center py-4">Không thể tải lịch sử hoạt động</p>';
-    }
-  }
-  
-  function formatTimeAgo(date) {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    
-    if (diffDays > 0) {
-      return `${diffDays} ngày trước`;
-    } else if (diffHours > 0) {
-      return `${diffHours} giờ trước`;
-    } else if (diffMinutes > 0) {
-      return `${diffMinutes} phút trước`;
-    } else {
-      return 'Vừa xong';
-    }
-  }
+  // Activity history functions removed
 
   function showSuccessAlert(message) {
     const alertDiv = document.createElement('div');

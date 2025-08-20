@@ -300,7 +300,7 @@ class SmartNavigation {
  */
 class SmartBreadcrumb {
   static init() {
-    this.addBreadcrumb();
+    // this.addBreadcrumb(); // Disabled to avoid breadcrumb duplication
   }
   
   static addBreadcrumb() {
@@ -362,7 +362,7 @@ class SmartBreadcrumb {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   SmartNavigation.init();
-  SmartBreadcrumb.init();
+  // SmartBreadcrumb.init(); // Disabled to avoid breadcrumb duplication
 });
 
 // Make available globally

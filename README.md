@@ -1,347 +1,206 @@
-# 🚀 Financial Management App
+# Financial Management App
 
-A comprehensive personal finance management application built with Spring Boot backend and Node.js frontend.
+Ứng dụng quản lý tài chính cá nhân với giao diện web hiện đại và AI Chat hỗ trợ.
 
-## 🎯 Features
+## 🚀 Tính năng chính
 
-### ✅ Core Features
-- **User Authentication**: JWT-based login/register system
-- **Transaction Management**: CRUD operations for income/expense tracking
-- **Wallet Management**: Multiple wallet support with balance tracking
-- **Category Management**: Customizable expense/income categories
-- **Budget Planning**: Monthly budget setting and tracking
-- **Financial Goals**: Goal setting and progress tracking
-- **AI Assistant**: ChatGPT integration for financial advice
-- **Notifications**: Budget alerts and low balance warnings
-- **Recurring Transactions**: Automated transaction scheduling
-- **File Upload**: Receipt and document attachment support
+### 💰 Quản lý tài chính
+- **Giao dịch**: Thêm, sửa, xóa giao dịch thu chi
+- **Danh mục**: Quản lý danh mục chi tiêu tùy chỉnh
+- **Ví**: Quản lý nhiều ví tiền khác nhau
+- **Ngân sách**: Thiết lập và theo dõi ngân sách theo tháng
+- **Mục tiêu**: Đặt và theo dõi mục tiêu tài chính
+- **Giao dịch định kỳ**: Tự động tạo giao dịch theo lịch
 
-### 📊 Analytics & Reporting
-- **Dashboard**: Real-time financial overview
-- **Charts**: Interactive expense analysis and trends
-- **Statistics**: Monthly/yearly financial summaries
-- **Multi-language Support**: Vietnamese and English
+### 🤖 AI Chat thông minh
+- **Tư vấn tài chính**: Lời khuyên về tiết kiệm, đầu tư, quản lý chi tiêu
+- **Báo cáo tự động**: Tạo báo cáo tài chính bằng AI
+- **Hỗ trợ đa ngôn ngữ**: Giao tiếp bằng tiếng Việt
+- **Phân tích thông minh**: Hiểu ý định người dùng và đưa ra gợi ý phù hợp
 
-## 🛠️ Technology Stack
+### 📊 Báo cáo tích hợp
+- **Báo cáo tổng hợp**: Tổng quan thu chi, chi tiêu theo danh mục
+- **Báo cáo giao dịch**: Chi tiết giao dịch theo thời gian
+- **Báo cáo ngân sách**: Theo dõi sử dụng ngân sách
+- **Xuất báo cáo**: Copy, tải về, in báo cáo trực tiếp từ AI Chat
+
+### 🔐 Bảo mật
+- **JWT Authentication**: Xác thực người dùng an toàn
+- **Mã hóa mật khẩu**: Sử dụng BCrypt
+- **Phân quyền**: Mỗi người dùng chỉ thấy dữ liệu của mình
+
+## 🛠️ Công nghệ sử dụng
 
 ### Backend
-- **Spring Boot 3.5.4**: Main framework
-- **Spring Security**: Authentication & authorization
-- **Spring Data JPA**: Database operations
-- **SQL Server**: Database
-- **JWT**: Token-based authentication
-- **MapStruct**: Object mapping
-- **Caffeine**: Caching
-- **Spring AI**: OpenAI integration
+- **Spring Boot 3.x**: Framework Java hiện đại
+- **Spring Security**: Bảo mật và xác thực
+- **Spring Data JPA**: Truy cập cơ sở dữ liệu
+- **SQL Server**: Cơ sở dữ liệu chính
+- **JWT**: Xác thực token
+- **Lombok**: Giảm boilerplate code
 
 ### Frontend
-- **Node.js**: Server runtime
-- **Express.js**: Web framework
+- **Node.js + Express**: Server-side rendering
 - **EJS**: Template engine
-- **Chart.js**: Data visualization
-- **Axios**: HTTP client
+- **Vanilla JavaScript**: Giao diện người dùng
+- **Bootstrap 5**: CSS framework
+- **Chart.js**: Biểu đồ tương tác
 
-## 📋 Prerequisites
+### AI & Báo cáo
+- **OpenRouter API**: Kết nối với các mô hình AI
+- **ReportService**: Tạo báo cáo tự động
+- **Text Export**: Xuất báo cáo dạng văn bản
+- **Smart Parsing**: Phân tích yêu cầu báo cáo từ tin nhắn
 
-- **Java 17+**
-- **Node.js 18+**
-- **SQL Server 2019+** (or SQL Server Express)
-- **Maven 3.6+**
+## 📱 Cách sử dụng
 
-## 🚀 Quick Start Guide
-
-### **Step 1: Clone Repository**
+### 1. Khởi động ứng dụng
 ```bash
-git clone <repository-url>
-cd financial-management-app
-```
-
-### **Step 2: Database Setup**
-
-#### **Option A: Automatic Setup (Recommended)**
-```bash
-# Run the database setup script
-scripts\setup-database.bat
-```
-
-#### **Option B: Manual Setup**
-1. **Open SQL Server Management Studio**
-2. **Run file:** `database/schema/FinancialManagement.sql`
-3. **Verify database creation**
-
-### **Step 3: Environment Configuration**
-
-#### **Create `.env` file in `backend/` directory:**
-```bash
-# Database Configuration
-DB_URL=jdbc:sqlserver://localhost:1433;databaseName=FinancialManagement;encrypt=false;trustServerCertificate=true
-DB_USERNAME=sa
-DB_PASSWORD=your_sql_server_password
-
-# JWT Configuration (Base64 format - already generated)
-JWT_SECRET=pvrI7sWa6Jbj22rtj731qFr9BkW7Uq7KpSFyEdJm6zk=
-
-# AI Configuration (Optional - for AI features)
-OPENAI_API_KEY=your_openrouter_api_key_here
-OPENAI_BASE_URL=https://openrouter.ai/api/v1/chat/completions
-OPENAI_MODEL=deepseek/deepseek-r1-distill-llama-70b:free
-
-# Server Configuration
-SERVER_PORT=8080
-LOGGING_LEVEL=INFO
-```
-
-### **Step 4: Start Backend**
-```bash
+# Backend (Spring Boot)
 cd backend
-.\mvnw.cmd spring-boot:run
-```
+./mvnw spring-boot:run
 
-### **Step 5: Start Frontend**
-```bash
+# Frontend (Node.js)
 cd frontend
 npm install
 npm start
 ```
 
-### **Step 6: Access Application**
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8080
-- **Health Check:** http://localhost:8080/actuator/health
+### 2. Sử dụng AI Chat
+- Truy cập trang **AI Chat**
+- Gõ câu hỏi về tài chính
+- Sử dụng các template có sẵn để tạo báo cáo
 
-## 🔐 Default Credentials
+### 3. Tạo báo cáo bằng AI
+```
+# Báo cáo tổng hợp
+"Tạo báo cáo tổng hợp tháng này"
 
-After setup, you can login with:
+# Báo cáo giao dịch
+"Báo cáo giao dịch từ 01/01 đến 31/01"
 
-### **Admin User:**
-- **Username:** `admin`
-- **Password:** `123456`
-
-### **Regular User (with full data):**
-- **Username:** `user`
-- **Password:** `123456`
-- **Profile:** Nguyễn Văn An (1995-03-15)
-- **Data includes:** 3 months of transactions, budgets, goals, notifications
-
-## 🛠️ Troubleshooting
-
-### **Common Issues & Solutions**
-
-#### **1. Database Connection Error**
-```bash
-# Check SQL Server is running
-sqlcmd -S localhost -E -Q "SELECT @@VERSION"
-
-# Test connection with credentials
-sqlcmd -S localhost -U sa -P your_password -Q "SELECT 1"
+# Báo cáo ngân sách
+"Báo cáo ngân sách tháng 12 năm 2024"
 ```
 
-#### **2. JWT Secret Error**
-- Ensure JWT_SECRET is Base64 format
-- Restart backend after changing JWT_SECRET
+### 4. Xuất báo cáo
+- **Copy**: Sao chép vào clipboard
+- **Tải về**: Lưu file .txt
+- **In**: In báo cáo trực tiếp
 
-#### **3. Port Conflicts**
-- Change port in `backend/src/main/resources/application.properties`
-- Default ports: Backend (8080), Frontend (3000)
+## 🔧 Cấu hình
 
-#### **4. Node.js Dependencies**
-```bash
-cd frontend
-npm cache clean --force
-npm install
+### Database
+```properties
+# application.properties
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=FinancialManagement
+spring.datasource.username=your_username
+spring.datasource.password=your_password
 ```
 
-#### **5. Maven Dependencies**
-```bash
-cd backend
-.\mvnw.cmd clean install
+### AI Chat
+```properties
+# OpenRouter API
+openrouter.api.key=your_api_key
+openrouter.api.url=https://openrouter.ai/api/v1
 ```
 
-### **Database Verification**
-```sql
-USE FinancialManagement;
-SELECT COUNT(*) as user_count FROM Users;
-SELECT COUNT(*) as category_count FROM Categories;
-```
+## 📊 Cấu trúc cơ sở dữ liệu
 
-## 📊 Database Schema Overview
+### Bảng chính
+- **Users**: Thông tin người dùng
+- **Transactions**: Giao dịch thu chi
+- **Categories**: Danh mục chi tiêu
+- **Wallets**: Ví tiền
+- **Budgets**: Ngân sách
+- **Goals**: Mục tiêu tài chính
 
-### **Main Tables:**
-- **Users** - User information and authentication
-- **User_Profile** - Detailed user profiles
-- **Wallets** - Financial wallets/accounts
-- **Categories** - Income/expense categories
-- **Transactions** - Financial transactions
-- **Budgets** - Monthly budget planning
-- **Goals** - Financial goals and targets
-- **Notifications** - System notifications
-- **AI_History** - AI chat history
+### Quan hệ
+- User → Transactions (1:N)
+- User → Categories (1:N)
+- User → Wallets (1:N)
+- User → Budgets (1:N)
+- User → Goals (1:N)
 
-### **Key Relationships:**
-- Users → Wallets (1:N)
-- Users → Transactions (1:N)
-- Categories → Transactions (1:N)
-- Users → Budgets (1:N)
-- Users → Goals (1:N)
+## 🚨 Xử lý lỗi
 
-## 🎯 Available Features
+### Transaction Issues
+**Lỗi "Violation of PRIMARY KEY constraint" khi tạo giao dịch:**
+- **Nguyên nhân**: IDENTITY sequence bị lỗi hoặc mapper set ID thủ công
+- **Giải pháp**:
+  1. Restart backend sau khi sửa code
+  2. Chạy script `database/fix_transaction_sequence.sql` để reset sequence
+  3. Kiểm tra database có dữ liệu cũ với ID trùng không
+- **Files đã sửa**:
+  - `TransactionMapperImpl.java` (comment out `entity.setId()`)
+  - `TransactionService.java` (xử lý create/update riêng biệt)
 
-### **Core Features:**
-- ✅ User Authentication (JWT)
-- ✅ Transaction Management
-- ✅ Wallet Management
-- ✅ Category Management
-- ✅ Budget Planning
-- ✅ Goal Setting
-- ✅ Statistics & Reports
-- ✅ AI Chat Assistant
-- ✅ File Upload
-- ✅ Notifications
+### Budget Issues
+**Lỗi "Category is required" khi tạo ngân sách:**
+- **Nguyên nhân**: Frontend gửi `category_id` nhưng backend DTO mong đợi `categoryId`
+- **Giải pháp**:
+  1. Restart frontend sau khi sửa code
+  2. Kiểm tra form validation hoạt động đúng
+  3. Đảm bảo đã chọn danh mục trước khi submit
+- **Files đã sửa**:
+  - `frontend/public/js/budgets.js` (sửa field mapping và validation)
 
-### **Advanced Features:**
-- ✅ Recurring Transactions
-- ✅ Shared Budgets
-- ✅ Multi-language Support
-- ✅ Data Export/Import
-- ✅ Real-time Notifications
+### AI Chat Issues
+**Lỗi kết nối AI hoặc không tạo được báo cáo:**
+- **Nguyên nhân**: API key hết hạn hoặc lỗi kết nối
+- **Giải pháp**:
+  1. Kiểm tra OpenRouter API key trong `application.properties`
+  2. Restart backend sau khi cập nhật cấu hình
+  3. Kiểm tra log backend để debug
 
-## 📁 Project Structure
+## 🔄 Cập nhật gần đây
 
-```
-financial-management-app/
-├── backend/                 # Spring Boot application
-│   ├── src/main/java/
-│   │   └── com/example/finance/
-│   │       ├── config/      # Configuration classes
-│   │       ├── controller/  # REST controllers
-│   │       ├── dto/         # Data transfer objects
-│   │       ├── entity/      # JPA entities
-│   │       ├── repository/  # Data access layer
-│   │       ├── security/    # Security components
-│   │       └── service/     # Business logic
-│   └── src/main/resources/
-│       └── application.properties
-├── frontend/               # Node.js application
-│   ├── public/            # Static assets
-│   ├── views/             # EJS templates
-│   └── server.js          # Express server
-├── database/              # Database scripts
-│   ├── schema/            # Database schema
-│   └── migrations/        # Database migrations
-└── scripts/               # Setup scripts
-    └── setup-database.bat # Database setup script
-```
+### v2.1.0 - AI Chat tích hợp báo cáo
+- ✅ Tích hợp chức năng báo cáo vào AI Chat
+- ✅ Tự động nhận diện yêu cầu báo cáo
+- ✅ Hỗ trợ 3 loại báo cáo: tổng hợp, giao dịch, ngân sách
+- ✅ Xuất báo cáo: copy, tải về, in
+- ✅ Template báo cáo có sẵn
+- ✅ Giao diện chat hiện đại và responsive
 
-## 🔐 Security Features
+### v2.0.0 - Cải thiện giao diện
+- ✅ Thiết kế lại UI/UX
+- ✅ Responsive design cho mobile
+- ✅ Cải thiện performance
+- ✅ Sửa lỗi giao dịch và ngân sách
 
-- **JWT Authentication**: Secure token-based auth
-- **Password Encryption**: BCrypt hashing
-- **Input Validation**: Comprehensive data validation
-- **SQL Injection Prevention**: Parameterized queries
-- **CORS Configuration**: Proper cross-origin settings
-- **Environment Variables**: No hardcoded secrets
+## 📝 Ghi chú phát triển
 
-## 📁 Project Structure
+### AI Chat Integration
+- **ReportService**: Xử lý logic tạo báo cáo
+- **AIFinanceService**: Tích hợp báo cáo vào AI Chat
+- **Smart Parsing**: Phân tích yêu cầu từ tin nhắn tự nhiên
+- **Export Options**: Copy, download, print báo cáo
 
-```
-financial-management-app/
-├── backend/                 # Spring Boot application
-│   ├── src/main/java/
-│   │   └── com/example/finance/
-│   │       ├── config/      # Configuration classes
-│   │       ├── controller/  # REST controllers
-│   │       ├── dto/         # Data transfer objects
-│   │       ├── entity/      # JPA entities
-│   │       ├── repository/  # Data access layer
-│   │       ├── security/    # Security components
-│   │       └── service/     # Business logic
-│   └── src/main/resources/
-│       └── application.properties
-├── frontend/               # Node.js application
-│   ├── public/            # Static assets
-│   ├── views/             # EJS templates
-│   └── server.js          # Express server
-└── database/              # Database scripts
-    ├── schema/            # Database schema
-    └── migrations/        # Database migrations
-```
+### Performance Optimization
+- **Lazy Loading**: Tải dữ liệu theo nhu cầu
+- **Caching**: Cache các báo cáo thường dùng
+- **Async Processing**: Xử lý báo cáo không đồng bộ
 
-## 🚀 API Endpoints
+## 🤝 Đóng góp
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-
-### Transactions
-- `GET /api/transactions` - List transactions
-- `POST /api/transactions` - Create transaction
-- `PUT /api/transactions/{id}` - Update transaction
-- `DELETE /api/transactions/{id}` - Delete transaction
-
-### Analytics
-- `GET /api/dashboard/data` - Dashboard statistics
-- `GET /api/transactions/stats-by-category` - Category statistics
-
-### AI Assistant
-- `POST /api/chat/message` - AI chat
-- `POST /api/ai/chat` - AI financial advice
-
-## 🔧 Development
-
-### Adding New Features
-1. **Backend**: Entity → Repository → Service → Controller
-2. **Frontend**: Route → Controller → View → JavaScript
-3. **Database**: Update schema and run migrations
-
-### Code Quality
-- Follow Spring Boot best practices
-- Use proper exception handling
-- Implement comprehensive validation
-- Write unit tests for critical components
-
-## 🐛 Troubleshooting
-
-### Common Issues
-1. **Database Connection**: Check SQL Server is running
-2. **JWT Issues**: Verify JWT_SECRET is set correctly
-3. **CORS Errors**: Check CORS configuration
-4. **AI Integration**: Verify OpenAI API key
-
-### Logs
-- Backend logs: Check console output
-- Frontend logs: Check browser console
-- Database logs: Check SQL Server logs
-
-## 📈 Performance Optimization
-
-- **Caching**: Caffeine cache for frequently accessed data
-- **Database Indexes**: Optimized queries with proper indexing
-- **Connection Pooling**: HikariCP for database connections
-- **Lazy Loading**: JPA lazy loading for relationships
-
-## 🔮 Future Enhancements
-
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics and predictions
-- [ ] Investment tracking
-- [ ] Bill reminders and auto-payments
-- [ ] Expense splitting with friends
-- [ ] Export to PDF/Excel
-- [ ] Push notifications
-- [ ] Multi-currency support
+1. Fork repository
+2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Tạo Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+Dự án này được phát hành dưới MIT License - xem file [LICENSE](LICENSE) để biết thêm chi tiết.
 
-## 🤝 Contributing
+## 📞 Hỗ trợ
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Nếu gặp vấn đề hoặc có câu hỏi:
+- Tạo issue trên GitHub
+- Liên hệ qua email: support@financeapp.com
+- Tham khảo tài liệu API: `/api/docs`
 
-## 📞 Support
+---
 
-For support and questions, please create an issue in the repository.
+**Lưu ý**: Đây là dự án demo, vui lòng không sử dụng cho mục đích sản xuất mà không có kiểm tra bảo mật đầy đủ.

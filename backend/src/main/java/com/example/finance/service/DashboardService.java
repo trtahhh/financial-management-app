@@ -5,6 +5,8 @@ import com.example.finance.entity.Transaction;
 import com.example.finance.entity.Wallet;
 import com.example.finance.repository.TransactionRepository;
 import com.example.finance.repository.WalletRepository;
+import com.example.finance.service.BudgetService;
+import com.example.finance.service.GoalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,8 @@ public class DashboardService {
 
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
-    // Tạm thời comment out GoalService để tránh circular dependency
-    // private final GoalService goalService;
+    private final BudgetService budgetService;
+    private final GoalService goalService;
 
     public SummaryDTO getDashboardData(Long userId, LocalDate dateFrom, LocalDate dateTo) {
         log.info("Getting dashboard data for user: {} from {} to {}", userId, dateFrom, dateTo);
@@ -132,11 +134,35 @@ public class DashboardService {
             dashboard.put("expensesByCategory", getExpensesByCategory(userId, month, year));
             dashboard.put("weeklyTrend", getWeeklyTrend(userId, month, year));
             
-            // Tạm thời comment out goal progress để tránh circular dependency
-            dashboard.put("goalProgress", new ArrayList<>());
-            dashboard.put("activeGoalsCount", 0L);
-            dashboard.put("budgetProgress", new ArrayList<>());
-            dashboard.put("budgetWarnings", new ArrayList<>());
+            // Tích hợp dữ liệu thực từ BudgetService và GoalService
+            try {
+                // Lấy tiến độ ngân sách
+                List<Map<String, Object>> budgetProgress = budgetService.getBudgetVsActual(userId, month, year);
+                dashboard.put("budgetProgress", budgetProgress);
+                
+                // Lấy cảnh báo ngân sách
+                List<Map<String, Object>> budgetWarnings = budgetService.getBudgetWarnings(userId, month, year);
+                dashboard.put("budgetWarnings", budgetWarnings);
+                
+                log.info("Budget data integrated: {} budgets, {} warnings", budgetProgress.size(), budgetWarnings.size());
+            } catch (Exception e) {
+                log.warn("Failed to get budget data: {}", e.getMessage());
+                dashboard.put("budgetProgress", new ArrayList<>());
+                dashboard.put("budgetWarnings", new ArrayList<>());
+            }
+            
+            try {
+                // Lấy tiến độ mục tiêu
+                List<Map<String, Object>> goalProgress = goalService.getGoalProgress(userId);
+                dashboard.put("goalProgress", goalProgress);
+                dashboard.put("activeGoalsCount", (long) goalProgress.size());
+                
+                log.info("Goal data integrated: {} active goals", goalProgress.size());
+            } catch (Exception e) {
+                log.warn("Failed to get goal data: {}", e.getMessage());
+                dashboard.put("goalProgress", new ArrayList<>());
+                dashboard.put("activeGoalsCount", 0L);
+            }
             
             log.info("Dashboard data by month calculated successfully for user: {} - Income: {}, Expense: {}, Calculated Balance: {}", 
                 userId, totalIncome, totalExpense, calculatedBalance);
@@ -164,6 +190,15 @@ public class DashboardService {
     /**
      * Lấy dữ liệu dashboard theo khoảng thời gian (để hỗ trợ endpoint data-by-date)
      */
+    // Getter methods để test
+    public GoalService getGoalService() {
+        return goalService;
+    }
+    
+    public BudgetService getBudgetService() {
+        return budgetService;
+    }
+
     public Map<String, Object> getDashboardDataByDate(Long userId, LocalDate dateFrom, LocalDate dateTo) {
         Map<String, Object> dashboard = new HashMap<>();
         
@@ -221,11 +256,38 @@ public class DashboardService {
             dashboard.put("expensesByCategory", getExpensesByCategoryByDate(userId, dateFrom, dateTo));
             dashboard.put("weeklyTrend", getWeeklyTrendByDate(userId, dateFrom, dateTo));
             
-            // Tạm thời comment out goal progress để tránh circular dependency
-            dashboard.put("goalProgress", new ArrayList<>());
-            dashboard.put("activeGoalsCount", 0L);
-            dashboard.put("budgetProgress", new ArrayList<>());
-            dashboard.put("budgetWarnings", new ArrayList<>());
+            // Tích hợp dữ liệu thực từ BudgetService và GoalService
+            try {
+                // Lấy tiến độ ngân sách theo khoảng thời gian
+                List<Map<String, Object>> budgetProgress = budgetService.getBudgetVsActualByDate(userId, dateFrom, dateTo);
+                dashboard.put("budgetProgress", budgetProgress);
+                
+                // Lấy cảnh báo ngân sách
+                List<Map<String, Object>> budgetWarnings = budgetService.getBudgetWarnings(userId, 
+                    dateFrom.getMonthValue(), dateFrom.getYear());
+                dashboard.put("budgetWarnings", budgetWarnings);
+                
+                log.info("Budget data integrated: {} budgets, {} warnings", budgetProgress.size(), budgetWarnings.size());
+            } catch (Exception e) {
+                log.warn("Failed to get budget data: {}", e.getMessage());
+                dashboard.put("budgetProgress", new ArrayList<>());
+                dashboard.put("budgetWarnings", new ArrayList<>());
+            }
+            
+            try {
+                // Lấy tiến độ mục tiêu
+                log.info("=== GETTING GOAL PROGRESS FOR USER: {} ===", userId);
+                List<Map<String, Object>> goalProgress = goalService.getGoalProgress(userId);
+                log.info("Goal progress data: {}", goalProgress);
+                dashboard.put("goalProgress", goalProgress);
+                dashboard.put("activeGoalsCount", (long) goalProgress.size());
+                
+                log.info("Goal data integrated: {} active goals", goalProgress.size());
+            } catch (Exception e) {
+                log.error("Failed to get goal data for user {}: {}", userId, e.getMessage(), e);
+                dashboard.put("goalProgress", new ArrayList<>());
+                dashboard.put("activeGoalsCount", 0L);
+            }
             
             log.info("Dashboard data by date calculated successfully for user: {} - Income: {}, Expense: {}, Calculated Balance: {}", 
                 userId, totalIncome, totalExpense, calculatedBalance);

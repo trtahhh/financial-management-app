@@ -269,14 +269,18 @@ public class GoalService {
      * Lấy tiến độ mục tiêu
      */
     public List<Map<String, Object>> getGoalProgress(Long userId) {
+        log.info("=== GoalService.getGoalProgress called for userId: {} ===", userId);
         List<Goal> activeGoals = repo.findByUserIdAndIsDeletedFalse(userId);
+        log.info("Found {} active goals for user {}", activeGoals.size(), userId);
         
         // Tính tổng số dư của user từ tất cả ví
         BigDecimal totalBalance = walletRepository.findByUserId(userId).stream()
                 .map(wallet -> wallet.getBalance() != null ? wallet.getBalance() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("Total balance for user {}: {}", userId, totalBalance);
         
         return activeGoals.stream().map(goal -> {
+            log.info("Processing goal: {} (ID: {}) with target: {}", goal.getName(), goal.getId(), goal.getTargetAmount());
             Map<String, Object> goalData = new HashMap<>();
             goalData.put("goalId", goal.getId());
             goalData.put("goalName", goal.getName());

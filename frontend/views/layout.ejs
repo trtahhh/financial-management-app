@@ -170,7 +170,7 @@
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/dashboard">Trang chủ</a></li>
-          <li class="breadcrumb-item active" aria-current="page" id="currentPage">Trang hiện tại</li>
+          <li class="breadcrumb-item active" aria-current="page" id="currentPage">Tổng quan</li>
         </ol>
       </nav>
       
@@ -248,34 +248,20 @@
       }
     }
     
-    function setActiveNavItem() {
-      const currentPath = window.location.pathname;
-      const navLinks = document.querySelectorAll('.sidebar .nav-link');
-      
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === currentPath) {
-          link.classList.add('active');
-        }
-      });
-      
-      // Update breadcrumb
-      const pageNames = {
-        '/dashboard': 'Tổng quan',
-        '/profile': 'Hồ sơ',
-        '/wallets': 'Ví tiền',
-        '/categories': 'Danh mục',
-        '/transactions': 'Giao dịch',
-        '/budgets': 'Ngân sách',
-        '/goals': 'Mục tiêu',
-        '/chat': 'AI Chat'
-      };
-      
-      const currentPageElement = document.getElementById('currentPage');
-      if (currentPageElement) {
-        currentPageElement.textContent = pageNames[currentPath] || 'Trang hiện tại';
-      }
-    }
+         function setActiveNavItem() {
+       const currentPath = window.location.pathname;
+       const navLinks = document.querySelectorAll('.sidebar .nav-link');
+       
+       // Update breadcrumb based on current page
+       updateBreadcrumb(currentPath);
+       
+       navLinks.forEach(link => {
+         link.classList.remove('active');
+         if (link.getAttribute('href') === currentPath) {
+           link.classList.add('active');
+         }
+       });
+     }
     
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
@@ -286,6 +272,30 @@
         overlay.classList.toggle('show');
       }
     }
+    
+         function updateBreadcrumb(currentPath) {
+       const currentPageElement = document.getElementById('currentPage');
+       if (!currentPageElement) return;
+       
+       // Map paths to page names
+       const pageNames = {
+         '/dashboard': 'Tổng quan',
+         '/profile': 'Hồ sơ cá nhân',
+         '/wallets': 'Ví tiền',
+         '/categories': 'Danh mục',
+         '/transactions': 'Giao dịch',
+         '/budgets': 'Ngân sách',
+         '/goals': 'Mục tiêu',
+         '/chat': 'AI Chat'
+       };
+       
+       const pageName = pageNames[currentPath] || 'Trang hiện tại';
+       currentPageElement.textContent = pageName;
+       
+       // Update page title for better SEO
+       const pageTitle = pageNames[currentPath] || 'Trang hiện tại';
+       document.title = `Finance AI - ${pageTitle}`;
+     }
     
     function logout() {
       localStorage.removeItem('authToken');

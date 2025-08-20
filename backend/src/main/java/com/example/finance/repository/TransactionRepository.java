@@ -34,6 +34,48 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("startDate") LocalDate startDate, 
         @Param("endDate") LocalDate endDate);
     
+    // Method for ReportService - sum amount by user, type and date range
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
+    BigDecimal sumByUserIdAndTypeAndDateBetween(
+        @Param("userId") Long userId, 
+        @Param("type") String type, 
+        @Param("startDate") LocalDate startDate, 
+        @Param("endDate") LocalDate endDate);
+    
+    // Method for ReportService - find transactions by user and date range, ordered by date desc
+    @Query("SELECT t FROM Transaction t " +
+           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.wallet " +
+           "WHERE t.user.id = :userId AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false " +
+           "ORDER BY t.date DESC")
+    List<Transaction> findByUserIdAndDateBetweenOrderByDateDesc(
+        @Param("userId") Long userId, 
+        @Param("startDate") LocalDate startDate, 
+        @Param("endDate") LocalDate endDate);
+    
+    // Method for ReportService - find transactions by user, type, category and date range
+    @Query("SELECT t FROM Transaction t " +
+           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.wallet " +
+           "WHERE t.user.id = :userId AND t.type = :type AND t.category.id = :categoryId AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
+    List<Transaction> findByUserIdAndTypeAndCategoryIdAndDateBetween(
+        @Param("userId") Long userId, 
+        @Param("type") String type, 
+        @Param("categoryId") Long categoryId,
+        @Param("startDate") LocalDate startDate, 
+        @Param("endDate") LocalDate endDate);
+    
+    // Method for ReportService - find transactions by user, category and date range
+    @Query("SELECT t FROM Transaction t " +
+           "LEFT JOIN FETCH t.category " +
+           "LEFT JOIN FETCH t.wallet " +
+           "WHERE t.user.id = :userId AND t.category.id = :categoryId AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
+    List<Transaction> findByUserIdAndCategoryIdAndDateBetween(
+        @Param("userId") Long userId, 
+        @Param("categoryId") Long categoryId,
+        @Param("startDate") LocalDate startDate, 
+        @Param("endDate") LocalDate endDate);
+    
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.isDeleted = false"
             + " AND (:month IS NULL OR FUNCTION('MONTH', t.date) = :month)"
             + " AND (:year IS NULL OR FUNCTION('YEAR', t.date) = :year)")

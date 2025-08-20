@@ -171,9 +171,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function renderStats(data) {
     console.log("✅ Rendering stats:", data);
-    document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString('vi-VN') + ' đ';
-    document.getElementById('totalExpense').textContent = (data.totalExpense || 0).toLocaleString('vi-VN') + ' đ';
-    document.getElementById('balance').textContent = (data.balance || 0).toLocaleString('vi-VN') + ' đ';
+            document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString('vi-VN') + ' VNĐ';
+        document.getElementById('totalExpense').textContent = (data.totalExpense || 0).toLocaleString('vi-VN') + ' VNĐ';
+        document.getElementById('balance').textContent = (data.balance || 0).toLocaleString('vi-VN') + ' VNĐ';
   }
 
   function initCharts() {
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const value = context.parsed;
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((value / total) * 100).toFixed(1);
-                return `${context.label}: ${value.toLocaleString('vi-VN')} đ (${percentage}%)`;
+                return `${context.label}: ${value.toLocaleString('vi-VN')} VNĐ (${percentage}%)`;
               }
             }
           }
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} đ`;
+                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VNĐ`;
               }
             }
           }
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return value.toLocaleString('vi-VN') + ' đ';
+                return value.toLocaleString('vi-VN') + ' VNĐ';
               }
             }
           }
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.label}: ${Number(context.parsed).toLocaleString('vi-VN')} đ`;
+                return `${context.label}: ${Number(context.parsed).toLocaleString('vi-VN')} VNĐ`;
               }
             }
           }
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} đ`;
+                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VNĐ`;
               }
             }
           }
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function () {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return value.toLocaleString('vi-VN') + ' đ';
+                return value.toLocaleString('vi-VN') + ' VNĐ';
               }
             }
           }
@@ -553,6 +553,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update Goal progress card
         try {
           const goalsRaw = Array.isArray(dashboardData.goalProgress) ? dashboardData.goalProgress : (dashboardData.goals || []);
+          console.log("🎯 Raw goal data:", goalsRaw);
+          
           // Chuẩn hóa tên và phần trăm tiến độ từ API backend (goalProgress)
           const goals = goalsRaw.map(g => ({
             name: g.goalName || g.name || 'Mục tiêu',
@@ -560,6 +562,8 @@ document.addEventListener('DOMContentLoaded', function () {
             currentAmount: Number(g.currentAmount || g.current_amount || 0),
             progressPercentage: Number(g.progressPercentage || g.progress || 0)
           }));
+          
+          console.log("🎯 Normalized goals:", goals);
           const recentTx = Array.isArray(dashboardData.recentTransactions) ? dashboardData.recentTransactions : [];
           const normalizedTx = recentTx.map(t => ({
             type: t.type === 'income' ? 'THU' : 'CHI',
@@ -568,26 +572,14 @@ document.addEventListener('DOMContentLoaded', function () {
           }));
           updateGoalProgress(goals, normalizedTx);
         } catch (e) { console.warn('Goal progress render error:', e); }
-
+        
         // Update Budget alerts card (đồng bộ field usagePercent/status từ backend)
         try {
           const alerts = Array.isArray(dashboardData.budgetWarnings) ? dashboardData.budgetWarnings : [];
-          const container = document.getElementById('budget-alerts');
-          if (container) {
-            if (alerts.length === 0) {
-              container.innerHTML = '<div class="text-center text-muted"><p>Tất cả ngân sách đều trong tầm kiểm soát</p><a href="/budgets" class="btn btn-warning btn-sm">Xem ngân sách</a></div>';
-            } else {
-              container.innerHTML = alerts.slice(0, 4).map(a => `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <small>${a.categoryName || 'Danh mục'}</small>
-                  <span class="badge ${a.status === 'EXCEEDED' ? 'bg-danger' : 'bg-warning'}">${a.status === 'EXCEEDED' ? 'Vượt' : 'Cảnh báo'}</span>
-                </div>
-                <div class="progress mb-2" style="height: 6px;">
-                  <div class="progress-bar ${Number(a.usagePercent||0) >= 100 ? 'bg-danger' : 'bg-warning'}" style="width: ${Math.min(Math.round(Number(a.usagePercent||0)), 100)}%"></div>
-                </div>
-              `).join('') + '<a href="/budgets" class="btn btn-warning btn-sm">Xem ngân sách</a>';
-            }
-          }
+          console.log("💰 Budget warnings:", alerts);
+          
+          // Gọi updateBudgetAlerts để xử lý cảnh báo ngân sách
+          updateBudgetAlerts(alerts);
         } catch (e) { console.warn('Budget alerts render error:', e); }
 
         // Update quick stats card (tháng theo phạm vi chọn)
@@ -605,9 +597,28 @@ document.addEventListener('DOMContentLoaded', function () {
           if (avgTransactionEl) {
             const total = tx.reduce((s, t) => s + Number(t.amount || 0), 0);
             const avg = tx.length > 0 ? total / tx.length : 0;
-            avgTransactionEl.textContent = avg.toLocaleString('vi-VN') + 'đ';
+            avgTransactionEl.textContent = avg.toLocaleString('vi-VN') + ' VNĐ';
           }
         } catch (e) { console.warn('Quick stats render error:', e); }
+        
+        // Tính toán thống kê nâng cao với dữ liệu tích hợp
+        try {
+          const enhancedStats = calculateEnhancedStats(
+            {
+              totalIncome: dashboardData.totalIncome || 0,
+              totalExpense: dashboardData.totalExpense || 0,
+              balance: dashboardData.totalBalance || 0
+            },
+            dashboardData.recentTransactions || [],
+            dashboardData.budgetProgress || [],
+            dashboardData.goalProgress || []
+          );
+          
+          // Cập nhật UI với thống kê nâng cao
+          updateStats(enhancedStats);
+        } catch (e) { console.warn('Enhanced stats calculation error:', e); }
+        
+        console.log("🎉 Dashboard loaded successfully with integrated data!");
         
       })
       .catch(err => {
@@ -630,9 +641,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("💳 Total balance:", totalBalance);
     
     // Cập nhật các số liệu chính
-    document.getElementById('totalIncome').textContent = Number(income || 0).toLocaleString('vi-VN') + ' đ';
-    document.getElementById('totalExpense').textContent = Number(expense || 0).toLocaleString('vi-VN') + ' đ';
-    document.getElementById('balance').textContent = totalBalance.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('totalIncome').textContent = Number(income || 0).toLocaleString('vi-VN') + ' VNĐ';
+    document.getElementById('totalExpense').textContent = Number(expense || 0).toLocaleString('vi-VN') + ' VNĐ';
+    document.getElementById('balance').textContent = totalBalance.toLocaleString('vi-VN') + ' VNĐ';
     
     // Cập nhật thông tin tháng hiện tại
     const from = document.getElementById('dash-date-from')?.value;
@@ -647,18 +658,44 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       const budgetUsageEl = document.getElementById('budget-usage');
       const progress = Array.isArray(data.budgetProgress) ? data.budgetProgress : [];
-      const totalBudget = progress.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0);
-      const usedBudget = progress.reduce((sum, b) => sum + (Number(b.spentAmount) || 0), 0);
-      const usagePercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
-      if (budgetUsageEl) {
-        budgetUsageEl.innerHTML = `
-          <div class="text-center">
-            <div class="h5 mb-0">${usagePercent}%</div>
-            <small class="text-muted">Đã sử dụng</small>
-            <div class="progress mt-2" style="height: 8px;">
-              <div class="progress-bar ${usagePercent > 100 ? 'bg-danger' : usagePercent > 80 ? 'bg-warning' : 'bg-success'}" style="width: ${Math.min(usagePercent, 100)}%"></div>
-            </div>
-          </div>`;
+      
+      console.log("💰 Budget progress data:", progress);
+      
+      if (progress.length > 0) {
+        const totalBudget = progress.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0);
+        const usedBudget = progress.reduce((sum, b) => sum + (Number(b.spentAmount) || 0), 0);
+        const usagePercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
+        
+        console.log("💰 Budget calculation:", { totalBudget, usedBudget, usagePercent });
+        
+        if (budgetUsageEl) {
+          budgetUsageEl.innerHTML = `
+            <div class="text-center">
+              <div class="h5 mb-0">${usagePercent}%</div>
+              <small class="text-muted">Đã sử dụng</small>
+              <div class="progress mt-2" style="height: 8px;">
+                <div class="progress-bar ${usagePercent > 100 ? 'bg-danger' : usagePercent > 80 ? 'bg-warning' : 'bg-success'}" style="width: ${Math.min(usagePercent, 100)}%"></div>
+              </div>
+              <small class="text-muted d-block mt-1">
+                ${usedBudget.toLocaleString('vi-VN')}VNĐ / ${totalBudget.toLocaleString('vi-VN')}VNĐ
+              </small>
+            </div>`;
+        }
+      } else {
+        // Không có ngân sách nào
+        if (budgetUsageEl) {
+          budgetUsageEl.innerHTML = `
+            <div class="text-center">
+              <div class="h5 mb-0">0%</div>
+              <small class="text-muted">Đã sử dụng</small>
+              <div class="progress mt-2" style="height: 8px;">
+                <div class="progress-bar bg-secondary" style="width: 0%"></div>
+              </div>
+              <small class="text-muted d-block mt-1">
+                Chưa thiết lập ngân sách
+              </small>
+            </div>`;
+        }
       }
     } catch (e) {
       console.warn('Cannot render budget usage:', e);
@@ -680,6 +717,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (Array.isArray(data.wallets)) {
       updateWalletDisplay(data.wallets);
     }
+    
+    console.log("✅ Dashboard UI updated successfully");
   }
   
   function updateWalletDisplay(wallets) {
@@ -688,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const walletHTML = wallets.map(wallet => 
         `<div class="wallet-item">
           <span class="wallet-name">${wallet.name}</span>
-          <span class="wallet-balance">${wallet.balance.toLocaleString('vi-VN')} đ</span>
+          <span class="wallet-balance">${wallet.balance.toLocaleString('vi-VN')} VNĐ</span>
         </div>`
       ).join('');
       walletContainer.innerHTML = walletHTML;
@@ -787,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const value = context.parsed;
                 const total = amounts.reduce((sum, amount) => sum + amount, 0);
                 const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                return `${context.label}: ${value.toLocaleString('vi-VN')}đ (${percentage}%)`;
+                return `${context.label}: ${value.toLocaleString('vi-VN')} VNĐ (${percentage}%)`;
               }
             }
           }
@@ -840,7 +879,7 @@ document.addEventListener('DOMContentLoaded', function () {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return value.toLocaleString('vi-VN') + ' đ';
+                return value.toLocaleString('vi-VN') + ' VNĐ';
               }
             }
           }
@@ -968,15 +1007,43 @@ function calculateEnhancedStats(stats, transactions, budgets, goals) {
            transactionDate.getFullYear() === currentYear;
   });
   
-  // Calculate budget usage
-  const totalBudget = budgets.reduce((sum, b) => sum + (b.amount || 0), 0);
-  const usedBudget = budgets.reduce((sum, b) => sum + (b.usedAmount || 0), 0);
+  // Calculate budget usage - sử dụng dữ liệu từ backend nếu có
+  let totalBudget = 0;
+  let usedBudget = 0;
+  
+  if (budgets && budgets.length > 0) {
+    // Sử dụng dữ liệu từ backend (budgetAmount, spentAmount)
+    totalBudget = budgets.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0);
+    usedBudget = budgets.reduce((sum, b) => sum + (Number(b.spentAmount) || 0), 0);
+  } else {
+    // Fallback cho dữ liệu cũ
+    totalBudget = budgets.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+    usedBudget = budgets.reduce((sum, b) => sum + (Number(b.usedAmount) || 0), 0);
+  }
+  
   const budgetUsagePercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
   
-  // Calculate goals progress
-  const totalGoalsTarget = goals.reduce((sum, g) => sum + (g.targetAmount || 0), 0);
-  const totalGoalsProgress = goals.reduce((sum, g) => sum + (g.currentAmount || 0), 0);
+  // Calculate goals progress - sử dụng dữ liệu từ backend nếu có
+  let totalGoalsTarget = 0;
+  let totalGoalsProgress = 0;
+  
+  if (goals && goals.length > 0) {
+    // Sử dụng dữ liệu từ backend (targetAmount, currentAmount hoặc currentBalance)
+    totalGoalsTarget = goals.reduce((sum, g) => sum + (Number(g.targetAmount) || 0), 0);
+    totalGoalsProgress = goals.reduce((sum, g) => sum + (Number(g.currentAmount || g.currentBalance) || 0), 0);
+  }
+  
   const goalsProgressPercent = totalGoalsTarget > 0 ? Math.round((totalGoalsProgress / totalGoalsTarget) * 100) : 0;
+  
+  console.log("📊 Enhanced stats calculation:", {
+    totalBudget,
+    usedBudget,
+    budgetUsagePercent,
+    totalGoalsTarget,
+    totalGoalsProgress,
+    goalsProgressPercent,
+    transactionCount: currentMonthTransactions.length
+  });
   
   return {
     ...stats,
@@ -996,32 +1063,54 @@ function calculateEnhancedStats(stats, transactions, budgets, goals) {
 function updateBudgetAlerts(budgets) {
   const alertContainer = document.getElementById('budget-alerts');
   if (!alertContainer) return;
+  
+  console.log("💰 Budget alerts data:", budgets);
+  
   if (!budgets || budgets.length === 0) {
     alertContainer.innerHTML = '<div class="text-center text-muted"><p>Tất cả ngân sách đều trong tầm kiểm soát</p><a href="/budgets" class="btn btn-warning btn-sm">Xem ngân sách</a></div>';
     return;
   }
   
-  const exceededBudgets = budgets.filter(b => (b.usedAmount || 0) > (b.amount || 0));
+  // Sử dụng dữ liệu từ backend (spentAmount, budgetAmount, usagePercent, status)
+  const exceededBudgets = budgets.filter(b => {
+    const usagePercent = Number(b.usagePercent || 0);
+    return usagePercent >= 100;
+  });
+  
   const nearLimitBudgets = budgets.filter(b => {
-    const usage = (b.usedAmount || 0) / (b.amount || 1);
-    return usage >= 0.8 && usage <= 1.0;
+    const usagePercent = Number(b.usagePercent || 0);
+    return usagePercent >= 80 && usagePercent < 100;
   });
   
   let alertsHtml = '';
   
   if (exceededBudgets.length > 0) {
-    alertsHtml += '<div class="alert alert-danger"><strong>⚠️ Vượt ngân sách:</strong> ';
-    alertsHtml += exceededBudgets.map(b => b.categoryName).join(', ');
+    alertsHtml += '<div class="alert alert-danger mb-2"><strong>⚠️ Vượt ngân sách:</strong><br>';
+    exceededBudgets.forEach(b => {
+      const spent = Number(b.spentAmount || 0);
+      const budget = Number(b.budgetAmount || 0);
+      alertsHtml += `<small>• ${b.categoryName}: ${spent.toLocaleString('vi-VN')}VNĐ / ${budget.toLocaleString('vi-VN')}VNĐ (${Number(b.usagePercent || 0).toFixed(1)}%)</small><br>`;
+    });
     alertsHtml += '</div>';
   }
   
   if (nearLimitBudgets.length > 0) {
-    alertsHtml += '<div class="alert alert-warning"><strong>📊 Gần đạt giới hạn:</strong> ';
-    alertsHtml += nearLimitBudgets.map(b => b.categoryName).join(', ');
+    alertsHtml += '<div class="alert alert-warning mb-2"><strong>📊 Gần đạt giới hạn:</strong><br>';
+    nearLimitBudgets.forEach(b => {
+      const spent = Number(b.spentAmount || 0);
+      const budget = Number(b.budgetAmount || 0);
+      alertsHtml += `<small>• ${b.categoryName}: ${spent.toLocaleString('vi-VN')}VNĐ / ${budget.toLocaleString('vi-VN')}VNĐ (${Number(b.usagePercent || 0).toFixed(1)}%)</small><br>`;
+    });
     alertsHtml += '</div>';
   }
   
+  if (alertsHtml) {
+    alertsHtml += '<a href="/budgets" class="btn btn-warning btn-sm">Xem ngân sách</a>';
+  }
+  
   alertContainer.innerHTML = alertsHtml || '<div class="text-center text-muted"><p>Tất cả ngân sách đều trong tầm kiểm soát</p><a href="/budgets" class="btn btn-warning btn-sm">Xem ngân sách</a></div>';
+  
+  console.log("💰 Budget alerts HTML updated");
 }
 
 /**
@@ -1029,7 +1118,9 @@ function updateBudgetAlerts(budgets) {
  */
 function updateGoalProgress(goals, transactions) {
   const goalContainer = document.getElementById('goal-progress');
-  if (!goalContainer || goals.length === 0) return;
+  if (!goalContainer) return;
+  
+  console.log("🎯 Updating goal progress with:", goals);
   
   const savingsTransactions = transactions.filter(t => t.type === 'THU');
   const thisMonthSavings = savingsTransactions
@@ -1041,31 +1132,43 @@ function updateGoalProgress(goals, transactions) {
     .reduce((sum, t) => sum + t.amount, 0);
   
   let goalHtml = '<h6>🎯 Tiến độ mục tiêu</h6>';
-  goals.slice(0, 3).forEach(goal => {
-    // Nếu backend đã cung cấp % tiến độ thì dùng trực tiếp để đồng bộ với trang Mục tiêu
-    const progress = Math.min(
-      (typeof goal.progressPercentage !== 'undefined' ? Number(goal.progressPercentage) : ((goal.currentAmount || 0) / (goal.targetAmount || 1) * 100)),
-      100
-    );
-    goalHtml += `
-      <div class="mb-2">
-        <div class="d-flex justify-content-between">
-          <small>${goal.name}</small>
-          <small>${progress.toFixed(1)}%</small>
-        </div>
-        <div class="progress" style="height: 8px;">
-          <div class="progress-bar ${progress >= 100 ? 'bg-success' : progress >= 75 ? 'bg-info' : 'bg-warning'}" 
-               style="width: ${progress}%"></div>
-        </div>
-      </div>
-    `;
-  });
   
-  if (thisMonthSavings > 0) {
-    goalHtml += `<small class="text-success">💰 Tháng này tiết kiệm: ${thisMonthSavings.toLocaleString('vi-VN')} đ</small>`;
+  if (goals.length === 0) {
+    goalHtml += '<div class="text-center text-muted"><p>Chưa có mục tiêu nào được thiết lập</p><a href="/goals" class="btn btn-success btn-sm">Tạo mục tiêu</a></div>';
+  } else {
+    goals.slice(0, 3).forEach(goal => {
+      // Nếu backend đã cung cấp % tiến độ thì dùng trực tiếp để đồng bộ với trang Mục tiêu
+      const progress = Math.min(
+        (typeof goal.progressPercentage !== 'undefined' ? Number(goal.progressPercentage) : ((goal.currentAmount || 0) / (goal.targetAmount || 1) * 100)),
+        100
+      );
+      
+      const currentAmount = Number(goal.currentAmount || goal.currentBalance || 0);
+      const targetAmount = Number(goal.targetAmount || 0);
+      
+      goalHtml += `
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="fw-bold">${goal.name}</small>
+            <small class="badge ${progress >= 100 ? 'bg-success' : progress >= 75 ? 'bg-info' : progress >= 50 ? 'bg-warning' : 'bg-secondary'}">${progress.toFixed(1)}%</small>
+          </div>
+          <div class="progress mb-2" style="height: 8px;">
+            <div class="progress-bar ${progress >= 100 ? 'bg-success' : progress >= 75 ? 'bg-info' : progress >= 50 ? 'bg-warning' : 'bg-secondary'}" 
+                 style="width: ${progress}%"></div>
+          </div>
+          <small class="text-muted d-block">
+            ${currentAmount.toLocaleString('vi-VN')}VNĐ / ${targetAmount.toLocaleString('vi-VN')}VNĐ
+          </small>
+        </div>
+      `;
+    });
   }
   
+                // Bỏ phần hiển thị "Tháng này tiết kiệm"
+  
   goalContainer.innerHTML = goalHtml;
+  
+  console.log("🎯 Goal progress HTML updated");
 }
 
 /**
@@ -1074,50 +1177,81 @@ function updateGoalProgress(goals, transactions) {
 function updateStats(enhancedStats) {
   console.log("✅ Rendering enhanced stats:", enhancedStats);
   
-  // Basic stats
-  document.getElementById('totalIncome').textContent = (enhancedStats.totalIncome || 0).toLocaleString('vi-VN') + ' đ';
-  document.getElementById('totalExpense').textContent = (enhancedStats.totalExpense || 0).toLocaleString('vi-VN') + ' đ';
-  document.getElementById('balance').textContent = (enhancedStats.balance || 0).toLocaleString('vi-VN') + ' đ';
+  // Basic stats - chỉ cập nhật nếu chưa được cập nhật bởi updateDashboardUI
+  const incomeEl = document.getElementById('totalIncome');
+  const expenseEl = document.getElementById('totalExpense');
+  const balanceEl = document.getElementById('balance');
   
-  // Enhanced stats
+  if (incomeEl && incomeEl.textContent === '0 VNĐ') {
+    incomeEl.textContent = (enhancedStats.totalIncome || 0).toLocaleString('vi-VN') + ' VNĐ';
+    console.log("💰 Income updated in updateStats:", enhancedStats.totalIncome);
+  }
+  if (expenseEl && expenseEl.textContent === '0 VNĐ') {
+    expenseEl.textContent = (enhancedStats.totalExpense || 0).toLocaleString('vi-VN') + ' VNĐ';
+    console.log("💸 Expense updated in updateStats:", enhancedStats.totalExpense);
+  }
+  if (balanceEl && balanceEl.textContent === '0 VNĐ') {
+    balanceEl.textContent = (enhancedStats.balance || 0).toLocaleString('vi-VN') + ' VNĐ';
+    console.log("💳 Balance updated in updateStats:", enhancedStats.balance);
+  }
+  
+  // Enhanced stats - chỉ cập nhật nếu chưa được cập nhật bởi updateDashboardUI
   const budgetUsageEl = document.getElementById('budget-usage');
-  if (budgetUsageEl) {
+  if (budgetUsageEl && budgetUsageEl.textContent.includes('0%')) {
+    const budgetPercent = enhancedStats.budgetUsagePercent || 0;
     budgetUsageEl.innerHTML = `
       <div class="text-center">
-        <div class="h5 mb-0">${enhancedStats.budgetUsagePercent}%</div>
+        <div class="h5 mb-0">${budgetPercent}%</div>
         <small class="text-muted">Đã sử dụng ngân sách</small>
         <div class="progress mt-2" style="height: 8px;">
-          <div class="progress-bar ${enhancedStats.budgetUsagePercent > 100 ? 'bg-danger' : enhancedStats.budgetUsagePercent > 80 ? 'bg-warning' : 'bg-success'}" 
-               style="width: ${Math.min(enhancedStats.budgetUsagePercent, 100)}%"></div>
+          <div class="progress-bar ${budgetPercent > 100 ? 'bg-danger' : budgetPercent > 80 ? 'bg-warning' : 'bg-success'}" 
+               style="width: ${Math.min(budgetPercent, 100)}%"></div>
         </div>
+        <small class="text-muted d-block mt-1">
+          ${enhancedStats.usedBudget ? enhancedStats.usedBudget.toLocaleString('vi-VN') + 'VNĐ' : '0VNĐ'} / 
+          ${enhancedStats.totalBudget ? enhancedStats.totalBudget.toLocaleString('vi-VN') + 'VNĐ' : '0VNĐ'}
+        </small>
       </div>
     `;
+    
+    console.log("💰 Budget usage updated in updateStats:", budgetPercent);
   }
   
   const goalsProgressEl = document.getElementById('goals-progress');
-  if (goalsProgressEl) {
+  if (goalsProgressEl && goalsProgressEl.textContent.includes('0%')) {
+    const goalsPercent = enhancedStats.goalsProgressPercent || 0;
     goalsProgressEl.innerHTML = `
       <div class="text-center">
-        <div class="h5 mb-0">${enhancedStats.goalsProgressPercent}%</div>
+        <div class="h5 mb-0">${goalsPercent}%</div>
         <small class="text-muted">Tiến độ mục tiêu</small>
         <div class="progress mt-2" style="height: 8px;">
-          <div class="progress-bar bg-primary" style="width: ${Math.min(enhancedStats.goalsProgressPercent, 100)}%"></div>
+          <div class="progress-bar bg-primary" style="width: ${Math.min(goalsPercent, 100)}%"></div>
         </div>
+        <small class="text-muted d-block mt-1">
+          ${enhancedStats.totalGoalsProgress ? enhancedStats.totalGoalsProgress.toLocaleString('vi-VN') + 'VNĐ' : '0VNĐ'} / 
+          ${enhancedStats.totalGoalsTarget ? enhancedStats.totalGoalsTarget.toLocaleString('vi-VN') + 'VNĐ' : '0VNĐ'}
+        </small>
       </div>
     `;
+    
+    console.log("🎯 Goals progress updated in updateStats:", goalsPercent);
   }
   
-  // Update quick stats
+  // Update quick stats - chỉ cập nhật nếu chưa được cập nhật bởi loadDashboard
   const transactionCountEl = document.getElementById('transaction-count');
-  if (transactionCountEl) {
+  if (transactionCountEl && transactionCountEl.textContent === '0') {
     transactionCountEl.textContent = enhancedStats.transactionCount || 0;
+    console.log("📊 Transaction count updated in updateStats:", enhancedStats.transactionCount);
   }
   
   const avgTransactionEl = document.getElementById('average-transaction');
-  if (avgTransactionEl && enhancedStats.transactionCount > 0) {
+  if (avgTransactionEl && avgTransactionEl.textContent === '0VNĐ' && enhancedStats.transactionCount > 0) {
     const avgAmount = (enhancedStats.totalExpense + enhancedStats.totalIncome) / enhancedStats.transactionCount;
-    avgTransactionEl.textContent = avgAmount.toLocaleString('vi-VN') + 'đ';
+    avgTransactionEl.textContent = avgAmount.toLocaleString('vi-VN') + ' VNĐ';
+    console.log("📊 Average transaction updated in updateStats:", avgAmount);
   }
+  
+  console.log("✅ updateStats completed successfully");
 }
 
 /**
@@ -1155,7 +1289,7 @@ function updateRecentTransactions(transactions) {
           </div>
         </div>
         <div class="${amountClass} fw-bold">
-          ${amountPrefix}${(tx.amount || 0).toLocaleString('vi-VN')}đ
+          ${amountPrefix}${(tx.amount || 0).toLocaleString('vi-VN')}VNĐ
         </div>
       </div>
     `;

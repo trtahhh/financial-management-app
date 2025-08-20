@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAIStatus();
     setupEventListeners();
     updateStats();
+    addReportTemplates();
 });
 
 // Setup event listeners
@@ -31,6 +32,93 @@ function setupEventListeners() {
 
     // Send button click
     sendButton.addEventListener('click', sendMessage);
+}
+
+// Add report templates to chat
+function addReportTemplates() {
+    const chatContainer = document.getElementById('chat-container');
+    
+                // Add welcome message with report templates
+            const welcomeMessage = `
+                <div class="message ai-message">
+                    <div class="message-content">
+                        <div class="ai-avatar">🤖</div>
+                        <div class="message-text">
+                            <p>Xin chào! Tôi là trợ lý AI tài chính thông minh của bạn. Tôi có thể giúp bạn:</p>
+
+                            <div class="report-templates">
+                                <h6>📊 <strong>Báo cáo tài chính</strong></h6>
+                                <div class="template-buttons">
+                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Tạo báo cáo tổng hợp tháng này')">
+                                        📈 Báo cáo tổng hợp
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Báo cáo giao dịch tháng này')">
+                                        📋 Báo cáo giao dịch
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Báo cáo ngân sách tháng này')">
+                                        💰 Báo cáo ngân sách
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning template-btn" onclick="useTemplate('Xuất báo cáo Excel tháng này')">
+                                        📊 Excel
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger template-btn" onclick="useTemplate('Xuất báo cáo PDF tháng này')">
+                                        📄 PDF
+                                    </button>
+                                </div>
+
+                                <h6>🔍 <strong>Phân tích thông minh</strong></h6>
+                                <div class="template-buttons">
+                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Phân tích chi tiêu của tôi')">
+                                        💸 Phân tích chi tiêu
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Phân tích thu nhập hiện tại')">
+                                        💰 Phân tích thu nhập
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Đánh giá hiệu quả ngân sách')">
+                                        📊 Đánh giá ngân sách
+                                    </button>
+                                </div>
+
+                                <h6>💡 <strong>Tư vấn tài chính</strong></h6>
+                                <div class="template-buttons">
+                                    <button class="btn btn-sm btn-outline-warning template-btn" onclick="useTemplate('Tư vấn tiết kiệm hiệu quả')">
+                                        💰 Tiết kiệm thông minh
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger template-btn" onclick="useTemplate('Tư vấn đầu tư cơ bản')">
+                                        📈 Đầu tư an toàn
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary template-btn" onclick="useTemplate('Lời khuyên quản lý nợ')">
+                                        💳 Quản lý nợ
+                                    </button>
+                                </div>
+
+                                <h6>🎯 <strong>Mục tiêu tài chính</strong></h6>
+                                <div class="template-buttons">
+                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Lập kế hoạch tài chính dài hạn')">
+                                        📋 Kế hoạch dài hạn
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Dự báo tài chính tương lai')">
+                                        🔮 Dự báo tương lai
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Tìm cơ hội tăng thu nhập')">
+                                        📈 Tăng thu nhập
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p class="mt-3">💡 <strong>Gợi ý</strong>: Bạn có thể hỏi bất kỳ điều gì về tài chính hoặc sử dụng các template trên!</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+    
+    chatContainer.innerHTML = welcomeMessage;
+}
+
+// Use template message
+function useTemplate(message) {
+    document.getElementById('message-input').value = message;
+    document.getElementById('message-input').focus();
 }
 
 // Load AI status
@@ -99,41 +187,19 @@ async function sendMessage() {
         // Lấy JWT token từ localStorage
         const token = localStorage.getItem('authToken');
         if (!token) {
-            appendMessage('ai', 'Xin lỗi, bạn cần đăng nhập để sử dụng AI Chat. Vui lòng đăng nhập lại.');
-            return;
+            throw new Error('Chưa đăng nhập');
         }
 
-        const response = await fetch('/api/chat/message', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ message: message }),
-            signal: AbortSignal.timeout(200000) // 200 seconds timeout
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Add AI response to chat
-            appendMessage('ai', data.message);
-            
-            // Update chat count
-            chatCount++;
-            
-            // Update chat history
-            updateChatHistory(message, data.message);
+        // Kiểm tra xem có phải yêu cầu xuất báo cáo không
+        if (isReportRequest(message)) {
+            await sendReportRequest(message, token);
         } else {
-            appendMessage('ai', 'Xin lỗi, có lỗi xảy ra: ' + data.message);
+            await sendChatRequest(message, token);
         }
+        
     } catch (error) {
-        if (error.name === 'TimeoutError') {
-            appendMessage('ai', 'Xin lỗi, câu hỏi của bạn hơi phức tạp và tôi cần thời gian suy nghĩ. Hãy thử đặt câu hỏi khác.');
-        } else {
-            appendMessage('ai', 'Có lỗi xảy ra khi kết nối với AI. Vui lòng thử lại.');
-        }
         console.error('Error sending message:', error);
+        appendMessage('ai', '❌ Xin lỗi, đã có lỗi xảy ra: ' + error.message);
     } finally {
         // Hide typing indicator and re-enable send button
         hideTypingIndicator();
@@ -141,7 +207,166 @@ async function sendMessage() {
         isProcessing = false;
         
         // Update stats
-        updateStats();
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
+        updateStats(responseTime);
+        
+        // Scroll to bottom
+        scrollToBottom();
+    }
+}
+
+// Check if message is a report request
+function isReportRequest(message) {
+    const reportKeywords = ['báo cáo', 'report', 'thống kê', 'tổng hợp', 'xuất', 'tạo báo cáo', 'export'];
+    return reportKeywords.some(keyword => message.toLowerCase().includes(keyword));
+}
+
+// Send report request
+async function sendReportRequest(message, token) {
+    try {
+        const response = await fetch('/api/ai/export-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const reportContent = await response.text();
+        appendMessage('ai', reportContent);
+        
+        // Add export options if it's a report
+        if (reportContent.includes('BÁO CÁO ĐÃ ĐƯỢC TẠO')) {
+            addExportOptions(message);
+        }
+        
+    } catch (error) {
+        console.error('Error sending report request:', error);
+        appendMessage('ai', '❌ Lỗi khi tạo báo cáo: ' + error.message);
+    }
+}
+
+// Send regular chat request
+async function sendChatRequest(message, token) {
+    try {
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        appendMessage('ai', data.answer);
+        
+    } catch (error) {
+        console.error('Error sending chat request:', error);
+        appendMessage('ai', '❌ Lỗi khi gửi tin nhắn: ' + error.message);
+    }
+}
+
+// Add export options after report
+function addExportOptions(message) {
+    const chatContainer = document.getElementById('chat-container');
+    if (!chatContainer) {
+        console.error('Chat container not found');
+        return;
+    }
+    
+    const lastMessage = chatContainer.lastElementChild;
+    if (lastMessage && lastMessage.classList.contains('ai-message')) {
+        const exportDiv = document.createElement('div');
+        exportDiv.className = 'export-options mt-3';
+        exportDiv.innerHTML = `
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-sm btn-success" onclick="copyReport()">
+                    📋 Copy báo cáo
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="downloadAsText()">
+                    📄 Tải về (.txt)
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="printReport()">
+                    🖨️ In báo cáo
+                </button>
+            </div>
+        `;
+
+        const messageText = lastMessage.querySelector('.message-text');
+        if (messageText) {
+            messageText.appendChild(exportDiv);
+        }
+    }
+}
+
+// Copy report to clipboard
+function copyReport() {
+    const lastAiMessage = document.querySelector('.ai-message:last-child .message-text');
+    if (lastAiMessage) {
+        const textToCopy = lastAiMessage.textContent || lastAiMessage.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast('✅ Đã copy báo cáo vào clipboard!', 'success');
+        }).catch(() => {
+            showToast('❌ Không thể copy báo cáo', 'error');
+        });
+    }
+}
+
+// Download report as text file
+function downloadAsText() {
+    const lastAiMessage = document.querySelector('.ai-message:last-child .message-text');
+    if (lastAiMessage) {
+        const textContent = lastAiMessage.textContent || lastAiMessage.innerText;
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bao-cao-tai-chinh-${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('📄 Đã tải báo cáo về máy!', 'success');
+    }
+}
+
+// Print report
+function printReport() {
+    const lastAiMessage = document.querySelector('.ai-message:last-child .message-text');
+    if (lastAiMessage) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Báo cáo tài chính</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .content { white-space: pre-wrap; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>📊 Báo cáo tài chính</h1>
+                        <p>Ngày tạo: ${new Date().toLocaleDateString('vi-VN')}</p>
+                    </div>
+                    <div class="content">${lastAiMessage.textContent || lastAiMessage.innerText}</div>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
     }
 }
 
@@ -375,35 +600,35 @@ function toggleSidebar() {
 }
 
 // Update stats
-function updateStats() {
-    // Stats are updated in real-time during chat
+function updateStats(responseTime) {
+    const responseTimeElement = document.getElementById('response-time');
+    if (responseTimeElement) {
+        responseTimeElement.textContent = `${responseTime}ms`;
+    }
 }
 
 // Show toast notification
 function showToast(message, type = 'info') {
-    // Create toast element
     const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    
-    // Set background color based on type
-    if (type === 'success') {
-        toast.style.background = '#19c37d';
-    } else if (type === 'error') {
-        toast.style.background = '#ef4444';
-    } else if (type === 'warning') {
-        toast.style.background = '#f59e0b';
-    } else {
-        toast.style.background = '#3b82f6';
-    }
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
     
     document.body.appendChild(toast);
     
-    // Remove after 3 seconds
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
+        toast.remove();
     }, 3000);
 }
 

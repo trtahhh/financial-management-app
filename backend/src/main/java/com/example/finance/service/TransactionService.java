@@ -90,7 +90,27 @@ public class TransactionService {
                 dto.setFilePath(filename);
             }
 
-            Transaction entity = mapper.toEntity(dto);
+            Transaction entity;
+            
+            // Kiểm tra xem đây là create hay update
+            if (dto.getId() != null) {
+                // Update existing transaction
+                entity = repo.findById(dto.getId())
+                    .orElseThrow(() -> new CustomException("Transaction not found with ID: " + dto.getId()));
+                
+                // Update fields
+                entity.setAmount(dto.getAmount());
+                entity.setType(dto.getType());
+                entity.setNote(dto.getNote());
+                entity.setDate(dto.getDate());
+                entity.setFilePath(dto.getFilePath());
+                entity.setStatus(dto.getStatus());
+                entity.setTags(dto.getTags());
+                entity.setDeleted(dto.getIsDeleted() != null ? dto.getIsDeleted() : false);
+            } else {
+                // Create new transaction
+                entity = mapper.toEntity(dto);
+            }
 
             if (entity.getStatus() == null) {
                 entity.setStatus("cleared");      

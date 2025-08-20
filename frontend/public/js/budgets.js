@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <td>${b.month}</td>
             <td>${b.year}</td>
             <td>${categoryMap[b.category_id] || 'Không xác định'}</td>
-            <td>${b.amount?.toLocaleString('vi-VN')} VND</td>
+            <td>${b.amount?.toLocaleString('vi-VN')} VNĐ</td>
             <td>
               <div class="d-flex flex-column">
-                <span class="fw-bold">${(b.spentAmount || 0).toLocaleString('vi-VN')} VND</span>
+                <span class="fw-bold">${(b.spentAmount || 0).toLocaleString('vi-VN')} VNĐ</span>
                 <div class="progress mt-1" style="height: 8px;">
                   <div class="progress-bar ${(b.progress||0) >= 100 ? 'bg-danger' : (b.progress||0) >= 80 ? 'bg-warning' : 'bg-success'}" 
                        role="progressbar" 
@@ -116,22 +116,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
   f.addEventListener('submit', function (e) {
     e.preventDefault();
+    
+    // Validation
+    const categoryId = +f.category_id.value;
+    const amount = +f.amount.value;
+    const month = +f.month.value;
+    const year = +f.year.value;
+    
+    if (!categoryId) {
+      alert('Vui lòng chọn danh mục');
+      f.category_id.focus();
+      return;
+    }
+    
+    if (!amount || amount <= 0) {
+      alert('Số tiền phải lớn hơn 0');
+      f.amount.focus();
+      return;
+    }
+    
+    if (month < 1 || month > 12) {
+      alert('Tháng phải từ 1 đến 12');
+      f.month.focus();
+      return;
+    }
+    
+    if (year < 2020 || year > 2030) {
+      alert('Năm phải từ 2020 đến 2030');
+      f.year.focus();
+      return;
+    }
+    
     const data = {
-      month: +f.month.value,
-      year: +f.year.value,
-      category_id: +f.category_id.value,
-      amount: +f.amount.value
+      month: month,
+      year: year,
+      categoryId: categoryId,
+      amount: amount
     };
     
-    if (!data.category_id) {
-      alert('Vui lòng chọn danh mục');
-      return;
-    }
-    
-    if (!data.amount || data.amount <= 0) {
-      alert('Số tiền phải lớn hơn 0');
-      return;
-    }
+    console.log('Sending budget data:', data);
     
     const method = editing ? 'PUT' : 'POST';
     const url = '/api/budgets' + (editing ? '/' + editing : '');
@@ -141,11 +164,19 @@ document.addEventListener('DOMContentLoaded', function () {
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
     })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) {
+          return r.json().then(errorData => {
+            throw new Error(errorData.message || `HTTP ${r.status}: ${r.statusText}`);
+          });
+        }
+        return r.json();
+      })
       .then(response => {
         if (response.success !== false) {
           m.hide();
           load();
+          alert(editing ? 'Cập nhật ngân sách thành công!' : 'Tạo ngân sách thành công!');
         } else {
           alert('Lỗi lưu ngân sách: ' + (response.message || 'Unknown error'));
         }

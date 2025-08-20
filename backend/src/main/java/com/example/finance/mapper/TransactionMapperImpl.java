@@ -85,7 +85,8 @@ public class TransactionMapperImpl {
         }
 
         Transaction entity = new Transaction();
-        entity.setId(dto.getId());
+        // Không set ID khi tạo entity mới để tránh lỗi duplicate key
+        // entity.setId(dto.getId());
         entity.setAmount(dto.getAmount());
         entity.setType(dto.getType());
         entity.setNote(dto.getNote());

@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
           div.className = 'card mb-3';
           
           // Format target amount with VND currency
-          const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VND' : 'Chưa xác định';
+          const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VNĐ' : 'Chưa xác định';
           
           // Format due date
           const dueDate = goal.dueDate ? new Date(goal.dueDate).toLocaleDateString('vi-VN') : 'Chưa xác định';
