@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
               <td>
                 <button class="btn btn-sm btn-outline-primary edit">Sửa</button>
                 <button class="btn btn-sm btn-outline-danger ms-2 del">Xoá</button>
-                <button class="btn btn-sm btn-outline-info ms-2 update-balance">Cập nhật</button>
+
               </td>
             </tr>`
           ).join('') + '</tbody>';
@@ -73,14 +73,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
     
-    // Sử dụng VND (mã chuẩn) nhưng thay thế thành VNĐ cho hiển thị
-    const formatted = new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-    
-    // Thay thế VND thành VNĐ để hiển thị
-    return formatted.replace('VND', 'VNĐ');
+    // Hiển thị số tiền với định dạng Việt Nam và đơn vị VND
+    const formatted = new Intl.NumberFormat('vi-VN').format(amount);
+    return `${formatted} VND`;
   }
 
   document.getElementById('wallet-add-btn').addEventListener('click', function () {
@@ -90,23 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
     m.show();
   });
 
-  document.getElementById('update-balances-btn').addEventListener('click', function () {
-    if (confirm('Cập nhật số dư tất cả ví dựa trên giao dịch?')) {
-      fetch('http://localhost:8080/api/wallets/update-balances', { 
-        method: 'POST',
-        headers: getAuthHeaders()
-      })
-        .then(res => {
-          if (!res.ok) return res.text().then(text => { throw new Error(text); });
-          return res.text();
-        })
-        .then(message => {
-          alert('Đã cập nhật số dư thành công!');
-          load();
-        })
-        .catch(e => alert('Lỗi cập nhật số dư: ' + e.message));
-    }
-  });
+
 
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
@@ -159,23 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .catch(e => alert(e.message));
       }
     }
-    if (e.target.classList.contains('update-balance')) {
-      if (confirm('Cập nhật số dư ví này dựa trên giao dịch?')) {
-        fetch('http://localhost:8080/api/wallets/' + id + '/update-balance', { 
-          method: 'POST',
-          headers: getAuthHeaders()
-        })
-          .then(res => {
-            if (!res.ok) return res.text().then(text => { throw new Error(text); });
-            return res.text();
-          })
-          .then(message => {
-            alert('Đã cập nhật số dư ví thành công!');
-            load();
-          })
-          .catch(e => alert('Lỗi cập nhật số dư: ' + e.message));
-      }
-    }
+
   });
 
   f.addEventListener('submit', function (e) {

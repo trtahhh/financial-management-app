@@ -77,14 +77,14 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("🔍 Dashboard response status:", res.status);
         if (!res.ok) {
           return res.text().then(text => { 
-            console.error("❌ Dashboard error:", text);
+            console.error("Dashboard error:", text);
             throw new Error(`HTTP ${res.status}: ${text}`); 
           });
         }
         return res.json();
       })
       .then(data => {
-        console.log("✅ Dashboard data received:", data);
+        console.log("Dashboard data received:", data);
         return data;
       })
       .catch(err => {
@@ -114,14 +114,14 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("🔍 Transactions response status:", res.status);
         if (!res.ok) {
           return res.text().then(text => { 
-            console.error("❌ Transactions error:", text);
+            console.error("Transactions error:", text);
             throw new Error(`HTTP ${res.status}: ${text}`); 
           });
         }
         return res.json();
       })
       .then(data => {
-        console.log("✅ Transactions data received:", data);
+        console.log("Transactions data received:", data);
         // No need to filter on frontend - backend already filters by user
         return data;
       })
@@ -152,14 +152,14 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("🔍 Categories response status:", res.status);
         if (!res.ok) {
           return res.text().then(text => { 
-            console.error("❌ Categories error:", text);
+            console.error("Categories error:", text);
             throw new Error(`HTTP ${res.status}: ${text}`); 
           });
         }
         return res.json();
       })
       .then(data => {
-        console.log("✅ Categories data received:", data);
+        console.log("Categories data received:", data);
         // No need to filter on frontend - backend already handles user-specific data
         return data;
       })
@@ -170,17 +170,17 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function renderStats(data) {
-    console.log("✅ Rendering stats:", data);
-            document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString('vi-VN') + ' VNĐ';
-        document.getElementById('totalExpense').textContent = (data.totalExpense || 0).toLocaleString('vi-VN') + ' VNĐ';
-        document.getElementById('balance').textContent = (data.balance || 0).toLocaleString('vi-VN') + ' VNĐ';
+          console.log("Rendering stats:", data);
+            document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString('vi-VN') + ' VND';
+        document.getElementById('totalExpense').textContent = (data.totalExpense || 0).toLocaleString('vi-VN') + ' VND';
+        document.getElementById('balance').textContent = (data.balance || 0).toLocaleString('vi-VN') + ' VND';
   }
 
   function initCharts() {
     // Sử dụng dữ liệu từ dashboard response thay vì fetch riêng
     fetchDashboardData()
       .then(data => {
-        console.log("📊 Dashboard data for charts:", data);
+        console.log("Dashboard data for charts:", data);
         
         // Render biểu đồ tròn với dữ liệu từ backend
         if (data.expensesByCategory && data.expensesByCategory.length > 0) {
@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function () {
       categoryMap[cat.id] = cat.name;
     });
     
-    console.log("📊 Rendering pie chart with transactions:", transactions);
-    console.log("📊 Category map:", categoryMap);
+          console.log("Rendering pie chart with transactions:", transactions);
+      console.log("Category map:", categoryMap);
     
     // Calculate expenses by category from real data
     const expensesByCategory = {};
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(`Added ${amount} to category ${categoryName}`);
       });
 
-    console.log("📊 Expenses by category:", expensesByCategory);
+          console.log("Expenses by category:", expensesByCategory);
 
     const ctx = document.getElementById('chart-pie').getContext('2d');
     if (pieChart) pieChart.destroy();
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const value = context.parsed;
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((value / total) * 100).toFixed(1);
-                return `${context.label}: ${value.toLocaleString('vi-VN')} VNĐ (${percentage}%)`;
+                return `${context.label}: ${value.toLocaleString('vi-VN')} VND (${percentage}%)`;
               }
             }
           }
@@ -291,8 +291,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
     
-    console.log("📊 Rendering bar chart for month:", currentMonth, "year:", currentYear);
-    console.log("📊 All transactions:", transactions);
+          console.log("Rendering bar chart for month:", currentMonth, "year:", currentYear);
+      console.log("All transactions:", transactions);
     
     const weeklyData = { income: [0,0,0,0], expense: [0,0,0,0] };
     
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VNĐ`;
+                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VND`;
               }
             }
           }
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return value.toLocaleString('vi-VN') + ' VNĐ';
+                return value.toLocaleString('vi-VN') + ' VND';
               }
             }
           }
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.label}: ${Number(context.parsed).toLocaleString('vi-VN')} VNĐ`;
+                return `${context.label}: ${Number(context.parsed).toLocaleString('vi-VN')} VND`;
               }
             }
           }
@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function () {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VNĐ`;
+                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VND`;
               }
             }
           }
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function () {
             beginAtZero: true,
             ticks: {
               callback: function(value) {
-                return value.toLocaleString('vi-VN') + ' VNĐ';
+                return value.toLocaleString('vi-VN') + ' VND';
               }
             }
           }
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (avgTransactionEl) {
             const total = tx.reduce((s, t) => s + Number(t.amount || 0), 0);
             const avg = tx.length > 0 ? total / tx.length : 0;
-            avgTransactionEl.textContent = avg.toLocaleString('vi-VN') + ' VNĐ';
+            avgTransactionEl.textContent = avg.toLocaleString('vi-VN') + ' VND';
           }
         } catch (e) { console.warn('Quick stats render error:', e); }
         
@@ -641,9 +641,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("💳 Total balance:", totalBalance);
     
     // Cập nhật các số liệu chính
-    document.getElementById('totalIncome').textContent = Number(income || 0).toLocaleString('vi-VN') + ' VNĐ';
-    document.getElementById('totalExpense').textContent = Number(expense || 0).toLocaleString('vi-VN') + ' VNĐ';
-    document.getElementById('balance').textContent = totalBalance.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('totalIncome').textContent = Number(income || 0).toLocaleString('vi-VN') + ' VND';
+        document.getElementById('totalExpense').textContent = Number(expense || 0).toLocaleString('vi-VN') + ' VND';
+        document.getElementById('balance').textContent = totalBalance.toLocaleString('vi-VN') + ' VND';
     
     // Cập nhật thông tin tháng hiện tại
     const from = document.getElementById('dash-date-from')?.value;
@@ -677,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="progress-bar ${usagePercent > 100 ? 'bg-danger' : usagePercent > 80 ? 'bg-warning' : 'bg-success'}" style="width: ${Math.min(usagePercent, 100)}%"></div>
               </div>
               <small class="text-muted d-block mt-1">
-                ${usedBudget.toLocaleString('vi-VN')}VNĐ / ${totalBudget.toLocaleString('vi-VN')}VNĐ
+                ${usedBudget.toLocaleString('vi-VN')}VND / ${totalBudget.toLocaleString('vi-VN')}VND
               </small>
             </div>`;
         }
@@ -1085,7 +1085,7 @@ function updateBudgetAlerts(budgets) {
   let alertsHtml = '';
   
   if (exceededBudgets.length > 0) {
-    alertsHtml += '<div class="alert alert-danger mb-2"><strong>⚠️ Vượt ngân sách:</strong><br>';
+            alertsHtml += '<div class="alert alert-danger mb-2"><strong>Vượt ngân sách:</strong><br>';
     exceededBudgets.forEach(b => {
       const spent = Number(b.spentAmount || 0);
       const budget = Number(b.budgetAmount || 0);
@@ -1095,7 +1095,7 @@ function updateBudgetAlerts(budgets) {
   }
   
   if (nearLimitBudgets.length > 0) {
-    alertsHtml += '<div class="alert alert-warning mb-2"><strong>📊 Gần đạt giới hạn:</strong><br>';
+            alertsHtml += '<div class="alert alert-warning mb-2"><strong>Gần đạt giới hạn:</strong><br>';
     nearLimitBudgets.forEach(b => {
       const spent = Number(b.spentAmount || 0);
       const budget = Number(b.budgetAmount || 0);
@@ -1131,7 +1131,7 @@ function updateGoalProgress(goals, transactions) {
     })
     .reduce((sum, t) => sum + t.amount, 0);
   
-  let goalHtml = '<h6>🎯 Tiến độ mục tiêu</h6>';
+        let goalHtml = '<h6>Tiến độ mục tiêu</h6>';
   
   if (goals.length === 0) {
     goalHtml += '<div class="text-center text-muted"><p>Chưa có mục tiêu nào được thiết lập</p><a href="/goals" class="btn btn-success btn-sm">Tạo mục tiêu</a></div>';

@@ -4,12 +4,18 @@ import com.example.finance.dto.AIChatRequest;
 import com.example.finance.dto.AIChatResponse;
 import com.example.finance.service.AIFinanceService;
 import com.example.finance.service.ReportService;
+import com.example.finance.service.ExportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,11 +26,14 @@ import java.time.format.DateTimeFormatter;
 @CrossOrigin(origins = "*")
 public class AIChatController {
 
-    @Autowired
+        @Autowired
     private AIFinanceService aiFinanceService;
-
+    
     @Autowired
     private ReportService reportService;
+    
+    @Autowired
+    private ExportService exportService;
 
     @PostMapping("/chat")
     public AIChatResponse chat(@RequestBody AIChatRequest request) {
@@ -159,5 +168,130 @@ public class AIChatController {
             case "text": return "Văn bản";
             default: return "Văn bản";
         }
+    }
+    
+    @PostMapping("/export-excel")
+    public ResponseEntity<byte[]> exportExcel(@RequestBody AIChatRequest request) {
+        try {
+            log.info("Export Excel request received: {}", request.getMessage());
+            
+            // Tạm thời sử dụng username mặc định
+            String username = "admin";
+            Long userId = reportService.getUserIdByUsername(username);
+
+            // Phân tích loại báo cáo và tham số
+            String reportType = determineReportType(request.getMessage());
+            Map<String, Object> params = extractReportParams(request.getMessage());
+            
+            // Chuyển đổi tham số thành LocalDate
+            LocalDate startDate = parseDate((String) params.get("dateFrom"));
+            LocalDate endDate = parseDate((String) params.get("dateTo"));
+            
+            // Xuất file Excel
+            byte[] excelData = exportService.exportToExcel(userId, reportType, startDate, endDate);
+            
+            // Tạo tên file
+            String fileName = "bao_cao_tai_chinh_" + startDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + 
+                            "_" + endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx";
+            
+            return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(excelData);
+                
+        } catch (Exception e) {
+            log.error("Error exporting Excel: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @PostMapping("/export-pdf")
+    public ResponseEntity<byte[]> exportPDF(@RequestBody AIChatRequest request) {
+        try {
+            log.info("Export PDF request received: {}", request.getMessage());
+            
+            // Tạm thời sử dụng username mặc định
+            String username = "admin";
+            Long userId = reportService.getUserIdByUsername(username);
+
+            // Phân tích loại báo cáo và tham số
+            String reportType = determineReportType(request.getMessage());
+            Map<String, Object> params = extractReportParams(request.getMessage());
+            
+            // Chuyển đổi tham số thành LocalDate
+            LocalDate startDate = parseDate((String) params.get("dateFrom"));
+            LocalDate endDate = parseDate((String) params.get("dateTo"));
+            
+            // Xuất file PDF
+            byte[] pdfData = exportService.exportToPDF(userId, reportType, startDate, endDate);
+            
+            // Tạo tên file
+            String fileName = "bao_cao_tai_chinh_" + startDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + 
+                            "_" + endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf";
+            
+            return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .header("Content-Type", "application/pdf")
+                .body(pdfData);
+                
+        } catch (Exception e) {
+            log.error("Error exporting PDF: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    private LocalDate parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return LocalDate.now();
+        }
+        
+        try {
+            // Thử parse các format khác nhau
+            if (dateStr.contains("/")) {
+                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } else if (dateStr.contains("-")) {
+                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            } else {
+                // Nếu là tháng/năm
+                String[] parts = dateStr.split("/");
+                if (parts.length == 2) {
+                    int month = Integer.parseInt(parts[0]);
+                    int year = Integer.parseInt(parts[1]);
+                    return LocalDate.of(year, month, 1);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not parse date: {}, using current date", dateStr);
+        }
+        
+        return LocalDate.now();
+    }
+    
+    private Map<String, Object> extractReportParams(String message) {
+        Map<String, Object> params = new HashMap<>();
+        
+        // Parse thời gian từ message
+        if (message.toLowerCase().contains("tháng này") || message.toLowerCase().contains("this month")) {
+            LocalDate now = LocalDate.now();
+            params.put("month", now.getMonthValue());
+            params.put("year", now.getYear());
+            params.put("dateFrom", now.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            params.put("dateTo", now.withDayOfMonth(now.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        } else if (message.toLowerCase().contains("tháng trước") || message.toLowerCase().contains("last month")) {
+            LocalDate lastMonth = LocalDate.now().minusMonths(1);
+            params.put("month", lastMonth.getMonthValue());
+            params.put("year", lastMonth.getYear());
+            params.put("dateFrom", lastMonth.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            params.put("dateTo", lastMonth.withDayOfMonth(lastMonth.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        } else {
+            // Mặc định là tháng hiện tại
+            LocalDate now = LocalDate.now();
+            params.put("month", now.getMonthValue());
+            params.put("year", now.getYear());
+            params.put("dateFrom", now.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            params.put("dateTo", now.withDayOfMonth(now.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        return params;
     }
 }

@@ -44,15 +44,13 @@ public class OpenRouterService {
             }
             
             try {
-                // Kiểm tra xem có phải câu hỏi về tài chính không
-                if (isFinancialQuestion(prompt)) {
-                    return getFinancialAdvice(prompt);
-                }
+                // Không cần kiểm tra loại câu hỏi nữa, AI có thể trả lời tất cả
+                // Chỉ sử dụng fallback khi có lỗi API
                 
                 log.info("Sending chat request to OpenRouter with model: {}", model);
                 
                 // Tạo system prompt để AI trả lời đầy đủ và có format đẹp
-                String systemPrompt = "Bạn là chuyên gia tài chính AI. Trả lời tiếng Việt chính xác và đầy đủ.\n\n" +
+                String systemPrompt = "Bạn là một AI trợ lý thông minh và thân thiện. Trả lời tiếng Việt chính xác và đầy đủ.\n\n" +
                     "HƯỚNG DẪN FORMAT:\n" +
                     "1. Luôn chia câu trả lời thành các đoạn văn rõ ràng\n" +
                     "2. Sử dụng dấu xuống dòng để tách các ý chính\n" +
@@ -64,8 +62,11 @@ public class OpenRouterService {
                     "Với mọi câu hỏi, hãy trả lời một cách toàn diện, bao gồm:\n" +
                     "• Các khía cạnh chính\n" +
                     "• Ví dụ minh họa cụ thể\n" +
-                    "• Lời khuyên thực tế\n" +
+                    "• Lời khuyên thực tế (nếu có)\n" +
                     "• Các bước thực hiện (nếu có)\n\n" +
+                    "Nếu câu hỏi về tài chính: Đưa ra lời khuyên chuyên môn và thực tế\n" +
+                    "Nếu câu hỏi về chủ đề khác: Trả lời chính xác và hữu ích\n" +
+                    "Luôn giữ giọng điệu thân thiện và sẵn sàng giúp đỡ\n\n" +
                     "Đảm bảo người dùng hiểu rõ vấn đề và có thể áp dụng kiến thức ngay lập tức.";
                 
                 // Tạo request payload theo format OpenRouter

@@ -44,69 +44,89 @@ function addReportTemplates() {
                     <div class="message-content">
                         <div class="ai-avatar">🤖</div>
                         <div class="message-text">
-                            <p>Xin chào! Tôi là trợ lý AI tài chính thông minh của bạn. Tôi có thể giúp bạn:</p>
+                            <p>Xin chào! Tôi là trợ lý AI thông minh của bạn. Tôi có thể trả lời <strong>tất cả mọi câu hỏi</strong> của bạn, bao gồm:</p>
 
                             <div class="report-templates">
-                                <h6>📊 <strong>Báo cáo tài chính</strong></h6>
+                                <h6><strong>Báo cáo tài chính</strong></h6>
                                 <div class="template-buttons">
                                     <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Tạo báo cáo tổng hợp tháng này')">
-                                        📈 Báo cáo tổng hợp
+                                        Báo cáo tổng hợp
                                     </button>
                                     <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Báo cáo giao dịch tháng này')">
-                                        📋 Báo cáo giao dịch
+                                        Báo cáo giao dịch
                                     </button>
                                     <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Báo cáo ngân sách tháng này')">
-                                        💰 Báo cáo ngân sách
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-warning template-btn" onclick="useTemplate('Xuất báo cáo Excel tháng này')">
-                                        📊 Excel
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger template-btn" onclick="useTemplate('Xuất báo cáo PDF tháng này')">
-                                        📄 PDF
+                                        Báo cáo ngân sách
                                     </button>
                                 </div>
-
-                                <h6>🔍 <strong>Phân tích thông minh</strong></h6>
+                                
+                                <h6><strong>Xuất file trực tiếp</strong></h6>
                                 <div class="template-buttons">
-                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Phân tích chi tiêu của tôi')">
-                                        💸 Phân tích chi tiêu
+                                    <button class="btn btn-sm btn-outline-warning template-btn" onclick="exportDirectly('excel')">
+                                        Excel (.xlsx)
                                     </button>
-                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Phân tích thu nhập hiện tại')">
-                                        💰 Phân tích thu nhập
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Đánh giá hiệu quả ngân sách')">
-                                        📊 Đánh giá ngân sách
+                                    <button class="btn btn-sm btn-outline-danger template-btn" onclick="exportDirectly('pdf')">
+                                        PDF (.pdf)
                                     </button>
                                 </div>
 
-                                <h6>💡 <strong>Tư vấn tài chính</strong></h6>
+                                <h6><strong>Phân tích thông minh</strong></h6>
                                 <div class="template-buttons">
-                                    <button class="btn btn-sm btn-outline-warning template-btn" onclick="useTemplate('Tư vấn tiết kiệm hiệu quả')">
-                                        💰 Tiết kiệm thông minh
+                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Phân tích thực tế')">
+                                        Phân tích dữ liệu thực tế
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger template-btn" onclick="useTemplate('Tư vấn đầu tư cơ bản')">
-                                        📈 Đầu tư an toàn
+                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Tình hình hiện tại')">
+                                        Tình hình tài chính hiện tại
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary template-btn" onclick="useTemplate('Lời khuyên quản lý nợ')">
-                                        💳 Quản lý nợ
+                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Phân tích chi tiêu của tôi')">
+                                        Phân tích chi tiêu
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning template-btn" onclick="useTemplate('Phân tích thu nhập hiện tại')">
+                                        Phân tích thu nhập
                                     </button>
                                 </div>
 
-                                <h6>🎯 <strong>Mục tiêu tài chính</strong></h6>
+                                <h6><strong>Tư vấn tài chính</strong></h6>
+                                <div class="template-buttons">
+                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Tư vấn tiết kiệm hiệu quả')">
+                                        Tiết kiệm thông minh
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Tư vấn đầu tư cơ bản')">
+                                        Đầu tư an toàn
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Lời khuyên quản lý nợ')">
+                                        Quản lý nợ
+                                    </button>
+                                </div>
+
+                                <h6><strong>💬 Chat AI thông minh</strong></h6>
+                                <div class="template-buttons">
+                                    <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Bạn có thể trả lời mọi câu hỏi không?')">
+                                        Test AI
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Kể chuyện cười')">
+                                        Giải trí
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Giải thích về blockchain')">
+                                        Kiến thức
+                                    </button>
+                                </div>
+
+                                <h6><strong>Mục tiêu tài chính</strong></h6>
                                 <div class="template-buttons">
                                     <button class="btn btn-sm btn-outline-primary template-btn" onclick="useTemplate('Lập kế hoạch tài chính dài hạn')">
-                                        📋 Kế hoạch dài hạn
+                                        Kế hoạch dài hạn
                                     </button>
                                     <button class="btn btn-sm btn-outline-success template-btn" onclick="useTemplate('Dự báo tài chính tương lai')">
-                                        🔮 Dự báo tương lai
+                                        Dự báo tương lai
                                     </button>
                                     <button class="btn btn-sm btn-outline-info template-btn" onclick="useTemplate('Tìm cơ hội tăng thu nhập')">
-                                        📈 Tăng thu nhập
+                                        Tăng thu nhập
                                     </button>
                                 </div>
                             </div>
 
-                            <p class="mt-3">💡 <strong>Gợi ý</strong>: Bạn có thể hỏi bất kỳ điều gì về tài chính hoặc sử dụng các template trên!</p>
+                            <p class="mt-3"><strong>Gợi ý</strong>: Bạn có thể hỏi bất kỳ điều gì về tài chính hoặc sử dụng các template trên!</p>
                         </div>
                     </div>
                 </div>
@@ -121,13 +141,61 @@ function useTemplate(message) {
     document.getElementById('message-input').focus();
 }
 
+// Export file directly
+async function exportDirectly(format) {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showToast('Vui lòng đăng nhập để xuất file', 'error');
+            return;
+        }
+        
+        showToast(`Đang xuất file ${format.toUpperCase()}...`, 'info');
+        
+        // Tạo message mặc định
+        const message = `Xuất báo cáo tổng hợp tháng này ${format}`;
+        
+        const response = await fetch(`/api/ai/export-${format}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Lỗi xuất file');
+        }
+        
+        // Lấy file data
+        const blob = await response.blob();
+        
+        // Tạo download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bao_cao_tai_chinh_${new Date().toISOString().slice(0, 10)}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showToast(`Đã xuất file ${format.toUpperCase()} thành công!`, 'success');
+        
+    } catch (error) {
+        console.error('Export error:', error);
+        showToast(`Lỗi xuất file ${format.toUpperCase()}: ${error.message}`, 'error');
+    }
+}
+
 // Load AI status
 async function loadAIStatus() {
     try {
         // Lấy JWT token từ localStorage
         const token = localStorage.getItem('authToken');
         if (!token) {
-            document.getElementById('ai-status-badge').innerHTML = '<i class="fas fa-circle me-1"></i>❌ Chưa đăng nhập';
+            document.getElementById('ai-status-badge').innerHTML = 'Chưa đăng nhập';
             document.getElementById('ai-status-badge').style.background = '#ef4444';
             return;
         }
@@ -144,19 +212,19 @@ async function loadAIStatus() {
             const badge = document.getElementById('ai-status-badge');
             
             if (status.provider === 'openrouter' && status.openrouter_available) {
-                badge.innerHTML = '<i class="fas fa-circle me-1"></i>🟢 OpenRouter AI';
+                badge.innerHTML = 'OpenRouter AI';
                 badge.style.background = '#19c37d';
             } else if (status.provider === 'openrouter') {
-                badge.innerHTML = '<i class="fas fa-circle me-1"></i>🟡 OpenRouter Offline';
+                badge.innerHTML = 'OpenRouter Offline';
                 badge.style.background = '#f59e0b';
             } else {
-                badge.innerHTML = '<i class="fas fa-circle me-1"></i>🌐 OpenRouter';
+                badge.innerHTML = 'OpenRouter';
                 badge.style.background = '#3b82f6';
             }
         }
     } catch (error) {
         console.error('Error loading AI status:', error);
-        document.getElementById('ai-status-badge').innerHTML = '<i class="fas fa-circle me-1"></i>❌ Lỗi kết nối';
+        document.getElementById('ai-status-badge').innerHTML = 'Lỗi kết nối';
         document.getElementById('ai-status-badge').style.background = '#ef4444';
     }
 }
@@ -190,8 +258,12 @@ async function sendMessage() {
             throw new Error('Chưa đăng nhập');
         }
 
+        // Kiểm tra xem có phải yêu cầu xuất file không
+        if (isExportRequest(message)) {
+            await sendExportRequest(message, token);
+        }
         // Kiểm tra xem có phải yêu cầu xuất báo cáo không
-        if (isReportRequest(message)) {
+        else if (isReportRequest(message)) {
             await sendReportRequest(message, token);
         } else {
             await sendChatRequest(message, token);
@@ -218,8 +290,14 @@ async function sendMessage() {
 
 // Check if message is a report request
 function isReportRequest(message) {
-    const reportKeywords = ['báo cáo', 'report', 'thống kê', 'tổng hợp', 'xuất', 'tạo báo cáo', 'export'];
+    const reportKeywords = ['báo cáo', 'report', 'thống kê', 'tổng hợp', 'tạo báo cáo'];
     return reportKeywords.some(keyword => message.toLowerCase().includes(keyword));
+}
+
+// Check if message is an export request
+function isExportRequest(message) {
+    const exportKeywords = ['xuất', 'excel', 'pdf', 'xlsx', 'download', 'tải về'];
+    return exportKeywords.some(keyword => message.toLowerCase().includes(keyword));
 }
 
 // Send report request
@@ -249,6 +327,36 @@ async function sendReportRequest(message, token) {
     } catch (error) {
         console.error('Error sending report request:', error);
         appendMessage('ai', '❌ Lỗi khi tạo báo cáo: ' + error.message);
+    }
+}
+
+// Send export request
+async function sendExportRequest(message, token) {
+    try {
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const exportInfo = await response.text();
+        appendMessage('ai', exportInfo);
+        
+        // Add export buttons if it's an export request
+        if (exportInfo.includes('XUẤT FILE BÁO CÁO')) {
+            addExportButtons();
+        }
+        
+    } catch (error) {
+        console.error('Error sending export request:', error);
+        appendMessage('ai', 'Lỗi khi xử lý yêu cầu xuất file: ' + error.message);
     }
 }
 
@@ -292,13 +400,43 @@ function addExportOptions(message) {
         exportDiv.innerHTML = `
             <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-sm btn-success" onclick="copyReport()">
-                    📋 Copy báo cáo
+                    Copy báo cáo
                 </button>
                 <button class="btn btn-sm btn-primary" onclick="downloadAsText()">
-                    📄 Tải về (.txt)
+                    Tải về (.txt)
                 </button>
                 <button class="btn btn-sm btn-warning" onclick="printReport()">
-                    🖨️ In báo cáo
+                    In báo cáo
+                </button>
+            </div>
+        `;
+
+        const messageText = lastMessage.querySelector('.message-text');
+        if (messageText) {
+            messageText.appendChild(exportDiv);
+        }
+    }
+}
+
+// Add export buttons after export info
+function addExportButtons() {
+    const chatContainer = document.getElementById('chat-container');
+    if (!chatContainer) {
+        console.error('Chat container not found');
+        return;
+    }
+    
+    const lastMessage = chatContainer.lastElementChild;
+    if (lastMessage && lastMessage.classList.contains('ai-message')) {
+        const exportDiv = document.createElement('div');
+        exportDiv.className = 'export-buttons mt-3';
+        exportDiv.innerHTML = `
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-sm btn-outline-warning" onclick="exportDirectly('excel')">
+                    Excel (.xlsx)
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="exportDirectly('pdf')">
+                    PDF (.pdf)
                 </button>
             </div>
         `;

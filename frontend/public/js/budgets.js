@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <td>${b.month}</td>
             <td>${b.year}</td>
             <td>${categoryMap[b.category_id] || 'Không xác định'}</td>
-            <td>${b.amount?.toLocaleString('vi-VN')} VNĐ</td>
+                            <td>${b.amount?.toLocaleString('vi-VN')} VND</td>
             <td>
               <div class="d-flex flex-column">
-                <span class="fw-bold">${(b.spentAmount || 0).toLocaleString('vi-VN')} VNĐ</span>
+                <span class="fw-bold">${(b.spentAmount || 0).toLocaleString('vi-VN')} VND</span>
                 <div class="progress mt-1" style="height: 8px;">
                   <div class="progress-bar ${(b.progress||0) >= 100 ? 'bg-danger' : (b.progress||0) >= 80 ? 'bg-warning' : 'bg-success'}" 
                        role="progressbar" 

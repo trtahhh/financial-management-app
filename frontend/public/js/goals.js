@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
           div.className = 'card mb-3';
           
           // Format target amount with VND currency
-          const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VNĐ' : 'Chưa xác định';
+          const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VND' : 'Chưa xác định';
           
           // Format due date
           const dueDate = goal.dueDate ? new Date(goal.dueDate).toLocaleDateString('vi-VN') : 'Chưa xác định';
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         const totalSaved = stats.totalSavedAmount || 0;
         document.getElementById('total-saved-amount').textContent = 
-          Number(totalSaved).toLocaleString('vi-VN') + ' VNĐ';
+          Number(totalSaved).toLocaleString('vi-VN') + ' VND';
       })
       .catch(e => {
         console.error('Error loading goal stats:', e);
@@ -144,8 +144,8 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>
             </div>
             <small class="text-muted">
-              Mục tiêu: ${Number(goal.targetAmount).toLocaleString('vi-VN')} VNĐ | 
-              Hiện tại: ${Number(goal.currentBalance).toLocaleString('vi-VN')} VNĐ
+                          Mục tiêu: ${Number(goal.targetAmount).toLocaleString('vi-VN')} VND |
+            Hiện tại: ${Number(goal.currentBalance).toLocaleString('vi-VN')} VND
             </small>
           </div>
         `).join('');
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div class="text-end">
                   <div class="text-success fw-bold">
-                    ${Number(goal.targetAmount).toLocaleString('vi-VN')} VNĐ
+                    ${Number(goal.targetAmount).toLocaleString('vi-VN')} VND
                   </div>
                   <small class="text-muted">Số tiền tiết kiệm</small>
                 </div>
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(r => r.json())
           .then(response => {
             if (response.success) {
-              alert(`✅ ${response.message}\n\nSố tiền: ${Number(response.transaction.amount).toLocaleString('vi-VN')} VNĐ\nVí: ${response.walletName}\nSố dư mới: ${Number(response.newBalance).toLocaleString('vi-VN')} VNĐ`);
+              alert(`✅ ${response.message}\n\nSố tiền: ${Number(response.transaction.amount).toLocaleString('vi-VN')} VND\nVí: ${response.walletName}\nSố dư mới: ${Number(response.newBalance).toLocaleString('vi-VN')} VND`);
               load(); // Reload để cập nhật UI
             } else {
               alert('❌ Lỗi: ' + response.error);

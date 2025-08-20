@@ -231,7 +231,7 @@ class GoalsIntegration {
           );
         }
         
-        return `Tiến độ mục tiêu đã cập nhật (+${transaction.amount.toLocaleString('vi-VN')}VNĐ)`;
+        return `Tiến độ mục tiêu đã cập nhật (+${transaction.amount.toLocaleString('vi-VN')}VND)`;
       }
     } catch (error) {
       console.error("❌ Failed to update goals progress:", error);
@@ -407,14 +407,11 @@ class GoalNotificationManager {
   }
 
   static formatCurrency(amount) {
-    // Sử dụng VND (mã chuẩn) nhưng thay thế thành VNĐ cho hiển thị
-    const formatted = new Intl.NumberFormat('vi-VN', {
+    // Sử dụng VND (mã chuẩn) cho hiển thị
+    return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
     }).format(amount);
-    
-    // Thay thế VND thành VNĐ để hiển thị
-    return formatted.replace('VND', 'VNĐ');
   }
 
   static isGoalCompletedNotified(goalId) {

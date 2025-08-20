@@ -76,47 +76,47 @@
     <ul class="nav flex-column">
       <li class="nav-item">
         <a href="/dashboard" class="nav-link">
-          📊 Tổng quan
+          Tổng quan
         </a>
       </li>
       <li class="nav-item">
         <a href="/profile" class="nav-link">
-          👤 Hồ sơ
+          Hồ sơ
         </a>
       </li>
       <li class="nav-item">
         <a href="/wallets" class="nav-link">
-          💰 Ví tiền
+          Ví tiền
         </a>
       </li>
       <li class="nav-item">
         <a href="/categories" class="nav-link">
-          🏷️ Danh mục
+          Danh mục
         </a>
       </li>
       <li class="nav-item">
         <a href="/transactions" class="nav-link">
-          💳 Giao dịch
+          Giao dịch
         </a>
       </li>
       <li class="nav-item">
         <a href="/budgets" class="nav-link">
-          📊 Ngân sách
+          Ngân sách
         </a>
       </li>
       <li class="nav-item">
         <a href="/goals" class="nav-link">
-          🎯 Mục tiêu
+          Mục tiêu
         </a>
       </li>
       <li class="nav-item">
         <a href="/chat" class="nav-link">
-          🤖 AI Chat
+          AI Chat
         </a>
       </li>
       <li class="nav-item mt-3 border-top pt-3">
         <a href="#" class="nav-link" onclick="logout()">
-          🚪 Đăng xuất
+          Đăng xuất
         </a>
       </li>
     </ul>
@@ -128,7 +128,7 @@
     <nav class="navbar navbar-light bg-light d-md-none">
       <div class="container-fluid">
         <button class="btn btn-outline-success" type="button" onclick="toggleSidebar()">
-          ☰
+          Menu
         </button>
         <span class="navbar-brand mb-0 h1">Finance AI</span>
         <!-- Notification badge for mobile -->
@@ -145,7 +145,7 @@
           <!-- Notification dropdown -->
           <div class="dropdown me-3">
             <button class="btn btn-outline-success position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              🔔 Thông báo
+              Thông báo
               <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
                 0
               </span>
@@ -358,11 +358,11 @@
         <li class="dropdown-item">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <div class="fw-bold">${getNotificationIcon(notification.type)} ${notification.message}</div>
+              <div class="fw-bold">${notification.message}</div>
               <small class="text-muted">${formatDateTime(notification.createdAt)}</small>
             </div>
             <button class="btn btn-sm btn-outline-secondary ms-2" onclick="markNotificationAsRead(${notification.id})">
-              ✓
+              Đọc
             </button>
           </div>
         </li>

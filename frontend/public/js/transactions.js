@@ -487,14 +487,9 @@ function deleteTransaction(id) {
 }
 
 function formatCurrency(amount) {
-  // Sử dụng VND (mã chuẩn) nhưng thay thế thành VNĐ cho hiển thị
-  const formatted = new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(amount);
-  
-  // Thay thế VND thành VNĐ để hiển thị
-  return formatted.replace('VND', 'VNĐ');
+  // Hiển thị số tiền với định dạng Việt Nam và đơn vị VND
+  const formatted = new Intl.NumberFormat('vi-VN').format(amount);
+  return `${formatted} VND`;
 }
 
 function showAlert(type, message) {
