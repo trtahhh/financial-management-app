@@ -654,24 +654,24 @@ document.addEventListener('DOMContentLoaded', function () {
       monthDisplay.textContent = monthText;
     }
     
-    // Cập nhật % ngân sách đã dùng từ budgetProgress
+    // Cập nhật % ngân sách đã dùng từ totalBudgetInfo (backend)
     try {
       const budgetUsageEl = document.getElementById('budget-usage');
-      const progress = Array.isArray(data.budgetProgress) ? data.budgetProgress : [];
+      const totalBudgetInfo = data.totalBudgetInfo || {};
       
-      console.log("💰 Budget progress data:", progress);
+      console.log("💰 Total budget info from backend:", totalBudgetInfo);
       
-      if (progress.length > 0) {
-        const totalBudget = progress.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0);
-        const usedBudget = progress.reduce((sum, b) => sum + (Number(b.spentAmount) || 0), 0);
-        const usagePercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
+      if (totalBudgetInfo.totalBudgetAmount && totalBudgetInfo.totalBudgetAmount > 0) {
+        const totalBudget = Number(totalBudgetInfo.totalBudgetAmount);
+        const usedBudget = Number(totalBudgetInfo.totalBudgetSpent);
+        const usagePercent = Number(totalBudgetInfo.budgetUsagePercent);
         
-        console.log("💰 Budget calculation:", { totalBudget, usedBudget, usagePercent });
+        console.log("💰 Budget from backend:", { totalBudget, usedBudget, usagePercent });
         
         if (budgetUsageEl) {
           budgetUsageEl.innerHTML = `
             <div class="text-center">
-              <div class="h5 mb-0">${usagePercent}%</div>
+              <div class="h5 mb-0">${Math.round(usagePercent)}%</div>
               <small class="text-muted">Đã sử dụng</small>
               <div class="progress mt-2" style="height: 8px;">
                 <div class="progress-bar ${usagePercent > 100 ? 'bg-danger' : usagePercent > 80 ? 'bg-warning' : 'bg-success'}" style="width: ${Math.min(usagePercent, 100)}%"></div>
@@ -682,19 +682,46 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>`;
         }
       } else {
-        // Không có ngân sách nào
-        if (budgetUsageEl) {
-          budgetUsageEl.innerHTML = `
-            <div class="text-center">
-              <div class="h5 mb-0">0%</div>
-              <small class="text-muted">Đã sử dụng</small>
-              <div class="progress mt-2" style="height: 8px;">
-                <div class="progress-bar bg-secondary" style="width: 0%"></div>
-              </div>
-              <small class="text-muted d-block mt-1">
-                Chưa thiết lập ngân sách
-              </small>
-            </div>`;
+        // Fallback: tính toán từ budgetProgress nếu không có totalBudgetInfo
+        const progress = Array.isArray(data.budgetProgress) ? data.budgetProgress : [];
+        
+        console.log("💰 Fallback: Budget progress data:", progress);
+        
+        if (progress.length > 0) {
+          const totalBudget = progress.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0);
+          const usedBudget = progress.reduce((sum, b) => sum + (Number(b.spentAmount) || 0), 0);
+          const usagePercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
+          
+          console.log("💰 Fallback budget calculation:", { totalBudget, usedBudget, usagePercent });
+          
+          if (budgetUsageEl) {
+            budgetUsageEl.innerHTML = `
+              <div class="text-center">
+                <div class="h5 mb-0">${usagePercent}%</div>
+                <small class="text-muted">Đã sử dụng</small>
+                <div class="progress mt-2" style="height: 8px;">
+                  <div class="progress-bar ${usagePercent > 100 ? 'bg-danger' : usagePercent > 80 ? 'bg-warning' : 'bg-success'}" style="width: ${Math.min(usagePercent, 100)}%"></div>
+                </div>
+                <small class="text-muted d-block mt-1">
+                  ${usedBudget.toLocaleString('vi-VN')}VND / ${totalBudget.toLocaleString('vi-VN')}VND
+                </small>
+              </div>`;
+          }
+        } else {
+          // Không có ngân sách nào
+          if (budgetUsageEl) {
+            budgetUsageEl.innerHTML = `
+              <div class="text-center">
+                <div class="h5 mb-0">0%</div>
+                <small class="text-muted">Đã sử dụng</small>
+                <div class="progress mt-2" style="height: 8px;">
+                  <div class="progress-bar bg-secondary" style="width: 0%"></div>
+                </div>
+                <small class="text-muted d-block mt-1">
+                  Chưa thiết lập ngân sách
+                </small>
+              </div>`;
+          }
         }
       }
     } catch (e) {

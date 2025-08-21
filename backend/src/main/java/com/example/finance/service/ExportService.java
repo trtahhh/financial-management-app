@@ -124,6 +124,26 @@ public class ExportService {
         return outputStream.toByteArray();
     }
 
+    /**
+     * Xuất báo cáo Excel với date range string
+     */
+    public byte[] generateExcelReport(Long userId, String startDateStr, String endDateStr) throws IOException {
+        LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr) : LocalDate.now().withDayOfMonth(1);
+        LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr) : LocalDate.now();
+        
+        return exportToExcel(userId, "summary", startDate, endDate);
+    }
+
+    /**
+     * Xuất báo cáo PDF với date range string
+     */
+    public byte[] generatePdfReport(Long userId, String startDateStr, String endDateStr) throws IOException, DocumentException {
+        LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr) : LocalDate.now().withDayOfMonth(1);
+        LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr) : LocalDate.now();
+        
+        return exportToPDF(userId, "summary", startDate, endDate);
+    }
+
     private int exportTransactionsToExcel(Sheet sheet, Long userId, LocalDate startDate, LocalDate endDate, 
                                        int startRow, CellStyle headerStyle, CellStyle dataStyle) {
         int rowNum = startRow;
@@ -170,11 +190,19 @@ public class ExportService {
         List<Map<String, Object>> budgets = budgetService.getBudgetVsActualByDate(userId, startDate, endDate);
         for (Map<String, Object> budget : budgets) {
             Row dataRow = sheet.createRow(rowNum++);
-            dataRow.createCell(0).setCellValue(budget.get("categoryName").toString());
-            dataRow.createCell(1).setCellValue(budget.get("budgetAmount").toString());
-            dataRow.createCell(2).setCellValue(budget.get("actualAmount").toString());
-            dataRow.createCell(3).setCellValue(budget.get("remainingAmount").toString());
-            dataRow.createCell(4).setCellValue(budget.get("usagePercent").toString() + "%");
+            
+            // Kiểm tra null và xử lý an toàn
+            String categoryName = budget.get("categoryName") != null ? budget.get("categoryName").toString() : "Không xác định";
+            String budgetAmount = budget.get("budgetAmount") != null ? budget.get("budgetAmount").toString() : "0";
+            String actualAmount = budget.get("actualAmount") != null ? budget.get("actualAmount").toString() : "0";
+            String remainingAmount = budget.get("remainingAmount") != null ? budget.get("remainingAmount").toString() : "0";
+            String usagePercent = budget.get("usagePercent") != null ? budget.get("usagePercent").toString() : "0";
+            
+            dataRow.createCell(0).setCellValue(categoryName);
+            dataRow.createCell(1).setCellValue(budgetAmount);
+            dataRow.createCell(2).setCellValue(actualAmount);
+            dataRow.createCell(3).setCellValue(remainingAmount);
+            dataRow.createCell(4).setCellValue(usagePercent + "%");
         }
         
         rowNum++; // Dòng trống
@@ -197,11 +225,19 @@ public class ExportService {
         List<Map<String, Object>> goals = goalService.getGoalProgress(userId);
         for (Map<String, Object> goal : goals) {
             Row dataRow = sheet.createRow(rowNum++);
-            dataRow.createCell(0).setCellValue(goal.get("name").toString());
-            dataRow.createCell(1).setCellValue(goal.get("targetAmount").toString());
-            dataRow.createCell(2).setCellValue(goal.get("currentAmount").toString());
-            dataRow.createCell(3).setCellValue(goal.get("progressPercent").toString() + "%");
-            dataRow.createCell(4).setCellValue(goal.get("targetDate") != null ? goal.get("targetDate").toString() : "");
+            
+            // Kiểm tra null và xử lý an toàn
+            String name = goal.get("name") != null ? goal.get("name").toString() : "Không xác định";
+            String targetAmount = goal.get("targetAmount") != null ? goal.get("targetAmount").toString() : "0";
+            String currentAmount = goal.get("currentAmount") != null ? goal.get("currentAmount").toString() : "0";
+            String progressPercent = goal.get("progressPercent") != null ? goal.get("progressPercent").toString() : "0";
+            String targetDate = goal.get("targetDate") != null ? goal.get("targetDate").toString() : "";
+            
+            dataRow.createCell(0).setCellValue(name);
+            dataRow.createCell(1).setCellValue(targetAmount);
+            dataRow.createCell(2).setCellValue(currentAmount);
+            dataRow.createCell(3).setCellValue(progressPercent + "%");
+            dataRow.createCell(4).setCellValue(targetDate);
         }
         
         return rowNum;
@@ -230,12 +266,20 @@ public class ExportService {
         // Dữ liệu
         List<Map<String, Object>> transactions = transactionService.getRecentTransactions(userId, 100);
         for (Map<String, Object> tx : transactions) {
-            table.addCell(tx.get("date").toString());
-            table.addCell(tx.get("type").toString());
-            table.addCell(tx.get("categoryName") != null ? tx.get("categoryName").toString() : "");
-            table.addCell(tx.get("description") != null ? tx.get("description").toString() : "");
-            table.addCell(tx.get("amount").toString());
-            table.addCell(tx.get("walletName") != null ? tx.get("walletName").toString() : "");
+            // Kiểm tra null và xử lý an toàn
+            String date = tx.get("date") != null ? tx.get("date").toString() : "";
+            String type = tx.get("type") != null ? tx.get("type").toString() : "";
+            String categoryName = tx.get("categoryName") != null ? tx.get("categoryName").toString() : "";
+            String description = tx.get("description") != null ? tx.get("description").toString() : "";
+            String amount = tx.get("amount") != null ? tx.get("amount").toString() : "0";
+            String walletName = tx.get("walletName") != null ? tx.get("walletName").toString() : "";
+            
+            table.addCell(date);
+            table.addCell(type);
+            table.addCell(categoryName);
+            table.addCell(description);
+            table.addCell(amount);
+            table.addCell(walletName);
         }
         
         document.add(table);
@@ -265,11 +309,18 @@ public class ExportService {
         // Dữ liệu
         List<Map<String, Object>> budgets = budgetService.getBudgetVsActualByDate(userId, startDate, endDate);
         for (Map<String, Object> budget : budgets) {
-            table.addCell(budget.get("categoryName").toString());
-            table.addCell(budget.get("budgetAmount").toString());
-            table.addCell(budget.get("actualAmount").toString());
-            table.addCell(budget.get("remainingAmount").toString());
-            table.addCell(budget.get("usagePercent").toString() + "%");
+            // Kiểm tra null và xử lý an toàn
+            String categoryName = budget.get("categoryName") != null ? budget.get("categoryName").toString() : "Không xác định";
+            String budgetAmount = budget.get("budgetAmount") != null ? budget.get("budgetAmount").toString() : "0";
+            String actualAmount = budget.get("actualAmount") != null ? budget.get("actualAmount").toString() : "0";
+            String remainingAmount = budget.get("remainingAmount") != null ? budget.get("remainingAmount").toString() : "0";
+            String usagePercent = budget.get("usagePercent") != null ? budget.get("usagePercent").toString() : "0";
+            
+            table.addCell(categoryName);
+            table.addCell(budgetAmount);
+            table.addCell(actualAmount);
+            table.addCell(remainingAmount);
+            table.addCell(usagePercent + "%");
         }
         
         document.add(table);
@@ -299,11 +350,18 @@ public class ExportService {
         // Dữ liệu
         List<Map<String, Object>> goals = goalService.getGoalProgress(userId);
         for (Map<String, Object> goal : goals) {
-            table.addCell(goal.get("name").toString());
-            table.addCell(goal.get("targetAmount").toString());
-            table.addCell(goal.get("currentAmount").toString());
-            table.addCell(goal.get("progressPercent").toString() + "%");
-            table.addCell(goal.get("targetDate") != null ? goal.get("targetDate").toString() : "");
+            // Kiểm tra null và xử lý an toàn
+            String name = goal.get("name") != null ? goal.get("name").toString() : "Không xác định";
+            String targetAmount = goal.get("targetAmount") != null ? goal.get("targetAmount").toString() : "0";
+            String currentAmount = goal.get("currentAmount") != null ? goal.get("currentAmount").toString() : "0";
+            String progressPercent = goal.get("progressPercent") != null ? goal.get("progressPercent").toString() : "0";
+            String targetDate = goal.get("targetDate") != null ? goal.get("targetDate").toString() : "";
+            
+            table.addCell(name);
+            table.addCell(targetAmount);
+            table.addCell(currentAmount);
+            table.addCell(progressPercent + "%");
+            table.addCell(targetDate);
         }
         
         document.add(table);

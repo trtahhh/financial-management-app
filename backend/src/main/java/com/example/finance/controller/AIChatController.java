@@ -5,20 +5,19 @@ import com.example.finance.dto.AIChatResponse;
 import com.example.finance.service.AIFinanceService;
 import com.example.finance.service.ReportService;
 import com.example.finance.service.ExportService;
+import com.example.finance.service.AIFinancialAnalysisService;
+import com.example.finance.security.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -26,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 @CrossOrigin(origins = "*")
 public class AIChatController {
 
-        @Autowired
+    @Autowired
     private AIFinanceService aiFinanceService;
     
     @Autowired
@@ -34,13 +33,27 @@ public class AIChatController {
     
     @Autowired
     private ExportService exportService;
+    
+    @Autowired
+    private AIFinancialAnalysisService aiFinancialAnalysisService;
 
+    /**
+     * AI Chat chính - xử lý tin nhắn và trả về phản hồi thông minh
+     */
     @PostMapping("/chat")
     public AIChatResponse chat(@RequestBody AIChatRequest request) {
         try {
             log.info("Received AI chat request: {}", request.getMessage());
             
-            String answer = aiFinanceService.processMessage(request.getMessage());
+            // Lấy userId từ JWT token
+            Long userId = getCurrentUserId();
+            if (userId == null) {
+                AIChatResponse resp = new AIChatResponse();
+                resp.setAnswer("❌ Bạn cần đăng nhập để sử dụng AI Chat. Vui lòng đăng nhập và thử lại.");
+                return resp;
+            }
+            
+            String answer = aiFinanceService.processMessage(request.getMessage(), userId);
             
             AIChatResponse resp = new AIChatResponse();
             resp.setAnswer(answer);
@@ -53,18 +66,23 @@ public class AIChatController {
         }
     }
 
+    /**
+     * Xuất báo cáo dạng text (cho AI Chat)
+     */
     @PostMapping("/export-report")
     public ResponseEntity<String> exportReport(@RequestBody AIChatRequest request) {
         try {
             log.info("=== EXPORT REPORT ENDPOINT CALLED ===");
             log.info("Received export report request: {}", request.getMessage());
             
-            // Tạm thời sử dụng username mặc định, trong thực tế sẽ lấy từ JWT token
-            String username = "admin"; // Sẽ được cập nhật sau
-            log.info("Using username: {}", username);
+            // Lấy userId từ JWT token
+            Long userId = getCurrentUserId();
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("❌ Bạn cần đăng nhập để xuất báo cáo.");
+            }
             
-            Long userId = reportService.getUserIdByUsername(username);
-            log.info("Found userId: {}", userId);
+            log.info("Using userId: {}", userId);
             
             // Phân tích yêu cầu xuất báo cáo
             String reportType = determineReportType(request.getMessage());
@@ -82,62 +100,222 @@ public class AIChatController {
             );
             log.info("Report generated successfully, length: {}", reportContent.length());
             
-                                    // Định dạng response
-                        String response = "📊 **BÁO CÁO ĐÃ ĐƯỢC TẠO**\n\n" +
-                                        "**Loại báo cáo**: " + getReportTypeName(reportType) + "\n" +
-                                        "**Định dạng**: " + getFormatName(format) + "\n\n" +
-                                        "**Nội dung báo cáo**:\n" +
-                                        "```\n" + reportContent + "\n```\n\n" +
-                                        "💡 **Lưu ý**: Báo cáo này được tạo trong AI Chat.\n\n" +
-                                        "📄 **HƯỚNG DẪN XUẤT FILE**:\n" +
-                                        "**Excel (.xlsx)**:\n" +
-                                        "1. Copy toàn bộ nội dung báo cáo\n" +
-                                        "2. Mở Microsoft Excel\n" +
-                                        "3. Paste vào ô A1\n" +
-                                        "4. Chọn File → Save As → Excel Workbook (.xlsx)\n\n" +
-                                        "**PDF (.pdf)**:\n" +
-                                        "1. Copy toàn bộ nội dung báo cáo\n" +
-                                        "2. Mở Microsoft Word\n" +
-                                        "3. Paste vào trang mới\n" +
-                                        "4. Chọn File → Save As → PDF (.pdf)\n\n" +
-                                        "**Text (.txt)**:\n" +
-                                        "• Sử dụng nút 'Tải về (.txt)' bên dưới\n" +
-                                        "• Hoặc copy và paste vào Notepad\n\n" +
-                                        "🔧 **Tính năng nâng cao**:\n" +
-                                        "• Copy báo cáo: Sử dụng nút 'Copy báo cáo'\n" +
-                                        "• In báo cáo: Sử dụng nút 'In báo cáo'\n" +
-                                        "• Tải về: Sử dụng nút 'Tải về (.txt)'";
+            // Định dạng response
+            String response = "📊 **BÁO CÁO ĐÃ ĐƯỢC TẠO**\n\n" +
+                            "**Loại báo cáo**: " + getReportTypeName(reportType) + "\n" +
+                            "**Định dạng**: " + getFormatName(format) + "\n\n" +
+                            "**Nội dung báo cáo**:\n" +
+                            "```\n" + reportContent + "\n```\n\n" +
+                            "💡 **Lưu ý**: Báo cáo này được tạo trong AI Chat.\n\n" +
+                            "📄 **HƯỚNG DẪN XUẤT FILE**:\n" +
+                            "**Excel (.xlsx)**:\n" +
+                            "1. Copy toàn bộ nội dung báo cáo\n" +
+                            "2. Mở Microsoft Excel\n" +
+                            "3. Paste vào ô A1\n" +
+                            "4. Chọn File → Save As → Excel Workbook (.xlsx)\n\n" +
+                            "**PDF (.pdf)**:\n" +
+                            "1. Copy toàn bộ nội dung báo cáo\n" +
+                            "2. Mở Microsoft Word\n" +
+                            "3. Paste vào document\n" +
+                            "4. Chọn File → Save As → PDF Document (.pdf)\n\n" +
+                            "🚀 **HOẶC**: Sử dụng nút xuất file trực tiếp bên dưới để tải về ngay!";
             
-            log.info("=== EXPORT REPORT SUCCESS ===");
-            return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE + "; charset=UTF-8")
-                .body(response);
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("=== EXPORT REPORT ERROR ===", e);
-            return ResponseEntity.badRequest()
-                .body("❌ Xin lỗi, tôi không thể xuất báo cáo lúc này. Vui lòng thử lại sau.\n\n" +
-                      "Chi tiết lỗi: " + e.getMessage());
+            log.error("Error in export report", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("❌ Đã có lỗi xảy ra khi tạo báo cáo: " + e.getMessage());
         }
     }
 
-    // Test endpoint để kiểm tra controller có hoạt động không
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        log.info("Test endpoint called");
-        return ResponseEntity.ok("AIChatController is working!");
+    /**
+     * Xuất file Excel trực tiếp
+     */
+    @PostMapping("/export-excel")
+    public ResponseEntity<byte[]> exportExcel(@RequestBody Map<String, Object> request) {
+        try {
+            log.info("=== EXPORT EXCEL ENDPOINT CALLED ===");
+            
+            // Lấy userId từ JWT token
+            Long userId = getCurrentUserId();
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            String startDate = (String) request.get("startDate");
+            String endDate = (String) request.get("endDate");
+            
+            log.info("Exporting Excel for userId: {}, from: {} to: {}", userId, startDate, endDate);
+            
+            // Tạo file Excel
+            byte[] excelContent = exportService.generateExcelReport(userId, startDate, endDate);
+            
+            // Tạo tên file
+            String fileName = "bao_cao_tai_chinh_" + 
+                (startDate != null ? startDate.replace("-", "") : "all") + "_" +
+                (endDate != null ? endDate.replace("-", "") : "all") + ".xlsx";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", fileName);
+            
+            log.info("Excel file generated successfully, size: {} bytes", excelContent.length);
+            
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(excelContent);
+                
+        } catch (Exception e) {
+            log.error("Error in export Excel", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Xuất file PDF trực tiếp
+     */
+    @PostMapping("/export-pdf")
+    public ResponseEntity<byte[]> exportPdf(@RequestBody Map<String, Object> request) {
+        try {
+            log.info("=== EXPORT PDF ENDPOINT CALLED ===");
+            
+            // Lấy userId từ JWT token
+            Long userId = getCurrentUserId();
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            String startDate = (String) request.get("startDate");
+            String endDate = (String) request.get("endDate");
+            
+            log.info("Exporting PDF for userId: {}, from: {} to: {}", userId, startDate, endDate);
+            
+            // Tạo file PDF
+            byte[] pdfContent = exportService.generatePdfReport(userId, startDate, endDate);
+            
+            // Tạo tên file
+            String fileName = "bao_cao_tai_chinh_" + 
+                (startDate != null ? startDate.replace("-", "") : "all") + "_" +
+                (endDate != null ? endDate.replace("-", "") : "all") + ".pdf";
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", fileName);
+            
+            log.info("PDF file generated successfully, size: {} bytes", pdfContent.length);
+            
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfContent);
+                
+        } catch (Exception e) {
+            log.error("Error in export PDF", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Phân tích tài chính nâng cao
+     */
+    @PostMapping("/analyze")
+    public ResponseEntity<Map<String, Object>> analyzeFinance(@RequestBody Map<String, Object> request) {
+        try {
+            log.info("=== AI FINANCIAL ANALYSIS ENDPOINT CALLED ===");
+            
+            // Lấy userId từ JWT token
+            Long userId = getCurrentUserId();
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            String analysisType = (String) request.get("type");
+            log.info("Financial analysis request for userId: {}, type: {}", userId, analysisType);
+            
+            Map<String, Object> analysisResult = new HashMap<>();
+            
+            switch (analysisType) {
+                case "comprehensive":
+                    analysisResult = aiFinancialAnalysisService.comprehensiveAnalysis(userId);
+                    break;
+                case "prediction":
+                    analysisResult = aiFinancialAnalysisService.financialPrediction(userId);
+                    break;
+                case "trend":
+                    analysisResult = aiFinancialAnalysisService.spendingTrendAnalysis(userId);
+                    break;
+                case "budget":
+                    analysisResult = aiFinancialAnalysisService.budgetOptimization(userId);
+                    break;
+                case "risk":
+                    analysisResult = aiFinancialAnalysisService.riskAssessment(userId);
+                    break;
+                case "investment":
+                    analysisResult = aiFinancialAnalysisService.investmentAdvice(userId);
+                    break;
+                default:
+                    analysisResult.put("error", "Loại phân tích không được hỗ trợ");
+                    break;
+            }
+            
+            log.info("Analysis completed successfully for type: {}", analysisType);
+            
+            return ResponseEntity.ok(analysisResult);
+            
+        } catch (Exception e) {
+            log.error("Error in financial analysis", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Đã có lỗi xảy ra khi phân tích: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
+     * Kiểm tra trạng thái AI
+     */
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getAIStatus() {
+        try {
+            Map<String, Object> status = new HashMap<>();
+            status.put("available", aiFinanceService.isAvailable());
+            status.put("provider", "OpenRouter AI");
+            status.put("timestamp", System.currentTimeMillis());
+            return ResponseEntity.ok(status);
+        } catch (Exception e) {
+            log.error("Error getting AI status", e);
+            Map<String, Object> errorStatus = new HashMap<>();
+            errorStatus.put("available", false);
+            errorStatus.put("error", e.getMessage());
+            return ResponseEntity.ok(errorStatus);
+        }
+    }
+
+    // Helper methods
+    private Long getCurrentUserId() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                return userDetails.getId();
+            }
+        } catch (Exception e) {
+            log.warn("Could not extract user ID from authentication", e);
+        }
+        return null;
     }
 
     private String determineReportType(String message) {
         String lowerMessage = message.toLowerCase();
-        if (lowerMessage.contains("tổng hợp") || lowerMessage.contains("summary")) {
+        if (lowerMessage.contains("tổng hợp") || lowerMessage.contains("tổng quan")) {
             return "summary";
         } else if (lowerMessage.contains("giao dịch") || lowerMessage.contains("transaction")) {
             return "transactions";
         } else if (lowerMessage.contains("ngân sách") || lowerMessage.contains("budget")) {
-            return "budgets";
+            return "budget";
+        } else if (lowerMessage.contains("mục tiêu") || lowerMessage.contains("goal")) {
+            return "goals";
         } else {
-            return "summary"; // Mặc định
+            return "summary"; // Default
         }
     }
 
@@ -148,16 +326,17 @@ public class AIChatController {
         } else if (lowerMessage.contains("pdf")) {
             return "pdf";
         } else {
-            return "text"; // Mặc định
+            return "text"; // Default
         }
     }
 
     private String getReportTypeName(String reportType) {
         switch (reportType) {
-            case "summary": return "Báo cáo tổng hợp";
-            case "transactions": return "Báo cáo giao dịch";
-            case "budgets": return "Báo cáo ngân sách";
-            default: return "Báo cáo tổng hợp";
+            case "summary": return "Tổng hợp tài chính";
+            case "transactions": return "Giao dịch chi tiết";
+            case "budget": return "Ngân sách";
+            case "goals": return "Mục tiêu tài chính";
+            default: return "Tổng hợp";
         }
     }
 
@@ -165,133 +344,7 @@ public class AIChatController {
         switch (format) {
             case "excel": return "Excel (.xlsx)";
             case "pdf": return "PDF (.pdf)";
-            case "text": return "Văn bản";
             default: return "Văn bản";
         }
-    }
-    
-    @PostMapping("/export-excel")
-    public ResponseEntity<byte[]> exportExcel(@RequestBody AIChatRequest request) {
-        try {
-            log.info("Export Excel request received: {}", request.getMessage());
-            
-            // Tạm thời sử dụng username mặc định
-            String username = "admin";
-            Long userId = reportService.getUserIdByUsername(username);
-
-            // Phân tích loại báo cáo và tham số
-            String reportType = determineReportType(request.getMessage());
-            Map<String, Object> params = extractReportParams(request.getMessage());
-            
-            // Chuyển đổi tham số thành LocalDate
-            LocalDate startDate = parseDate((String) params.get("dateFrom"));
-            LocalDate endDate = parseDate((String) params.get("dateTo"));
-            
-            // Xuất file Excel
-            byte[] excelData = exportService.exportToExcel(userId, reportType, startDate, endDate);
-            
-            // Tạo tên file
-            String fileName = "bao_cao_tai_chinh_" + startDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + 
-                            "_" + endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx";
-            
-            return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                .body(excelData);
-                
-        } catch (Exception e) {
-            log.error("Error exporting Excel: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    @PostMapping("/export-pdf")
-    public ResponseEntity<byte[]> exportPDF(@RequestBody AIChatRequest request) {
-        try {
-            log.info("Export PDF request received: {}", request.getMessage());
-            
-            // Tạm thời sử dụng username mặc định
-            String username = "admin";
-            Long userId = reportService.getUserIdByUsername(username);
-
-            // Phân tích loại báo cáo và tham số
-            String reportType = determineReportType(request.getMessage());
-            Map<String, Object> params = extractReportParams(request.getMessage());
-            
-            // Chuyển đổi tham số thành LocalDate
-            LocalDate startDate = parseDate((String) params.get("dateFrom"));
-            LocalDate endDate = parseDate((String) params.get("dateTo"));
-            
-            // Xuất file PDF
-            byte[] pdfData = exportService.exportToPDF(userId, reportType, startDate, endDate);
-            
-            // Tạo tên file
-            String fileName = "bao_cao_tai_chinh_" + startDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + 
-                            "_" + endDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf";
-            
-            return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                .header("Content-Type", "application/pdf")
-                .body(pdfData);
-                
-        } catch (Exception e) {
-            log.error("Error exporting PDF: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    private LocalDate parseDate(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) {
-            return LocalDate.now();
-        }
-        
-        try {
-            // Thử parse các format khác nhau
-            if (dateStr.contains("/")) {
-                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            } else if (dateStr.contains("-")) {
-                return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            } else {
-                // Nếu là tháng/năm
-                String[] parts = dateStr.split("/");
-                if (parts.length == 2) {
-                    int month = Integer.parseInt(parts[0]);
-                    int year = Integer.parseInt(parts[1]);
-                    return LocalDate.of(year, month, 1);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Could not parse date: {}, using current date", dateStr);
-        }
-        
-        return LocalDate.now();
-    }
-    
-    private Map<String, Object> extractReportParams(String message) {
-        Map<String, Object> params = new HashMap<>();
-        
-        // Parse thời gian từ message
-        if (message.toLowerCase().contains("tháng này") || message.toLowerCase().contains("this month")) {
-            LocalDate now = LocalDate.now();
-            params.put("month", now.getMonthValue());
-            params.put("year", now.getYear());
-            params.put("dateFrom", now.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            params.put("dateTo", now.withDayOfMonth(now.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        } else if (message.toLowerCase().contains("tháng trước") || message.toLowerCase().contains("last month")) {
-            LocalDate lastMonth = LocalDate.now().minusMonths(1);
-            params.put("month", lastMonth.getMonthValue());
-            params.put("year", lastMonth.getYear());
-            params.put("dateFrom", lastMonth.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            params.put("dateTo", lastMonth.withDayOfMonth(lastMonth.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        } else {
-            // Mặc định là tháng hiện tại
-            LocalDate now = LocalDate.now();
-            params.put("month", now.getMonthValue());
-            params.put("year", now.getYear());
-            params.put("dateFrom", now.withDayOfMonth(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            params.put("dateTo", now.withDayOfMonth(now.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        }
-        
-        return params;
     }
 }

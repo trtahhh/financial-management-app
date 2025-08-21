@@ -208,9 +208,9 @@ public class BudgetService {
         List<Budget> budgets = budgetRepository.findByUserIdAndMonthYearRangeAndIsDeletedFalse(userId, startMonth, startYear, endMonth, endYear);
         
         return budgets.stream().map(budget -> {
-            // Tính tổng chi tiêu thực tế trong khoảng ngày
+            // Tính tổng chi tiêu thực tế cho đúng tháng của ngân sách này
             BigDecimal actualSpent = budgetCalculationService.calculateSpentAmount(
-                    userId, budget.getCategory().getId(), startMonth, startYear);
+                    userId, budget.getCategory().getId(), budget.getMonth(), budget.getYear());
 
             if (actualSpent == null) actualSpent = BigDecimal.ZERO;
 
@@ -239,6 +239,8 @@ public class BudgetService {
             }
             result.put("budgetAmount", budget.getAmount());
             result.put("spentAmount", actualSpent);
+            result.put("actualAmount", actualSpent);
+            result.put("remainingAmount", budget.getAmount().subtract(actualSpent));
             result.put("usagePercent", usagePercent.doubleValue());
             result.put("alertThreshold", 80.0);
             result.put("status", status);

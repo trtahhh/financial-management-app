@@ -2,16 +2,14 @@ package com.example.finance.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import com.example.finance.entity.Transaction;
-import com.example.finance.entity.Budget;
-import com.example.finance.entity.Goal;
 import com.example.finance.dto.BudgetDTO;
 import com.example.finance.dto.GoalDTO;
 
 @Service
+@Slf4j
 public class AIFinanceService {
 
     @Autowired
@@ -31,6 +29,9 @@ public class AIFinanceService {
     
     @Autowired
     private OpenRouterService openRouterService;
+    
+    @Autowired
+    private AIFinancialAnalysisService aiFinancialAnalysisService;
 
     // Từ khóa cho các chủ đề tài chính
     private static final Map<String, List<String>> KEYWORDS = new HashMap<>();
@@ -47,37 +48,60 @@ public class AIFinanceService {
         KEYWORDS.put("advice", Arrays.asList("tư vấn", "lời khuyên", "gợi ý", "hướng dẫn", "cách làm"));
         KEYWORDS.put("thanks", Arrays.asList("cảm ơn", "thanks", "thank you", "cảm ơn bạn", "tốt"));
         KEYWORDS.put("help", Arrays.asList("giúp", "help", "hỗ trợ", "làm sao", "cách nào"));
+        KEYWORDS.put("analysis", Arrays.asList("phân tích", "đánh giá", "so sánh", "xu hướng", "dự báo", "dự đoán", "tư vấn", "lời khuyên", "phân tích thực tế", "tình hình hiện tại", "dữ liệu của tôi"));
+        KEYWORDS.put("prediction", Arrays.asList("dự báo", "dự đoán", "tương lai", "6 tháng tới", "12 tháng tới", "1 năm tới"));
+        KEYWORDS.put("trends", Arrays.asList("xu hướng", "trend", "pattern", "chu kỳ", "biến động"));
+        KEYWORDS.put("optimization", Arrays.asList("tối ưu", "tối ưu hóa", "cải thiện", "hiệu quả", "tối ưu hóa ngân sách"));
+        KEYWORDS.put("risk", Arrays.asList("rủi ro", "risk", "nguy hiểm", "bảo vệ", "an toàn"));
+        KEYWORDS.put("investment", Arrays.asList("đầu tư", "đầu tư tiền", "đầu tư thông minh", "đầu tư an toàn", "đầu tư sinh lời", "lời khuyên đầu tư"));
     }
 
-    public String processMessage(String message) {
+    public String processMessage(String message, Long userId) {
         String normalizedMessage = message.toLowerCase().trim();
 
         // Kiểm tra xem có phải yêu cầu xuất file không
         if (isExportRequest(normalizedMessage)) {
-            return processExportRequest(message);
+            return processExportRequest(message, userId);
         }
 
         // Kiểm tra xem có phải yêu cầu báo cáo không
         if (isReportRequest(normalizedMessage)) {
-            return processReportRequest(message);
+            return processReportRequest(message, userId);
         }
 
         // Kiểm tra xem có phải yêu cầu phân tích tài chính không
         if (isFinancialAnalysisRequest(normalizedMessage)) {
-            return processFinancialAnalysisRequest(message);
+            return processFinancialAnalysisRequest(message, userId);
+        }
+        
+        // Kiểm tra xem có phải yêu cầu phân tích AI mới không
+        if (isAdvancedAnalysisRequest(normalizedMessage)) {
+            return processAdvancedAnalysisRequest(message, userId);
         }
         
         // Kiểm tra xem có phải yêu cầu chat AI không
         if (isAIChatRequest(normalizedMessage)) {
-            return processAIChatRequest(message);
+            return processAIChatRequest(message, userId);
         }
         
         // Phân loại tin nhắn
         String category = classifyMessage(normalizedMessage);
-        return generateResponse(category, normalizedMessage);
+        return generateResponse(category, normalizedMessage, userId);
     }
     
-    private String processExportRequest(String message) {
+    /**
+     * Kiểm tra xem AI service có khả dụng không
+     */
+    public boolean isAvailable() {
+        try {
+            return openRouterService.isAvailable();
+        } catch (Exception e) {
+            log.warn("Error checking AI availability", e);
+            return false;
+        }
+    }
+    
+    private String processExportRequest(String message, Long userId) {
         StringBuilder response = new StringBuilder();
         response.append("**📊 XUẤT FILE BÁO CÁO**\n\n");
         
@@ -112,16 +136,92 @@ public class AIFinanceService {
         return response.toString();
     }
     
-        private boolean isAIChatRequest(String message) {
+        private boolean isAdvancedAnalysisRequest(String message) {
+        String[] analysisKeywords = {
+            "phân tích thực tế", "tình hình hiện tại", "dữ liệu của tôi",
+            "dự báo tài chính", "6 tháng tới", "12 tháng tới", "1 năm tới",
+            "phân tích xu hướng", "xu hướng chi tiêu", "pattern", "chu kỳ",
+            "tối ưu hóa ngân sách", "cải thiện ngân sách",
+            "phân tích rủi ro", "rủi ro tài chính", "bảo vệ tài chính",
+            "lời khuyên đầu tư", "tư vấn đầu tư", "profile đầu tư"
+        };
+        
+        for (String keyword : analysisKeywords) {
+            if (message.toLowerCase().contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private String processAdvancedAnalysisRequest(String message, Long userId) {
+        try {
+            // TODO: Lấy userId thực tế từ JWT token
+            // Long userId = 1L; // Tạm thời hardcode
+            
+            String lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.contains("phân tích thực tế") || lowerMessage.contains("tình hình hiện tại") || 
+                lowerMessage.contains("dữ liệu của tôi")) {
+                return aiFinancialAnalysisService.analyzePersonalFinance(userId);
+            }
+            
+            if (lowerMessage.contains("dự báo") || lowerMessage.contains("6 tháng") || 
+                lowerMessage.contains("12 tháng") || lowerMessage.contains("1 năm")) {
+                int months = 6;
+                if (lowerMessage.contains("12 tháng") || lowerMessage.contains("1 năm")) {
+                    months = 12;
+                } else if (lowerMessage.contains("3 tháng")) {
+                    months = 3;
+                }
+                return aiFinancialAnalysisService.predictFinancialFuture(userId, months);
+            }
+            
+            if (lowerMessage.contains("xu hướng") || lowerMessage.contains("trend") || 
+                lowerMessage.contains("pattern") || lowerMessage.contains("chu kỳ")) {
+                int months = 6;
+                if (lowerMessage.contains("12 tháng") || lowerMessage.contains("1 năm")) {
+                    months = 12;
+                } else if (lowerMessage.contains("3 tháng")) {
+                    months = 3;
+                }
+                return aiFinancialAnalysisService.analyzeSpendingTrends(userId, months);
+            }
+            
+            if (lowerMessage.contains("tối ưu") || lowerMessage.contains("cải thiện") || 
+                lowerMessage.contains("hiệu quả")) {
+                return aiFinancialAnalysisService.optimizeBudget(userId);
+            }
+            
+            if (lowerMessage.contains("rủi ro") || lowerMessage.contains("risk") || 
+                lowerMessage.contains("bảo vệ") || lowerMessage.contains("an toàn")) {
+                return aiFinancialAnalysisService.analyzeFinancialRisk(userId);
+            }
+            
+            if (lowerMessage.contains("đầu tư") || lowerMessage.contains("tư vấn") || 
+                lowerMessage.contains("profile")) {
+                return aiFinancialAnalysisService.getPersonalizedInvestmentAdvice(userId);
+            }
+            
+            // Fallback to general AI chat
+            return processAIChatRequest(message, userId);
+            
+        } catch (Exception e) {
+            log.error("Error in advanced analysis request: ", e);
+            return "Xin lỗi, không thể xử lý yêu cầu phân tích nâng cao lúc này. Vui lòng thử lại sau.";
+        }
+    }
+    
+    private boolean isAIChatRequest(String message) {
         // AI có thể trả lời tất cả mọi câu hỏi
         // Chỉ loại trừ các yêu cầu xuất file cụ thể
         return !isExportRequest(message);
     }
     
-    private String processAIChatRequest(String message) {
+    private String processAIChatRequest(String message, Long userId) {
         try {
             // Tạo context từ dữ liệu thực tế của user
-            String userContext = createUserFinancialContext();
+            String userContext = createUserFinancialContext(userId);
             
             // Tạo prompt thông minh kết hợp context
             String enhancedPrompt = createEnhancedPrompt(message, userContext);
@@ -137,10 +237,10 @@ public class AIFinanceService {
         }
     }
     
-    private String createUserFinancialContext() {
+    private String createUserFinancialContext(Long userId) {
         try {
             // TODO: Lấy userId thực tế từ JWT token
-            Long userId = 1L; // Tạm thời hardcode
+            // Long userId = 1L; // Tạm thời hardcode
             
             StringBuilder context = new StringBuilder();
             context.append("**TÌNH HÌNH TÀI CHÍNH HIỆN TẠI:**\n");
@@ -233,11 +333,11 @@ public class AIFinanceService {
         return false;
     }
 
-    private String processReportRequest(String message) {
+    private String processReportRequest(String message, Long userId) {
         try {
             // Tạm thời sử dụng username mặc định, trong thực tế sẽ lấy từ JWT token
             String username = "admin"; // Sẽ được cập nhật sau
-            Long userId = reportService.getUserIdByUsername(username);
+            // Long userId = reportService.getUserIdByUsername(username); // This line is removed
 
             // Phân tích loại báo cáo từ tin nhắn
             String reportType = determineReportType(message);
@@ -287,35 +387,35 @@ public class AIFinanceService {
         }
     }
 
-    private String processFinancialAnalysisRequest(String message) {
+    private String processFinancialAnalysisRequest(String message, Long userId) {
         String lowerMessage = message.toLowerCase();
         
         // Kiểm tra xem có yêu cầu phân tích dữ liệu thực tế không
         if (lowerMessage.contains("phân tích thực tế") || lowerMessage.contains("dữ liệu của tôi") || 
             lowerMessage.contains("tình hình hiện tại") || lowerMessage.contains("phân tích cá nhân")) {
-            return analyzeRealFinancialData(message);
+            return analyzeRealFinancialData(message, userId);
         }
         
         if (lowerMessage.contains("phân tích") || lowerMessage.contains("đánh giá")) {
             if (lowerMessage.contains("chi tiêu") || lowerMessage.contains("chi phí")) {
-                return analyzeExpenses(message);
+                return analyzeExpenses(message, userId);
             } else if (lowerMessage.contains("thu nhập") || lowerMessage.contains("kiếm tiền")) {
-                return analyzeIncome(message);
+                return analyzeIncome(message, userId);
             } else if (lowerMessage.contains("ngân sách")) {
-                return analyzeBudget(message);
+                return analyzeBudget(message, userId);
             } else {
-                return provideGeneralFinancialAnalysis();
+                return provideGeneralFinancialAnalysis(userId);
             }
         } else if (lowerMessage.contains("tư vấn") || lowerMessage.contains("lời khuyên")) {
-            return provideFinancialAdvice(message);
+            return provideFinancialAdvice(message, userId);
         } else if (lowerMessage.contains("dự báo") || lowerMessage.contains("dự đoán")) {
-            return provideFinancialForecast(message);
+            return provideFinancialForecast(message, userId);
         }
         
-        return provideGeneralFinancialAnalysis();
+        return provideGeneralFinancialAnalysis(userId);
     }
     
-    private String analyzeRealFinancialData(String message) {
+    private String analyzeRealFinancialData(String message, Long userId) {
         StringBuilder analysis = new StringBuilder();
         analysis.append("**PHÂN TÍCH TÀI CHÍNH DỰA TRÊN DỮ LIỆU THỰC TẾ**\n\n");
         
@@ -349,7 +449,7 @@ public class AIFinanceService {
         return analysis.toString();
     }
 
-    private String analyzeExpenses(String message) {
+    private String analyzeExpenses(String message, Long userId) {
         return "**PHÂN TÍCH CHI TIÊU THÔNG MINH**\n\n" +
                                "**Cách phân tích chi tiêu hiệu quả**:\n" +
                "1. **Phân loại chi tiêu**:\n" +
@@ -367,7 +467,7 @@ public class AIFinanceService {
                "**Lời khuyên**: Hãy yêu cầu 'tạo báo cáo chi tiêu tháng này' để xem chi tiết!";
     }
 
-    private String analyzeIncome(String message) {
+    private String analyzeIncome(String message, Long userId) {
         return "**PHÂN TÍCH THU NHẬP VÀ TĂNG TRƯỞNG**\n\n" +
                "**Cách tăng thu nhập hiệu quả**:\n" +
                "1. **Phát triển kỹ năng**:\n" +
@@ -385,7 +485,7 @@ public class AIFinanceService {
                "**Lời khuyên**: Hãy yêu cầu 'tạo báo cáo thu nhập tháng này' để xem chi tiết!";
     }
 
-    private String analyzeBudget(String message) {
+    private String analyzeBudget(String message, Long userId) {
         return "**PHÂN TÍCH NGÂN SÁCH VÀ KẾ HOẠCH TÀI CHÍNH**\n\n" +
                "**Cách lập ngân sách thông minh**:\n" +
                "1. **Xác định thu nhập cố định**:\n" +
@@ -403,7 +503,7 @@ public class AIFinanceService {
                "**Lời khuyên**: Hãy yêu cầu 'tạo báo cáo ngân sách tháng này' để xem chi tiết!";
     }
 
-    private String provideFinancialAdvice(String message) {
+    private String provideFinancialAdvice(String message, Long userId) {
         String lowerMessage = message.toLowerCase();
         
         if (lowerMessage.contains("tiết kiệm")) {
@@ -452,7 +552,7 @@ public class AIFinanceService {
         }
     }
 
-    private String provideFinancialForecast(String message) {
+    private String provideFinancialForecast(String message, Long userId) {
         return "**DỰ BÁO TÀI CHÍNH VÀ XU HƯỚNG**\n\n" +
                "**Cách dự báo tài chính cá nhân**:\n" +
                "1. **Phân tích dữ liệu quá khứ**:\n" +
@@ -470,7 +570,7 @@ public class AIFinanceService {
                "**Lời khuyên**: Hãy yêu cầu 'tạo báo cáo dự báo tài chính' để xem chi tiết!";
     }
 
-    private String provideGeneralFinancialAnalysis() {
+    private String provideGeneralFinancialAnalysis(Long userId) {
         return "**PHÂN TÍCH TÀI CHÍNH TỔNG QUÁT**\n\n" +
                                "**Các khía cạnh cần phân tích**:\n" +
                "1. **Thu nhập**:\n" +
@@ -566,7 +666,7 @@ public class AIFinanceService {
         return "general";
     }
 
-    private String generateResponse(String category, String normalizedMessage) {
+    private String generateResponse(String category, String normalizedMessage, Long userId) {
         switch (category) {
             case "saving":
                 return "**TIẾT KIỆM THÔNG MINH**\n\n" +
@@ -703,10 +803,16 @@ public class AIFinanceService {
 
             case "help":
                   return "Tôi có thể giúp bạn với các chủ đề sau:\n\n" +
-                         "**🆕 PHÂN TÍCH DỮ LIỆU THỰC TẾ**:\n" +
+                         "**🤖 PHÂN TÍCH AI NÂNG CAO**:\n" +
                          "• 'Phân tích thực tế' - Phân tích dựa trên dữ liệu của bạn\n" +
                          "• 'Tình hình hiện tại' - Đánh giá tài chính hiện tại\n" +
-                         "• 'Dữ liệu của tôi' - Xem phân tích cá nhân\n\n" +
+                         "• 'Dự báo tài chính 6 tháng tới' - Dự báo tương lai\n" +
+                         "• 'Phân tích xu hướng chi tiêu' - Phân tích pattern và chu kỳ\n\n" +
+                         "**⚡ TỐI ƯU HÓA THÔNG MINH**:\n" +
+                         "• 'Tối ưu hóa ngân sách' - Cải thiện hiệu quả ngân sách\n" +
+                         "• 'Phân tích rủi ro tài chính' - Đánh giá và bảo vệ tài chính\n" +
+                         "• 'Lời khuyên đầu tư cá nhân' - Tư vấn đầu tư theo profile\n" +
+                         "• 'Dự báo tài chính 12 tháng tới' - Kế hoạch dài hạn\n\n" +
                        "**Quản lý tài chính**:\n" +
                        "• Tiết kiệm và đầu tư thông minh\n" +
                        "• Quản lý ngân sách và chi tiêu hiệu quả\n" +
@@ -733,17 +839,24 @@ public class AIFinanceService {
                        "• Tải về file text (.txt)\n" +
                        "• In báo cáo trực tiếp\n\n" +
                        "**Ví dụ sử dụng**:\n" +
-                       "• 'Phân tích chi tiêu của tôi'\n" +
-                       "• 'Tư vấn đầu tư cơ bản'\n" +
-                       "• 'Tạo báo cáo Excel tháng này'\n" +
-                       "• 'Lời khuyên tiết kiệm hiệu quả'\n\n" +
+                       "• 'Phân tích thực tế'\n" +
+                       "• 'Dự báo tài chính 6 tháng tới'\n" +
+                       "• 'Tối ưu hóa ngân sách'\n" +
+                       "• 'Phân tích rủi ro tài chính'\n" +
+                       "• 'Lời khuyên đầu tư cá nhân'\n\n" +
                        "Hãy hỏi bất kỳ điều gì bạn quan tâm!";
 
             default:
                   return "Tôi hiểu bạn đang tìm kiếm thông tin tài chính. Bạn có thể hỏi tôi về:\n\n" +
-                         "**🆕 Phân tích dữ liệu thực tế**:\n" +
+                         "**🤖 Phân tích AI nâng cao**:\n" +
                          "• 'Phân tích thực tế' - Dựa trên dữ liệu của bạn\n" +
-                         "• 'Tình hình hiện tại' - Đánh giá tài chính hiện tại\n\n" +
+                         "• 'Tình hình hiện tại' - Đánh giá tài chính hiện tại\n" +
+                         "• 'Dự báo tài chính 6 tháng tới' - Dự báo tương lai\n" +
+                         "• 'Phân tích xu hướng chi tiêu' - Phân tích pattern\n\n" +
+                         "**⚡ Tối ưu hóa thông minh**:\n" +
+                         "• 'Tối ưu hóa ngân sách' - Cải thiện hiệu quả\n" +
+                         "• 'Phân tích rủi ro tài chính' - Bảo vệ tài chính\n" +
+                         "• 'Lời khuyên đầu tư cá nhân' - Tư vấn theo profile\n\n" +
                        "• Tiết kiệm và đầu tư\n" +
                        "• Quản lý ngân sách\n" +
                        "• Xử lý nợ và vay\n" +

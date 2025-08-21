@@ -7,26 +7,629 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        /* Chat Interface Styles */
+        .chat-container {
+            display: flex;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .chat-sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .new-chat-btn {
+            margin: 20px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .new-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4);
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 0 20px;
+            overflow-y: auto;
+        }
+
+        .chat-header {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+        }
+
+        .chat-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .ai-status-container {
+            margin: 20px 0;
+        }
+
+        .ai-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .ai-status.online {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .ai-status.offline {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .analysis-section, .export-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .analysis-section h6, .export-section h6 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .analysis-buttons, .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .analysis-btn, .export-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .analysis-btn:hover, .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-btn.primary { background: #2196f3; color: white; }
+        .analysis-btn.success { background: #4caf50; color: white; }
+        .analysis-btn.info { background: #00bcd4; color: white; }
+        .analysis-btn.warning { background: #ff9800; color: white; }
+        .analysis-btn.danger { background: #f44336; color: white; }
+
+        .export-btn.excel { background: #4caf50; color: white; }
+        .export-btn.pdf { background: #f44336; color: white; }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .welcome-message h1 {
+            font-size: 2.5rem;
+            color: #42b883;
+            margin-bottom: 20px;
+        }
+
+        .welcome-message p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        .report-templates {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .template-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .template-btn {
+            padding: 15px 20px;
+            border: 2px solid #42b883;
+            background: white;
+            color: #42b883;
+            border-radius: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-btn:hover, .template-btn.primary {
+            background: #42b883;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .template-btn.success {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .template-btn.success:hover {
+            background: #4caf50;
+            color: white;
+        }
+
+        .template-btn.info {
+            border-color: #2196f3;
+            color: #2196f3;
+        }
+
+        .template-btn.info:hover {
+            background: #2196f3;
+            color: white;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .message.user-message {
+            justify-content: flex-end;
+        }
+
+        .message.ai-message {
+            justify-content: flex-start;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+        }
+
+        .ai-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-content pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .message-content code {
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .message-content strong {
+            font-weight: 600;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            background: #f8f9fa;
+            border-radius: 25px;
+            padding: 10px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #42b883;
+        }
+
+        #message-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 15px;
+            resize: none;
+            outline: none;
+            font-size: 1rem;
+            max-height: 120px;
+            min-height: 20px;
+        }
+
+        #send-button {
+            width: 45px;
+            height: 45px;
+            border: none;
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #send-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4);
+        }
+
+        .chat-actions {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .clear-chat-btn {
+            padding: 8px 16px;
+            border: 1px solid #dc3545;
+            background: white;
+            color: #dc3545;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-chat-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .typing-indicator {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #42b883;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Export Modal */
+        .export-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .export-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .export-modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .export-modal-header h3 {
+            color: #42b883;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #42b883;
+            outline: none;
+        }
+
+        .quick-date-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .quick-date-btn {
+            padding: 8px 12px;
+            border: 1px solid #42b883;
+            background: white;
+            color: #42b883;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .quick-date-btn:hover {
+            background: #42b883;
+            color: white;
+        }
+
+        .export-modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .export-modal-actions .btn {
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #42b883, #347474);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success { background: #4caf50; }
+        .toast-error { background: #f44336; }
+        .toast-info { background: #2196f3; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+            }
+
+            .chat-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .mobile-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1001;
+                background: #42b883;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                cursor: pointer;
+            }
+
+            .chat-header h2 {
+                font-size: 2rem;
+            }
+
+            .analysis-buttons, .export-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .template-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+
+        /* Hide mobile toggle on desktop */
+        .mobile-toggle {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
     <div class="chat-container">
         <!-- Sidebar -->
         <div class="chat-sidebar" id="chat-sidebar">
             <div class="sidebar-header">
-                <h3>AI Trợ lý</h3>
+                <h3>🤖 Finance AI</h3>
             </div>
             
             <button class="new-chat-btn" onclick="newChat()">
-                Cuộc trò chuyện mới
+                <i class="bi bi-plus-circle"></i> Cuộc trò chuyện mới
             </button>
             
             <div class="chat-history" id="chat-history">
                 <!-- Chat history will be populated here -->
             </div>
             
-            <div class="sidebar-footer">
-                <button onclick="clearChat()">
-                    Xóa chat
+            <div class="sidebar-footer" style="margin-top: auto; padding: 20px;">
+                <button class="clear-chat-btn" onclick="clearChat()">
+                    <i class="bi bi-trash"></i> Xóa chat
                 </button>
             </div>
         </div>
@@ -35,97 +638,155 @@
         <div class="chat-main">
             <!-- Chat Header -->
             <div class="chat-header">
-                <h2>Trợ lý AI Thông minh</h2>
+                <h2>AI Trợ lý</h2>
                 <div class="subtitle">Trả lời tất cả mọi câu hỏi của bạn 24/7 - Tài chính, Kiến thức, Giải trí và nhiều hơn nữa!</div>
-                <div class="ai-status-badge" id="ai-status-badge">
-                    Đang kiểm tra...
+                
+                <!-- AI Status -->
+                <div class="ai-status-container">
+                    <div id="ai-status" class="ai-status">
+                        <span class="status-loading">⏳ Đang kiểm tra...</span>
+                    </div>
                 </div>
+
+                <!-- AI Analysis Buttons -->
+                <div class="analysis-section">
+                    <h6><strong>🤖 PHÂN TÍCH AI NÂNG CAO</strong></h6>
+                    <div class="analysis-buttons">
+                        <button class="analysis-btn primary" data-type="comprehensive">
+                            📊 Phân tích toàn diện
+                        </button>
+                        <button class="analysis-btn success" data-type="prediction">
+                            🔮 Dự báo tương lai
+                        </button>
+                        <button class="analysis-btn info" data-type="trend">
+                            📈 Xu hướng chi tiêu
+                        </button>
+                        <button class="analysis-btn warning" data-type="budget">
+                            💰 Tối ưu ngân sách
+                        </button>
+                        <button class="analysis-btn danger" data-type="risk">
+                            ⚠️ Đánh giá rủi ro
+                        </button>
+                        <button class="analysis-btn primary" data-type="investment">
+                            💎 Lời khuyên đầu tư
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Chat Messages -->
+            <!-- Chat Messages Area -->
             <div class="chat-messages" id="chat-messages">
                 <!-- Welcome Message -->
                 <div class="welcome-message">
-                    <h1>Chào mừng đến với AI Trợ lý Thông minh</h1>
+                    <h1>Chào mừng đến với AI Trợ lý Thông minh! 🚀</h1>
                     <p>Tôi có thể trả lời <strong>tất cả mọi câu hỏi</strong> của bạn, bao gồm tài chính, đầu tư, tiết kiệm, quản lý ngân sách và nhiều chủ đề khác!</p>
                     
-                    <div class="examples-grid">
-                        <div class="example-card" onclick="sendSuggestion('Làm thế nào để tiết kiệm tiền hiệu quả?')">
-                            <h4>Tiết kiệm thông minh</h4>
-                            <p>Chiến lược tiết kiệm và quản lý chi tiêu hiệu quả</p>
+                    <div class="report-templates">
+                        <h6><strong>📊 Báo cáo tài chính</strong></h6>
+                        <div class="template-buttons">
+                            <button class="template-btn primary" onclick="useTemplate('Tạo báo cáo tổng hợp tháng này')">
+                                📈 Báo cáo tổng hợp
+                            </button>
+                            <button class="template-btn success" onclick="useTemplate('Báo cáo giao dịch tháng này')">
+                                💰 Báo cáo giao dịch
+                            </button>
+                            <button class="template-btn info" onclick="useTemplate('Báo cáo ngân sách tháng này')">
+                                📋 Báo cáo ngân sách
+                            </button>
                         </div>
-                        <div class="example-card" onclick="sendSuggestion('Tôi nên đầu tư như thế nào?')">
-                            <h4>Hướng dẫn đầu tư</h4>
-                            <p>Kiến thức cơ bản về đầu tư cho người mới bắt đầu</p>
-                        </div>
-                        <div class="example-card" onclick="sendSuggestion('Cách lập ngân sách gia đình?')">
-                            <h4>Ngân sách gia đình</h4>
-                            <p>Quản lý tài chính gia đình một cách khoa học</p>
-                        </div>
-                        <div class="example-card" onclick="sendSuggestion('Quản lý nợ thông minh ra sao?')">
-                            <h4>Quản lý nợ</h4>
-                            <p>Chiến lược trả nợ và quản lý tín dụng hiệu quả</p>
-                        </div>
-                    </div>
-                    
-                    <div class="capabilities-grid">
-                        <div class="capability-card">
-                            <h5>Phân tích tài chính</h5>
-                            <p>Đánh giá tình hình thu chi</p>
-                        </div>
-                        <div class="capability-card">
-                            <h5>Lập kế hoạch</h5>
-                            <p>Kế hoạch tài chính dài hạn</p>
-                        </div>
-                        <div class="capability-card">
-                            <h5>Quản lý rủi ro</h5>
-                            <p>Đánh giá và giảm thiểu rủi ro</p>
-                        </div>
-                        <div class="capability-card">
-                            <h5>Giáo dục tài chính</h5>
-                            <p>Kiến thức tài chính cơ bản</p>
+                        
+                        <h6><strong>💡 Ví dụ câu hỏi</strong></h6>
+                        <div class="template-buttons">
+                            <button class="template-btn" onclick="sendSuggestion('Làm thế nào để tiết kiệm tiền hiệu quả?')">
+                                💰 Tiết kiệm thông minh
+                            </button>
+                            <button class="template-btn" onclick="sendSuggestion('Tôi nên đầu tư như thế nào?')">
+                                📈 Hướng dẫn đầu tư
+                            </button>
+                            <button class="template-btn" onclick="sendSuggestion('Cách lập ngân sách gia đình?')">
+                                🏠 Ngân sách gia đình
+                            </button>
+                            <button class="template-btn" onclick="sendSuggestion('Quản lý nợ thông minh ra sao?')">
+                                💳 Quản lý nợ
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Typing Indicator -->
-            <div class="typing-indicator" id="typing-indicator">
-                <div class="typing-container">
-                    <div class="typing-avatar">
-                        AI
-                    </div>
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <!-- Export Section -->
+                <div class="export-section" style="margin: 0 0 20px 0; padding: 15px; background: rgba(66, 184, 131, 0.1); border-radius: 15px; border: 1px solid rgba(66, 184, 131, 0.2);">
+                    <h6 style="color: #42b883; margin-bottom: 15px; font-size: 1rem;"><strong>📁 XUẤT FILE TRỰC TIẾP</strong></h6>
+                    <div class="export-buttons">
+                        <button class="export-btn excel" onclick="showExportModal('excel')">
+                            📊 Excel (.xlsx)
+                        </button>
+                        <button class="export-btn pdf" onclick="showExportModal('pdf')">
+                            📄 PDF (.pdf)
+                        </button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Chat Input -->
-            <div class="chat-input-container">
-                <div class="input-wrapper">
+                
+                <div class="input-container">
                     <textarea 
-                        class="message-input" 
                         id="message-input" 
                         placeholder="Nhập câu hỏi của bạn..."
                         rows="1"
                     ></textarea>
-                    <button class="send-button" id="send-button" onclick="sendMessage()">
-                        Gửi
+                    <button id="send-button" type="button">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+                <div class="chat-actions">
+                    <button class="clear-chat-btn" onclick="clearChat()">
+                        <i class="bi bi-trash"></i>
+                        Xóa chat
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Mobile Sidebar Toggle -->
-    <button class="sidebar-toggle" onclick="toggleSidebar()">
-        Menu
-    </button>
+    <!-- Export Modal -->
+    <div class="export-modal" id="export-modal">
+        <div class="export-modal-content">
+            <div class="export-modal-header">
+                <h3 id="export-modal-title">📊 Xuất báo cáo Excel</h3>
+                <p id="export-modal-subtitle">Chọn khoảng thời gian để xuất báo cáo</p>
+            </div>
+            
+            <form id="export-form">
+                <div class="form-group">
+                    <label for="start-date">📅 Từ ngày:</label>
+                    <input type="date" id="start-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="end-date">📅 Đến ngày:</label>
+                    <input type="date" id="end-date" required>
+                </div>
+                
+                <div class="quick-date-buttons">
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('today')">Hôm nay</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('yesterday')">Hôm qua</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('thisWeek')">Tuần này</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('lastWeek')">Tuần trước</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('thisMonth')">Tháng này</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('lastMonth')">Tháng trước</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('thisYear')">Năm nay</button>
+                    <button type="button" class="quick-date-btn" onclick="setQuickDate('lastYear')">Năm trước</button>
+                </div>
+                
+                <div class="export-modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">❌ Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="export-submit-btn">📊 Xuất file</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/chat.js"></script>
 </body>
 </html>

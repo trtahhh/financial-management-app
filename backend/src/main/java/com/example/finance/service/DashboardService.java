@@ -262,6 +262,39 @@ public class DashboardService {
                 List<Map<String, Object>> budgetProgress = budgetService.getBudgetVsActualByDate(userId, dateFrom, dateTo);
                 dashboard.put("budgetProgress", budgetProgress);
                 
+                // Tính tổng ngân sách và số tiền đã sử dụng cho dashboard
+                BigDecimal totalBudgetAmount = BigDecimal.ZERO;
+                BigDecimal totalBudgetSpent = BigDecimal.ZERO;
+                
+                for (Map<String, Object> budget : budgetProgress) {
+                    BigDecimal budgetAmount = (BigDecimal) budget.get("budgetAmount");
+                    BigDecimal spentAmount = (BigDecimal) budget.get("spentAmount");
+                    
+                    if (budgetAmount != null) {
+                        totalBudgetAmount = totalBudgetAmount.add(budgetAmount);
+                    }
+                    if (spentAmount != null) {
+                        totalBudgetSpent = totalBudgetSpent.add(spentAmount);
+                    }
+                }
+                
+                // Tính phần trăm sử dụng ngân sách tổng
+                BigDecimal budgetUsagePercent = BigDecimal.ZERO;
+                if (totalBudgetAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    budgetUsagePercent = totalBudgetSpent.divide(totalBudgetAmount, 4, java.math.RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100));
+                }
+                
+                // Thêm thông tin ngân sách tổng vào dashboard
+                Map<String, Object> totalBudgetInfo = new HashMap<>();
+                totalBudgetInfo.put("totalBudgetAmount", totalBudgetAmount);
+                totalBudgetInfo.put("totalBudgetSpent", totalBudgetSpent);
+                totalBudgetInfo.put("budgetUsagePercent", budgetUsagePercent.doubleValue());
+                dashboard.put("totalBudgetInfo", totalBudgetInfo);
+                
+                log.info("Total budget calculated: Amount={}, Spent={}, Usage={}%", 
+                    totalBudgetAmount, totalBudgetSpent, budgetUsagePercent);
+                
                 // Lấy cảnh báo ngân sách
                 List<Map<String, Object>> budgetWarnings = budgetService.getBudgetWarnings(userId, 
                     dateFrom.getMonthValue(), dateFrom.getYear());
@@ -272,6 +305,13 @@ public class DashboardService {
                 log.warn("Failed to get budget data: {}", e.getMessage());
                 dashboard.put("budgetProgress", new ArrayList<>());
                 dashboard.put("budgetWarnings", new ArrayList<>());
+                
+                // Thêm thông tin ngân sách mặc định
+                Map<String, Object> totalBudgetInfo = new HashMap<>();
+                totalBudgetInfo.put("totalBudgetAmount", BigDecimal.ZERO);
+                totalBudgetInfo.put("totalBudgetSpent", BigDecimal.ZERO);
+                totalBudgetInfo.put("budgetUsagePercent", 0.0);
+                dashboard.put("totalBudgetInfo", totalBudgetInfo);
             }
             
             try {
@@ -299,14 +339,21 @@ public class DashboardService {
             dashboard.put("totalExpense", BigDecimal.ZERO);
             dashboard.put("netIncome", BigDecimal.ZERO);
             dashboard.put("totalBalance", BigDecimal.ZERO);
-            dashboard.put("expensesByCategory", new ArrayList<>());
-            dashboard.put("weeklyTrend", new ArrayList<>());
-            dashboard.put("goalProgress", new ArrayList<>());
-            dashboard.put("activeGoalsCount", 0L);
             dashboard.put("recentTransactions", new ArrayList<>());
             dashboard.put("wallets", new ArrayList<>());
+            dashboard.put("expensesByCategory", new ArrayList<>());
+            dashboard.put("weeklyTrend", new ArrayList<>());
             dashboard.put("budgetProgress", new ArrayList<>());
             dashboard.put("budgetWarnings", new ArrayList<>());
+            dashboard.put("goalProgress", new ArrayList<>());
+            dashboard.put("activeGoalsCount", 0L);
+            
+            // Thêm thông tin ngân sách mặc định
+            Map<String, Object> totalBudgetInfo = new HashMap<>();
+            totalBudgetInfo.put("totalBudgetAmount", BigDecimal.ZERO);
+            totalBudgetInfo.put("totalBudgetSpent", BigDecimal.ZERO);
+            totalBudgetInfo.put("budgetUsagePercent", 0.0);
+            dashboard.put("totalBudgetInfo", totalBudgetInfo);
         }
         
         return dashboard;

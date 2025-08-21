@@ -18,6 +18,14 @@
 - **Hỗ trợ đa ngôn ngữ**: Giao tiếp bằng tiếng Việt
 - **Phân tích thông minh**: Hiểu ý định người dùng và đưa ra gợi ý phù hợp
 
+### 🚀 AI Phân tích nâng cao (MỚI)
+- **Phân tích tài chính toàn diện**: Đánh giá tình hình dựa trên dữ liệu thực tế
+- **Dự báo tài chính tương lai**: Dự báo 3, 6, 12 tháng tới
+- **Phân tích xu hướng chi tiêu**: Pattern và chu kỳ chi tiêu
+- **Tối ưu hóa ngân sách**: Cải thiện hiệu quả quản lý ngân sách
+- **Phân tích rủi ro tài chính**: Đánh giá và bảo vệ tài chính
+- **Lời khuyên đầu tư cá nhân hóa**: Tư vấn theo profile cá nhân
+
 ### 📊 Báo cáo tích hợp
 - **Báo cáo tổng hợp**: Tổng quan thu chi, chi tiêu theo danh mục
 - **Báo cáo giao dịch**: Chi tiết giao dịch theo thời gian
@@ -52,6 +60,12 @@
 - **Text Export**: Xuất báo cáo dạng văn bản
 - **Smart Parsing**: Phân tích yêu cầu báo cáo từ tin nhắn
 
+### AI Phân tích nâng cao
+- **AIFinancialAnalysisService**: Service phân tích tài chính AI
+- **AIFinancialAnalysisController**: API endpoints cho phân tích nâng cao
+- **Prompt Engineering**: Tối ưu hóa prompt cho từng loại phân tích
+- **Data Context**: Cung cấp context dữ liệu thực tế cho AI
+
 ## 📱 Cách sử dụng
 
 ### 1. Khởi động ứng dụng
@@ -81,6 +95,33 @@ npm start
 
 # Báo cáo ngân sách
 "Báo cáo ngân sách tháng 12 năm 2024"
+```
+
+### 4. Sử dụng AI Phân tích nâng cao
+```
+# Phân tích tài chính
+"Phân tích thực tế tình hình tài chính của tôi"
+"Tình hình hiện tại"
+
+# Dự báo tương lai
+"Dự báo tài chính 6 tháng tới"
+"Dự báo tài chính 12 tháng tới"
+
+# Phân tích xu hướng
+"Phân tích xu hướng chi tiêu"
+"Phân tích pattern chi tiêu"
+
+# Tối ưu hóa
+"Tối ưu hóa ngân sách"
+"Cải thiện hiệu quả ngân sách"
+
+# Phân tích rủi ro
+"Phân tích rủi ro tài chính"
+"Bảo vệ tài chính"
+
+# Tư vấn đầu tư
+"Lời khuyên đầu tư cá nhân"
+"Tư vấn đầu tư theo profile"
 ```
 
 ### 4. Xuất báo cáo

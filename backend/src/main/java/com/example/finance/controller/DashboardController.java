@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -121,24 +123,58 @@ public class DashboardController {
         }
     }
 
+    /**
+     * Endpoint mới để hỗ trợ frontend với date range parameters
+     */
     @GetMapping("/data-by-date")
-    public ResponseEntity<Map<String, Object>> getDashboardByDate(
+    public ResponseEntity<Map<String, Object>> getDashboardDataByDate(
             @RequestParam Long userId,
             @RequestParam String dateFrom,
             @RequestParam String dateTo) {
+        
         try {
-            LocalDate from = LocalDate.parse(dateFrom);
-            LocalDate to = LocalDate.parse(dateTo);
-
-            Map<String, Object> dashboard = dashboardService.getDashboardDataByDate(userId, from, to);
+            // Parse date strings to LocalDate
+            LocalDate startDate = LocalDate.parse(dateFrom);
+            LocalDate endDate = LocalDate.parse(dateTo);
+            
+            System.out.println("Dashboard data-by-date request for userId: " + userId + 
+                ", from: " + startDate + ", to: " + endDate);
+            
+            // Lấy dữ liệu dashboard theo khoảng thời gian
+            Map<String, Object> dashboard = dashboardService.getDashboardDataByDate(userId, startDate, endDate);
+            
+            System.out.println("Dashboard data-by-date response: " + dashboard.get("totalBalance"));
+            
             return ResponseEntity.ok(dashboard);
+            
         } catch (Exception e) {
-            System.err.println("Error in /api/dashboard/data-by-date: " + e.getMessage());
+            System.err.println("Error in getDashboardDataByDate: " + e.getMessage());
             e.printStackTrace();
-            Map<String, Object> err = new java.util.HashMap<>();
-            err.put("success", false);
-            err.put("message", e.getMessage());
-            return ResponseEntity.status(500).body(err);
+            
+            // Trả về response lỗi
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to get dashboard data");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("totalIncome", 0);
+            errorResponse.put("totalExpense", 0);
+            errorResponse.put("totalBalance", 0);
+            errorResponse.put("recentTransactions", new ArrayList<>());
+            errorResponse.put("wallets", new ArrayList<>());
+            errorResponse.put("expensesByCategory", new ArrayList<>());
+            errorResponse.put("weeklyTrend", new ArrayList<>());
+            errorResponse.put("budgetProgress", new ArrayList<>());
+            errorResponse.put("budgetWarnings", new ArrayList<>());
+            errorResponse.put("goalProgress", new ArrayList<>());
+            errorResponse.put("activeGoalsCount", 0L);
+            
+            // Thêm thông tin ngân sách mặc định
+            Map<String, Object> totalBudgetInfo = new HashMap<>();
+            totalBudgetInfo.put("totalBudgetAmount", 0);
+            totalBudgetInfo.put("totalBudgetSpent", 0);
+            totalBudgetInfo.put("budgetUsagePercent", 0.0);
+            errorResponse.put("totalBudgetInfo", totalBudgetInfo);
+            
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 }
