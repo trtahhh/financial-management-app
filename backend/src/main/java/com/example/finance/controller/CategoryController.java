@@ -2,6 +2,7 @@ package com.example.finance.controller;
 
 import com.example.finance.dto.CategoryDTO;
 import com.example.finance.service.CategoryService;
+import com.example.finance.service.CategoryColorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -18,6 +20,7 @@ import java.util.Map;
 public class CategoryController {
 
     private final CategoryService service;
+    private final CategoryColorService categoryColorService;
 
     @GetMapping
     public ResponseEntity<?> list() {
@@ -94,6 +97,40 @@ public class CategoryController {
             log.error("Error deleting category: {}", id, e);
             return ResponseEntity.badRequest()
                 .body(Map.of("success", false, "message", "Lỗi xóa danh mục: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Test endpoint để xem màu của các category
+     */
+    @GetMapping("/test-colors")
+    public ResponseEntity<Map<String, Object>> testCategoryColors() {
+        try {
+            Map<String, String> categoryColors = categoryColorService.getAllCategoryColors();
+            
+            // Test một số category cụ thể
+            Map<String, String> testColors = new HashMap<>();
+            String[] testCategories = {
+                "Ăn uống", "Giao thông", "Giải trí", "Sức khỏe", "Giáo dục",
+                "Mua sắm", "Tiện ích", "Du lịch", "Thể thao", "Lương",
+                "Thu nhập khác", "Đầu tư", "Kinh doanh", "Khác"
+            };
+            
+            for (String category : testCategories) {
+                testColors.put(category, categoryColorService.getCategoryColor(category));
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("allCategoryColors", categoryColors);
+            response.put("testCategoryColors", testColors);
+            response.put("message", "Màu category đã được tạo thành công");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error testing category colors: {}", e.getMessage(), e);
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Lỗi test màu category: " + e.getMessage()));
         }
     }
 }

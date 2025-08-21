@@ -173,4 +173,31 @@ public class GoalController {
             return Map.of("success", false, "error", "Lỗi khi thực hiện mục tiêu: " + e.getMessage());
         }
     }
+    
+    /**
+     * Lấy danh sách mục tiêu đã hoàn thành
+     */
+    @GetMapping("/completed")
+    public List<GoalDTO> getCompletedGoals(HttpServletRequest request) {
+        Long userId = extractUserId(request);
+        return service.getCompletedGoals(userId);
+    }
+    
+    /**
+     * Lấy danh sách mục tiêu đã thực hiện
+     */
+    @GetMapping("/executed")
+    public List<GoalDTO> getExecutedGoals(HttpServletRequest request) {
+        Long userId = extractUserId(request);
+        return service.getExecutedGoals(userId);
+    }
+    
+    /**
+     * Lấy danh sách mục tiêu đang thực hiện
+     */
+    @GetMapping("/active")
+    public List<GoalDTO> getActiveGoals(HttpServletRequest request) {
+        Long userId = extractUserId(request);
+        return service.getActiveGoals(userId);
+    }
 }

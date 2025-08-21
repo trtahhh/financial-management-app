@@ -245,3 +245,151 @@ Nếu gặp vấn đề hoặc có câu hỏi:
 ---
 
 **Lưu ý**: Đây là dự án demo, vui lòng không sử dụng cho mục đích sản xuất mà không có kiểm tra bảo mật đầy đủ.
+
+## 🎨 **Test Màu Category Dashboard**
+
+### **Vấn đề đã khắc phục:**
+- Biểu đồ tròn ở dashboard bị trùng màu cho 14 danh mục
+- Đã tạo bảng màu đủ lớn và logic phân bổ màu thông minh
+
+### **Cách test:**
+
+#### 1. **Test endpoint màu category:**
+```bash
+GET http://localhost:8080/api/categories/test-colors
+```
+
+#### 2. **Kiểm tra dashboard:**
+- Truy cập dashboard
+- Xem biểu đồ tròn "Phân bổ chi tiêu theo danh mục"
+- Mỗi category phải có màu khác biệt
+
+#### 3. **Kiểm tra log backend:**
+```bash
+# Tìm log màu category
+grep "🎨" backend/logs/application.log
+```
+
+### **Tính năng đã thêm:**
+- **CategoryColorService**: Quản lý màu cho từng category
+- **Bảng màu cố định**: 14 màu cho các category phổ biến
+- **Bảng màu dự phòng**: 20+ màu cho category khác
+- **Logic thông minh**: Tránh trùng lặp màu
+- **Frontend tối ưu**: Sử dụng màu từ backend
+
+### **Màu cố định:**
+- **Thu nhập**: Xanh lá, xanh dương, tím, cam
+- **Chi tiêu**: Đỏ cam, xanh lá, xanh dương, vàng, tím, xám
+- **Dự phòng**: 20+ màu gradient và hiện đại
+
+---
+
+## 📧 **Test Email Thông Báo Budget**
+
+### **Vấn đề đã khắc phục:**
+- Hệ thống chưa gửi email thông báo khi vượt quá ngân sách
+- Đã thêm cấu hình và logic gửi email tự động
+
+### **Cách test:**
+
+#### 1. **Test gửi email trực tiếp:**
+```bash
+POST http://localhost:8080/api/auth/test-budget-email
+Content-Type: application/json
+
+{
+  "email": "your-email@gmail.com",
+  "username": "your-username",
+  "categoryName": "Ăn uống",
+  "currentAmount": "1500000",
+  "limitAmount": "1000000"
+}
+```
+
+#### 2. **Test tạo giao dịch và kích hoạt budget alert:**
+```bash
+POST http://localhost:8080/api/transactions/test-budget-alert
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "categoryId": 1,
+  "walletId": 1,
+  "amount": "1500000",
+  "note": "Test transaction vượt quá ngân sách"
+}
+```
+
+#### 3. **Kiểm tra log backend:**
+- Mở console backend để xem log:
+  - `📧 Budget alert email check`
+  - `📧 Budget alert email sent to:`
+  - `🚨 Budget exceeded for category`
+
+### **Cấu hình email:**
+```properties
+# Budget Alert Email Configuration
+notification.email.budget-alerts=true
+notification.email.budget-warning-threshold=80
+notification.email.budget-exceeded-threshold=100
+```
+
+### **Lưu ý:**
+- Email sẽ được gửi khi:
+  - Sử dụng ≥80% ngân sách (cảnh báo)
+  - Vượt quá 100% ngân sách (vượt quá)
+- Kiểm tra email spam nếu không nhận được
+- Đảm bảo Gmail App Password đã được cấu hình đúng
+
+## 🎯 **Test Tính Năng Mục Tiêu Đã Thực Hiện**
+
+### **Vấn đề đã khắc phục:**
+- Mục tiêu đã hoàn thành chưa được tự động xóa khỏi danh sách đang thực hiện
+- Chưa có danh sách riêng để theo dõi mục tiêu đã thực hiện
+- Đã thêm logic tự động xóa và lưu vào danh sách riêng
+
+### **Cách test:**
+
+#### 1. **Test thực hiện mục tiêu:**
+```bash
+POST http://localhost:8080/api/goals/{goalId}/execute
+Authorization: Bearer {your-jwt-token}
+```
+
+#### 2. **Test lấy danh sách mục tiêu theo trạng thái:**
+```bash
+# Mục tiêu đang thực hiện
+GET http://localhost:8080/api/goals/active
+
+# Mục tiêu đã hoàn thành
+GET http://localhost:8080/api/goals/completed
+
+# Mục tiêu đã thực hiện
+GET http://localhost:8080/api/goals/executed
+```
+
+#### 3. **Kiểm tra frontend:**
+- Truy cập trang `/goals`
+- Tạo mục tiêu mới và đạt 100% tiến độ
+- Nhấn "Thực hiện mục tiêu"
+- Mục tiêu sẽ tự động biến mất khỏi danh sách đang thực hiện
+- Mục tiêu sẽ xuất hiện trong danh sách "Mục tiêu đã hoàn thành" với badge "Đã thực hiện"
+
+### **Tính năng đã thêm:**
+- **Tự động xóa**: Mục tiêu đã thực hiện tự động biến mất khỏi danh sách đang thực hiện
+- **Danh sách riêng**: Mục tiêu đã thực hiện được lưu vào danh sách riêng với trạng thái "EXECUTED"
+- **Animation**: Hiệu ứng fadeOut khi xóa mục tiêu
+- **Phân loại**: 3 danh sách riêng biệt: đang thực hiện, đã hoàn thành, đã thực hiện
+- **Cập nhật số lượng**: Tự động cập nhật số lượng mục tiêu theo từng trạng thái
+
+### **Trạng thái mục tiêu:**
+- **ACTIVE**: Đang thực hiện (chưa đạt 100%)
+- **COMPLETED**: Đã hoàn thành (đạt 100% nhưng chưa thực hiện)
+- **EXECUTED**: Đã thực hiện (đã hoàn thành và đã thực hiện - trừ tiền từ ví)
+
+### **Luồng hoạt động:**
+1. **Tạo mục tiêu** → Trạng thái ACTIVE
+2. **Đạt 100% tiến độ** → Trạng thái COMPLETED
+3. **Nhấn "Thực hiện mục tiêu"** → Trạng thái EXECUTED
+4. **Tự động xóa** khỏi danh sách đang thực hiện
+5. **Lưu vào danh sách** mục tiêu đã thực hiện

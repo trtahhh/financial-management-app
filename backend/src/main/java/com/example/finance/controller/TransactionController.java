@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.example.finance.service.WalletService;
 import com.example.finance.service.CategoryService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -180,6 +181,43 @@ public class TransactionController {
             log.error("Error creating transaction", e);
             return ResponseEntity.badRequest()
                 .body(Map.of("success", false, "message", "Error creating transaction: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Test endpoint để tạo giao dịch test và kích hoạt budget alert
+     */
+    @PostMapping("/test-budget-alert")
+    public ResponseEntity<Map<String, Object>> testBudgetAlert(@RequestBody Map<String, Object> request) {
+        try {
+            Long userId = Long.parseLong(request.get("userId").toString());
+            Long categoryId = Long.parseLong(request.get("categoryId").toString());
+            Long walletId = Long.parseLong(request.get("walletId").toString());
+            BigDecimal amount = new BigDecimal(request.get("amount").toString());
+            String note = (String) request.get("note");
+            
+            // Tạo giao dịch test
+            TransactionDTO dto = new TransactionDTO();
+            dto.setUserId(userId);
+            dto.setCategoryId(categoryId);
+            dto.setWalletId(walletId);
+            dto.setAmount(amount);
+            dto.setType("expense");
+            dto.setDate(LocalDate.now());
+            dto.setNote(note != null ? note : "Test transaction for budget alert");
+            
+            TransactionDTO saved = service.save(dto, null);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Giao dịch test đã được tạo và budget alert đã được kích hoạt",
+                "transaction", saved,
+                "budgetAlertTriggered", true
+            ));
+            
+        } catch (Exception e) {
+            log.error("Error testing budget alert: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Lỗi test budget alert: " + e.getMessage()));
         }
     }
 

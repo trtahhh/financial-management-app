@@ -1,6 +1,21 @@
 <main class="container py-4">
   <h2 class="mb-4">Mục tiêu tài chính</h2>
   
+  <style>
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+    
+    .goal-item, .completed-goal-item, .executed-goal-item {
+      transition: all 0.3s ease;
+    }
+    
+    .executed-goal-item {
+      border: 2px solid #28a745;
+    }
+  </style>
+
   <!-- Goal Statistics -->
   <div class="row mb-4">
     <div class="col-md-4">

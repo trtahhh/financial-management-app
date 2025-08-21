@@ -1,5 +1,6 @@
 package com.example.finance.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDate;
 
@@ -10,7 +11,10 @@ public class RegisterRequest {
     private String email;
     private String fullName;
     private String phone;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
+    
     private String gender;
     private String address;
     private String imageUrl;

@@ -30,6 +30,9 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import com.example.finance.entity.Category;
 import com.example.finance.repository.CategoryRepository;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -237,6 +240,13 @@ public class GoalService {
             goal.setIsExecuted(true);
             goal.setExecutedAt(LocalDateTime.now());
             goal.setExecutedTransactionId(transaction.getId());
+            
+            // Đánh dấu mục tiêu đã hoàn thành và thực hiện
+            goal.setStatus("EXECUTED");
+            goal.setCompletedAt(LocalDateTime.now());
+            goal.setCurrentAmount(goal.getTargetAmount());
+            
+            // Lưu mục tiêu đã cập nhật
             repo.save(goal);
             
             // Tạo thông báo
@@ -442,10 +452,49 @@ public class GoalService {
      * Lấy danh sách mục tiêu đã hoàn thành
      */
     public List<GoalDTO> getCompletedGoals(Long userId) {
-        return repo.findByUserIdAndStatusAndIsDeletedFalse(userId, "COMPLETED")
-                  .stream()
-                  .map(mapper::toDto)
-                  .toList();
+        try {
+            List<Goal> completedGoals = repo.findByUserIdAndStatusAndIsDeletedFalse(userId, "COMPLETED");
+            log.info("Found {} completed goals for user ID: {}", completedGoals.size(), userId);
+            return completedGoals.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting completed goals for user ID: {}", userId, e);
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Lấy danh sách mục tiêu đã thực hiện (đã hoàn thành và thực hiện)
+     */
+    public List<GoalDTO> getExecutedGoals(Long userId) {
+        try {
+            List<Goal> executedGoals = repo.findByUserIdAndStatusAndIsDeletedFalse(userId, "EXECUTED");
+            log.info("Found {} executed goals for user ID: {}", executedGoals.size(), userId);
+            return executedGoals.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting executed goals for user ID: {}", userId, e);
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Lấy danh sách mục tiêu đang thực hiện (chưa hoàn thành)
+     */
+    public List<GoalDTO> getActiveGoals(Long userId) {
+        try {
+            List<Goal> activeGoals = repo.findByUserIdAndStatusNotInAndIsDeletedFalse(userId, 
+                Arrays.asList("COMPLETED", "EXECUTED"));
+            log.info("Found {} active goals for user ID: {}", activeGoals.size(), userId);
+            return activeGoals.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting active goals for user ID: {}", userId, e);
+            return new ArrayList<>();
+        }
     }
 
     /**

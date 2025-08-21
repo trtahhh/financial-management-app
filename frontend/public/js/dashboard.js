@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function () {
       categoryMap[cat.id] = cat.name;
     });
     
-          console.log("Rendering pie chart with transactions:", transactions);
-      console.log("Category map:", categoryMap);
+    console.log("Rendering pie chart with transactions:", transactions);
+    console.log("Category map:", categoryMap);
     
     // Calculate expenses by category from real data
     const expensesByCategory = {};
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(`Added ${amount} to category ${categoryName}`);
       });
 
-          console.log("Expenses by category:", expensesByCategory);
+    console.log("Expenses by category:", expensesByCategory);
 
     const ctx = document.getElementById('chart-pie').getContext('2d');
     if (pieChart) pieChart.destroy();
@@ -243,16 +243,21 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     
+    // Sử dụng logic màu mới để tránh trùng lặp
+    const categoryNames = Object.keys(expensesByCategory);
+    const colors = categoryNames.map((categoryName, index) => 
+      generateCategoryColor(categoryName, index)
+    );
+    
+    console.log("🎨 Pie chart colors:", colors);
+    
     pieChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: Object.keys(expensesByCategory),
+        labels: categoryNames,
         datasets: [{
           data: Object.values(expensesByCategory),
-          backgroundColor: [
-            '#28a745', '#dc3545', '#ffc107', '#17a2b8',
-            '#6f42c1', '#fd7e14', '#20c997', '#6c757d'
-          ],
+          backgroundColor: colors,
           borderWidth: 2,
           borderColor: '#fff'
         }]
@@ -400,7 +405,19 @@ document.addEventListener('DOMContentLoaded', function () {
     
     const labels = expensesByCategory.map(item => item.categoryName);
     const data = expensesByCategory.map(item => item.totalAmount);
-    const colors = expensesByCategory.map(item => item.categoryColor || '#007bff');
+    
+    // Sử dụng logic màu mới để tránh trùng lặp
+    const colors = labels.map((categoryName, index) => {
+      // Nếu có màu từ backend, sử dụng; nếu không, tạo màu mới
+      const backendColor = expensesByCategory[index]?.categoryColor;
+      if (backendColor && backendColor !== '#007bff') {
+        return backendColor;
+      }
+      // Tạo màu dựa trên tên category để đảm bảo nhất quán
+      return generateCategoryColor(categoryName, index);
+    });
+    
+    console.log("🎨 Pie chart from data colors:", colors);
     
     pieChart = new Chart(ctx, {
       type: 'doughnut',
@@ -777,16 +794,31 @@ document.addEventListener('DOMContentLoaded', function () {
     if (data.spendingTrend && data.spendingTrend.length > 0) {
       renderBarChartFromTrend(data.spendingTrend);
     } else if (Array.isArray(data.recentTransactions)) {
-      const byWeek = {};
+      const byWeek = { income: {}, expense: {} };
       data.recentTransactions.forEach(t => {
         const d = new Date(t.date);
         // tạo nhãn tuần dạng YYYY-Wn (đơn giản hóa)
         const firstJan = new Date(d.getFullYear(),0,1);
         const week = Math.ceil((((d - firstJan) / 86400000) + firstJan.getDay()+1)/7);
         const key = `${d.getFullYear()}-W${week}`;
-        byWeek[key] = (byWeek[key] || 0) + (t.type === 'expense' ? Number(t.amount||0) : 0);
+        
+        // Phân loại theo thu nhập và chi tiêu
+        if (t.type === 'income' || t.type === 'THU' || t.type === 'INCOME') {
+          byWeek.income[key] = (byWeek.income[key] || 0) + Number(t.amount || 0);
+        } else if (t.type === 'expense' || t.type === 'CHI' || t.type === 'EXPENSE') {
+          byWeek.expense[key] = (byWeek.expense[key] || 0) + Number(t.amount || 0);
+        }
       });
-      const trend = Object.keys(byWeek).sort().map(k => ({ period: k, amount: byWeek[k] }));
+      
+      // Tạo trend data với cả thu nhập và chi tiêu
+      const allWeeks = new Set([...Object.keys(byWeek.income), ...Object.keys(byWeek.expense)]);
+      const trend = Array.from(allWeeks).sort().map(week => ({
+        period: week,
+        income: byWeek.income[week] || 0,
+        amount: byWeek.expense[week] || 0,
+        expense: byWeek.expense[week] || 0
+      }));
+      
       renderBarChartFromTrend(trend);
     } else {
       console.log("⚠️ No spendingTrend or recentTransactions data available for chart.");
@@ -810,7 +842,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // Transform API data to chart format
     const labels = expensesByCategory.map(item => item.categoryName || 'Không xác định');
     const amounts = expensesByCategory.map(item => item.totalAmount || 0);
-    const colors = expensesByCategory.map(item => item.categoryColor || '#6c757d');
+    
+    // Sử dụng logic màu mới để tránh trùng lặp
+    const colors = labels.map((categoryName, index) => {
+      // Nếu có màu từ backend, sử dụng; nếu không, tạo màu mới
+      const backendColor = expensesByCategory[index]?.categoryColor;
+      if (backendColor && backendColor !== '#6c757d') {
+        return backendColor;
+      }
+      // Tạo màu dựa trên tên category để đảm bảo nhất quán
+      return generateCategoryColor(categoryName, index);
+    });
+    
+    console.log("🎨 Chart colors:", colors);
     
     if (labels.length === 0 || amounts.every(amount => amount === 0)) {
       // Show empty state
@@ -844,6 +888,28 @@ document.addEventListener('DOMContentLoaded', function () {
               padding: 20,
               font: {
                 size: 12
+              },
+              // Tùy chỉnh legend để hiển thị màu rõ ràng
+              generateLabels: function(chart) {
+                const data = chart.data;
+                if (data.labels.length && data.datasets.length) {
+                  return data.labels.map((label, i) => {
+                    const dataset = data.datasets[0];
+                    const value = dataset.data[i];
+                    const total = dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    
+                    return {
+                      text: `${label} (${percentage}%)`,
+                      fillStyle: dataset.backgroundColor[i],
+                      strokeStyle: dataset.backgroundColor[i],
+                      lineWidth: 0,
+                      hidden: false,
+                      index: i
+                    };
+                  });
+                }
+                return [];
               }
             }
           },
@@ -871,34 +937,60 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Destroy existing chart if exists
-    if (window.barChartInstance) {
-      window.barChartInstance.destroy();
+    if (barChart) {
+      barChart.destroy();
     }
 
-    // Prepare data
+    // Prepare data for both income and expense
     const labels = spendingTrend.map(item => item.period || 'N/A');
-    const amounts = spendingTrend.map(item => parseFloat(item.amount) || 0);
+    const incomeData = spendingTrend.map(item => parseFloat(item.income) || 0);
+    const expenseData = spendingTrend.map(item => parseFloat(item.amount) || 0);
 
-    console.log("📊 Bar chart data:", { labels, amounts });
+    console.log("📊 Bar chart data:", { labels, incomeData, expenseData });
 
-    // Create bar chart
-    window.barChartInstance = new Chart(barChartCanvas, {
+    // Create bar chart with both income and expense datasets
+    barChart = new Chart(barChartCanvas, {
       type: 'bar',
       data: {
         labels: labels,
-        datasets: [{
-          label: 'Chi tiêu',
-          data: amounts,
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        }]
+        datasets: [
+          {
+            label: 'Thu nhập',
+            data: incomeData,
+            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+            borderColor: 'rgba(40, 167, 69, 1)',
+            borderWidth: 1,
+            borderRadius: 4
+          },
+          {
+            label: 'Chi tiêu',
+            data: expenseData,
+            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+            borderColor: 'rgba(220, 53, 69, 1)',
+            borderWidth: 1,
+            borderRadius: 4
+          }
+        ]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: true
+            display: true,
+            position: 'top',
+            labels: { 
+              usePointStyle: true, 
+              padding: 20,
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} VNĐ`;
+              }
+            }
           }
         },
         scales: {
@@ -916,11 +1008,109 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   function generateColors(count) {
-    const colors = [
-      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-      '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+    // Bảng màu đủ lớn với 20+ màu khác biệt để tránh trùng lặp
+    const colorPalette = [
+      // Màu chính - tươi sáng
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6384', '#C9CBCF', '#FF6384', '#36A2EB',
+      
+      // Màu phụ - đa dạng
+      '#FF6B9D', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+      '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+      
+      // Màu bổ sung - độc đáo
+      '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2',
+      '#F9E79F', '#D5A6BD', '#A9CCE3', '#FAD7A0', '#D2B4DE',
+      
+      // Màu gradient - hiện đại
+      '#E74C3C', '#8E44AD', '#2980B9', '#27AE60', '#F39C12',
+      '#E67E22', '#95A5A6', '#34495E', '#2C3E50', '#16A085'
     ];
-    return Array.from({length: count}, (_, i) => colors[i % colors.length]);
+    
+    // Logic phân bổ màu thông minh để tránh trùng lặp
+    const colors = [];
+    const usedColors = new Set();
+    
+    for (let i = 0; i < count; i++) {
+      let color;
+      let attempts = 0;
+      const maxAttempts = 50;
+      
+      do {
+        // Ưu tiên màu từ bảng màu chính trước
+        if (i < colorPalette.length) {
+          color = colorPalette[i];
+        } else {
+          // Nếu vượt quá bảng màu, tạo màu ngẫu nhiên
+          color = generateRandomColor();
+        }
+        
+        attempts++;
+        
+        // Nếu đã thử quá nhiều lần, tạo màu hoàn toàn ngẫu nhiên
+        if (attempts > maxAttempts) {
+          color = generateRandomColor();
+          break;
+        }
+        
+      } while (usedColors.has(color));
+      
+      colors.push(color);
+      usedColors.add(color);
+    }
+    
+    console.log(`🎨 Generated ${count} unique colors for chart`);
+    return colors;
+  }
+  
+  /**
+   * Tạo màu ngẫu nhiên với độ tương phản tốt
+   */
+  function generateRandomColor() {
+    // Tạo màu với độ bão hòa và độ sáng phù hợp cho biểu đồ
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = Math.floor(Math.random() * 30) + 60; // 60-90% để màu không quá nhạt
+    const lightness = Math.floor(Math.random() * 20) + 45;  // 45-65% để màu không quá tối
+    
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
+  
+  /**
+   * Tạo màu dựa trên tên category để đảm bảo nhất quán
+   */
+  function generateCategoryColor(categoryName, index) {
+    // Bảng màu cố định cho các category phổ biến
+    const categoryColorMap = {
+      'Ăn uống': '#FF6B6B',      // Đỏ cam
+      'Giao thông': '#4ECDC4',   // Xanh lá
+      'Giải trí': '#45B7D1',     // Xanh dương
+      'Sức khỏe': '#96CEB4',     // Xanh lá nhạt
+      'Giáo dục': '#FFEAA7',     // Vàng
+      'Mua sắm': '#DDA0DD',      // Tím
+      'Tiện ích': '#98D8C8',     // Xanh lá đậm
+      'Du lịch': '#F7DC6F',      // Vàng cam
+      'Thể thao': '#BB8FCE',     // Tím nhạt
+      'Lương': '#27AE60',        // Xanh lá đậm
+      'Thu nhập khác': '#2980B9', // Xanh dương đậm
+      'Đầu tư': '#8E44AD',       // Tím đậm
+      'Kinh doanh': '#E67E22',   // Cam
+      'Khác': '#95A5A6'          // Xám
+    };
+    
+    // Nếu có màu cố định cho category, sử dụng
+    if (categoryColorMap[categoryName]) {
+      return categoryColorMap[categoryName];
+    }
+    
+    // Nếu không có, sử dụng bảng màu theo index
+    const colorPalette = [
+      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+      '#FF9F40', '#FF6B9D', '#4ECDC4', '#45B7D1', '#96CEB4',
+      '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE',
+      '#85C1E9', '#F8C471', '#82E0AA', '#F1948A', '#D7BDE2'
+    ];
+    
+    return colorPalette[index % colorPalette.length];
   }
   
   function showError(message) {

@@ -7,6 +7,7 @@ import com.example.finance.repository.TransactionRepository;
 import com.example.finance.repository.WalletRepository;
 import com.example.finance.service.BudgetService;
 import com.example.finance.service.GoalService;
+import com.example.finance.service.CategoryColorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class DashboardService {
     private final WalletRepository walletRepository;
     private final BudgetService budgetService;
     private final GoalService goalService;
+    private final CategoryColorService categoryColorService;
 
     public SummaryDTO getDashboardData(Long userId, LocalDate dateFrom, LocalDate dateTo) {
         log.info("Getting dashboard data for user: {} from {} to {}", userId, dateFrom, dateTo);
@@ -132,7 +134,7 @@ public class DashboardService {
             
             // Thêm dữ liệu cho biểu đồ
             dashboard.put("expensesByCategory", getExpensesByCategory(userId, month, year));
-            dashboard.put("weeklyTrend", getWeeklyTrend(userId, month, year));
+            dashboard.put("spendingTrend", getWeeklyTrend(userId, month, year));
             
             // Tích hợp dữ liệu thực từ BudgetService và GoalService
             try {
@@ -175,7 +177,7 @@ public class DashboardService {
             dashboard.put("netIncome", BigDecimal.ZERO);
             dashboard.put("totalBalance", BigDecimal.ZERO);
             dashboard.put("expensesByCategory", new ArrayList<>());
-            dashboard.put("weeklyTrend", new ArrayList<>());
+            dashboard.put("spendingTrend", new ArrayList<>());
             dashboard.put("goalProgress", new ArrayList<>());
             dashboard.put("activeGoalsCount", 0L);
             dashboard.put("recentTransactions", new ArrayList<>());
@@ -254,7 +256,7 @@ public class DashboardService {
             
             // Thêm dữ liệu cho biểu đồ
             dashboard.put("expensesByCategory", getExpensesByCategoryByDate(userId, dateFrom, dateTo));
-            dashboard.put("weeklyTrend", getWeeklyTrendByDate(userId, dateFrom, dateTo));
+            dashboard.put("spendingTrend", getWeeklyTrendByDate(userId, dateFrom, dateTo));
             
             // Tích hợp dữ liệu thực từ BudgetService và GoalService
             try {
@@ -342,7 +344,7 @@ public class DashboardService {
             dashboard.put("recentTransactions", new ArrayList<>());
             dashboard.put("wallets", new ArrayList<>());
             dashboard.put("expensesByCategory", new ArrayList<>());
-            dashboard.put("weeklyTrend", new ArrayList<>());
+            dashboard.put("spendingTrend", new ArrayList<>());
             dashboard.put("budgetProgress", new ArrayList<>());
             dashboard.put("budgetWarnings", new ArrayList<>());
             dashboard.put("goalProgress", new ArrayList<>());
@@ -366,11 +368,21 @@ public class DashboardService {
         try {
             List<Object[]> results = transactionRepository.findExpensesByCategory(userId, month, year);
             return results.stream().map(result -> {
+                String categoryName = (String) result[0];
+                String categoryColor = (String) result[1];
+                
+                // Sử dụng CategoryColorService để đảm bảo màu không trùng lặp
+                String finalColor = categoryColorService.getCategoryColor(categoryName);
+                
                 Map<String, Object> map = new HashMap<>();
-                map.put("categoryName", result[0]);
-                map.put("categoryColor", result[1]);
+                map.put("categoryName", categoryName);
+                map.put("categoryColor", finalColor);
                 map.put("totalAmount", result[2]);
                 map.put("transactionCount", result[3]);
+                
+                log.info("🎨 Category: {}, Original Color: {}, Final Color: {}", 
+                    categoryName, categoryColor, finalColor);
+                
                 return map;
             }).collect(Collectors.toList());
         } catch (Exception e) {
@@ -386,11 +398,21 @@ public class DashboardService {
         try {
             List<Object[]> results = transactionRepository.findExpensesByCategoryByDate(userId, dateFrom, dateTo);
             return results.stream().map(result -> {
+                String categoryName = (String) result[0];
+                String categoryColor = (String) result[1];
+                
+                // Sử dụng CategoryColorService để đảm bảo màu không trùng lặp
+                String finalColor = categoryColorService.getCategoryColor(categoryName);
+                
                 Map<String, Object> map = new HashMap<>();
-                map.put("categoryName", result[0]);
-                map.put("categoryColor", result[1]);
+                map.put("categoryName", categoryName);
+                map.put("categoryColor", finalColor);
                 map.put("totalAmount", result[2]);
                 map.put("transactionCount", result[3]);
+                
+                log.info("🎨 Category by date: {}, Original Color: {}, Final Color: {}", 
+                    categoryName, categoryColor, finalColor);
+                
                 return map;
             }).collect(Collectors.toList());
         } catch (Exception e) {
@@ -439,7 +461,7 @@ public class DashboardService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
                 
                 Map<String, Object> weekData = new HashMap<>();
-                weekData.put("week", "Tuần " + (week + 1));
+                weekData.put("period", "Tuần " + (week + 1));
                 weekData.put("income", weeklyIncome);
                 weekData.put("expense", weeklyExpense);
                 weekData.put("net", weeklyIncome.subtract(weeklyExpense));
@@ -497,9 +519,10 @@ public class DashboardService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
                 
                 Map<String, Object> weekData = new HashMap<>();
-                weekData.put("week", "Tuần " + (week + 1) + " (" + weekStartDate.getDayOfMonth() + "/" + weekStartDate.getMonthValue() + ")");
+                weekData.put("period", "Tuần " + (week + 1) + " (" + weekStartDate.getDayOfMonth() + "/" + weekStartDate.getMonthValue() + ")");
                 weekData.put("income", weeklyIncome);
                 weekData.put("expense", weeklyExpense);
+                weekData.put("amount", weeklyExpense); // Thêm key "amount" để phù hợp với frontend
                 weekData.put("net", weeklyIncome.subtract(weeklyExpense));
                 
                 trend.add(weekData);

@@ -7,6 +7,8 @@ import java.util.*;
 import java.time.LocalDate;
 import com.example.finance.dto.BudgetDTO;
 import com.example.finance.dto.GoalDTO;
+import com.example.finance.dto.WalletDTO;
+import java.math.BigDecimal;
 
 @Service
 @Slf4j
@@ -239,9 +241,6 @@ public class AIFinanceService {
     
     private String createUserFinancialContext(Long userId) {
         try {
-            // TODO: Lấy userId thực tế từ JWT token
-            // Long userId = 1L; // Tạm thời hardcode
-            
             StringBuilder context = new StringBuilder();
             context.append("**TÌNH HÌNH TÀI CHÍNH HIỆN TẠI:**\n");
             
@@ -249,55 +248,141 @@ public class AIFinanceService {
             List<Map<String, Object>> recentTransactions = transactionService.getRecentTransactions(userId, 5);
             if (!recentTransactions.isEmpty()) {
                 context.append("• Giao dịch gần đây: ").append(recentTransactions.size()).append(" giao dịch\n");
+                
+                // Tính tổng thu nhập và chi tiêu
+                BigDecimal totalIncome = BigDecimal.ZERO, totalExpense = BigDecimal.ZERO;
+                for (Map<String, Object> trans : recentTransactions) {
+                    String type = (String) trans.get("type");
+                    BigDecimal amount = (BigDecimal) trans.get("amount");
+                    if (amount != null) {
+                        if ("INCOME".equals(type)) {
+                            totalIncome = totalIncome.add(amount);
+                        } else if ("EXPENSE".equals(type)) {
+                            totalExpense = totalExpense.add(amount);
+                        }
+                    }
+                }
+                context.append("• Tổng thu nhập gần đây: ").append(String.format("%,.0f VNĐ", totalIncome)).append("\n");
+                context.append("• Tổng chi tiêu gần đây: ").append(String.format("%,.0f VNĐ", totalExpense)).append("\n");
+                if (totalIncome.compareTo(BigDecimal.ZERO) > 0) {
+                    double expenseRatio = (totalExpense.doubleValue() / totalIncome.doubleValue()) * 100;
+                    context.append("• Tỷ lệ chi tiêu/thu nhập: ").append(String.format("%.1f%%", expenseRatio)).append("\n");
+                }
+            } else {
+                context.append("• Chưa có giao dịch nào được ghi nhận\n");
             }
             
             // Lấy thông tin ngân sách
             List<BudgetDTO> budgets = budgetService.getAllBudgets(userId);
             if (!budgets.isEmpty()) {
                 context.append("• Số ngân sách đang quản lý: ").append(budgets.size()).append(" danh mục\n");
+                
+                // Tính tổng ngân sách và chi tiêu thực tế
+                BigDecimal totalBudget = BigDecimal.ZERO, totalSpent = BigDecimal.ZERO;
+                for (BudgetDTO budget : budgets) {
+                    if (budget.getAmount() != null) totalBudget = totalBudget.add(budget.getAmount());
+                    if (budget.getSpentAmount() != null) totalSpent = totalSpent.add(budget.getSpentAmount());
+                }
+                context.append("• Tổng ngân sách: ").append(String.format("%,.0f VNĐ", totalBudget)).append("\n");
+                context.append("• Tổng đã chi: ").append(String.format("%,.0f VNĐ", totalSpent)).append("\n");
+                if (totalBudget.compareTo(BigDecimal.ZERO) > 0) {
+                    double usageRatio = (totalSpent.doubleValue() / totalBudget.doubleValue()) * 100;
+                    context.append("• Tỷ lệ sử dụng ngân sách: ").append(String.format("%.1f%%", usageRatio)).append("\n");
+                }
+            } else {
+                context.append("• Chưa thiết lập ngân sách nào\n");
             }
             
             // Lấy thông tin mục tiêu
             List<GoalDTO> goals = goalService.findByUserId(userId);
             if (!goals.isEmpty()) {
                 context.append("• Số mục tiêu đang theo dõi: ").append(goals.size()).append(" mục tiêu\n");
+                
+                // Tính tổng mục tiêu và tiến độ
+                BigDecimal totalTarget = BigDecimal.ZERO, totalCurrent = BigDecimal.ZERO;
+                for (GoalDTO goal : goals) {
+                    if (goal.getTargetAmount() != null) totalTarget = totalTarget.add(goal.getTargetAmount());
+                    if (goal.getCurrentAmount() != null) totalCurrent = totalCurrent.add(goal.getCurrentAmount());
+                }
+                context.append("• Tổng mục tiêu: ").append(String.format("%,.0f VNĐ", totalTarget)).append("\n");
+                context.append("• Tổng đã tiết kiệm: ").append(String.format("%,.0f VNĐ", totalCurrent)).append("\n");
+                if (totalTarget.compareTo(BigDecimal.ZERO) > 0) {
+                    double progressRatio = (totalCurrent.doubleValue() / totalTarget.doubleValue()) * 100;
+                    context.append("• Tiến độ tổng thể: ").append(String.format("%.1f%%", progressRatio)).append("\n");
+                }
+            } else {
+                context.append("• Chưa thiết lập mục tiêu tài chính nào\n");
+            }
+            
+            // Lấy thông tin ví
+            try {
+                List<WalletDTO> wallets = walletService.findAll(userId);
+                if (!wallets.isEmpty()) {
+                    context.append("• Số ví đang quản lý: ").append(wallets.size()).append(" ví\n");
+                    
+                    // Tính tổng số dư
+                    BigDecimal totalBalance = BigDecimal.ZERO;
+                    for (WalletDTO wallet : wallets) {
+                        if (wallet.getBalance() != null) {
+                            totalBalance = totalBalance.add(wallet.getBalance());
+                        }
+                    }
+                    context.append("• Tổng số dư: ").append(String.format("%,.0f VNĐ", totalBalance)).append("\n");
+                } else {
+                    context.append("• Chưa thiết lập ví nào\n");
+                }
+            } catch (Exception e) {
+                context.append("• Không thể lấy thông tin ví\n");
             }
             
             context.append("\n");
             return context.toString();
             
         } catch (Exception e) {
-            return "";
+            log.error("Error creating user financial context", e);
+            return "**TÌNH HÌNH TÀI CHÍNH:**\n• Không thể lấy dữ liệu tài chính hiện tại\n\n";
         }
     }
     
     private String createEnhancedPrompt(String userMessage, String context) {
         return String.format(
-            "Bạn là một AI trợ lý thông minh và thân thiện. Dựa trên thông tin sau:\n\n" +
+            "Bạn là một AI trợ lý tài chính thông minh và chính xác. Dựa trên thông tin thực tế sau:\n\n" +
             "%s\n\n" +
             "Và câu hỏi của người dùng: \"%s\"\n\n" +
-            "Hãy trả lời một cách toàn diện, hữu ích và thân thiện. " +
-            "Trả lời bằng tiếng Việt, ngắn gọn nhưng đầy đủ thông tin. " +
-            "Nếu câu hỏi liên quan đến tài chính, hãy đưa ra lời khuyên thực tế và cụ thể. " +
-            "Nếu câu hỏi về chủ đề khác, hãy trả lời một cách chính xác và hữu ích. " +
-            "Luôn giữ giọng điệu thân thiện và sẵn sàng giúp đỡ.",
-            context, userMessage
+            "HƯỚNG DẪN TRẢ LỜI:\n" +
+            "1. **Luôn dựa trên dữ liệu thực tế** đã cung cấp ở trên\n" +
+            "2. **Trả lời chính xác và đúng trọng tâm** câu hỏi\n" +
+            "3. **Sử dụng số liệu cụ thể** từ dữ liệu user (số giao dịch, số ngân sách, số mục tiêu)\n" +
+            "4. **Đưa ra lời khuyên thực tế** dựa trên tình hình hiện tại\n" +
+            "5. **Trả lời ngắn gọn nhưng đầy đủ thông tin** (3-5 câu)\n" +
+            "6. **Nếu không có dữ liệu**, hãy nói rõ và hướng dẫn cách tạo dữ liệu\n" +
+            "7. **Luôn trả lời bằng tiếng Việt**\n\n" +
+            "VÍ DỤ:\n" +
+            "- Nếu user hỏi về chi tiêu: Phân tích dựa trên %d giao dịch gần đây\n" +
+            "- Nếu user hỏi về ngân sách: Đánh giá dựa trên %d danh mục ngân sách\n" +
+            "- Nếu user hỏi về mục tiêu: Tư vấn dựa trên %d mục tiêu đang theo dõi\n\n" +
+            "Hãy trả lời một cách chuyên nghiệp, chính xác và hữu ích.",
+            context, userMessage, 
+            context.contains("giao dịch") ? context.split("giao dịch gần đây: ")[1].split(" ")[0] : "0",
+            context.contains("ngân sách") ? context.split("ngân sách đang quản lý: ")[1].split(" ")[0] : "0",
+            context.contains("mục tiêu") ? context.split("mục tiêu đang theo dõi: ")[1].split(" ")[0] : "0"
         );
     }
     
     private String combineAIResponseWithRealData(String aiResponse, String message) {
         StringBuilder combinedResponse = new StringBuilder();
-        combinedResponse.append(aiResponse).append("\n\n");
+        combinedResponse.append(aiResponse);
         
-        // Thêm gợi ý dựa trên loại câu hỏi
+        // Chỉ thêm gợi ý ngắn gọn khi cần thiết và có dữ liệu thực tế
+        // Giữ gợi ý ngắn để không gây tràn
         if (message.toLowerCase().contains("tiết kiệm") || message.toLowerCase().contains("chi tiêu")) {
-            combinedResponse.append("**💡 Gợi ý thêm**: Bạn có thể yêu cầu 'tạo báo cáo chi tiêu tháng này' để xem chi tiết tình hình thực tế của mình.");
-        } else if (message.toLowerCase().contains("đầu tư") || message.toLowerCase().contains("tăng trưởng")) {
-            combinedResponse.append("**💡 Gợi ý thêm**: Bạn có thể yêu cầu 'phân tích thu nhập và xu hướng' để đánh giá tiềm năng đầu tư.");
-        } else if (message.toLowerCase().contains("ngân sách") || message.toLowerCase().contains("kế hoạch")) {
-            combinedResponse.append("**💡 Gợi ý thêm**: Bạn có thể yêu cầu 'báo cáo ngân sách chi tiết' để xem hiệu quả quản lý ngân sách.");
-        } else if (message.toLowerCase().contains("báo cáo") || message.toLowerCase().contains("thống kê")) {
-            combinedResponse.append("**💡 Gợi ý thêm**: Bạn có thể yêu cầu xuất báo cáo Excel hoặc PDF bằng cách sử dụng các nút template có sẵn.");
+            combinedResponse.append("\n\n💡 **Gợi ý**: Yêu cầu 'phân tích chi tiêu tháng này' để xem chi tiết.");
+        } else if (message.toLowerCase().contains("đầu tư")) {
+            combinedResponse.append("\n\n💡 **Gợi ý**: Yêu cầu 'phân tích thu nhập và xu hướng' để đánh giá đầu tư.");
+        } else if (message.toLowerCase().contains("ngân sách")) {
+            combinedResponse.append("\n\n💡 **Gợi ý**: Yêu cầu 'báo cáo ngân sách chi tiết' để xem hiệu quả.");
+        } else if (message.toLowerCase().contains("mục tiêu") || message.toLowerCase().contains("goal")) {
+            combinedResponse.append("\n\n💡 **Gợi ý**: Yêu cầu 'đánh giá tiến độ mục tiêu' để xem tình hình.");
         }
         
         return combinedResponse.toString();

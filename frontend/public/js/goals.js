@@ -16,6 +16,22 @@ document.addEventListener('DOMContentLoaded', function () {
     return headers;
   }
 
+  function updateTotalSavedAmount(goals) {
+    const totalSaved = goals
+      .filter(g => g.status === 'COMPLETED' || g.status === 'EXECUTED')
+      .reduce((sum, g) => sum + (Number(g.targetAmount) || 0), 0);
+    
+    document.getElementById('total-saved-amount').textContent = totalSaved.toLocaleString('vi-VN') + ' VNĐ';
+  }
+  
+  function updateGoalCounts() {
+    const activeGoalsCount = document.querySelectorAll('.goal-item').length;
+    const completedGoalsCount = document.querySelectorAll('.completed-goal-item').length;
+    
+    document.getElementById('active-goals-count').textContent = activeGoalsCount;
+    document.getElementById('completed-goals-count').textContent = completedGoalsCount;
+  }
+  
   function load() {
     loadGoals();
     loadGoalStats();
@@ -29,68 +45,32 @@ document.addEventListener('DOMContentLoaded', function () {
       headers: getAuthHeaders()
     })
       .then(r => r.json())
-      .then(response => {
-        // Handle both direct array and response object formats
-        const goals = Array.isArray(response) ? response : (response.data || response);
+      .then(goals => {
+        console.log('Goals loaded:', goals);
         
-        if (!Array.isArray(goals)) {
-          console.error('Expected array but got:', goals);
-          list.innerHTML = '<div class="alert alert-warning">Không có mục tiêu nào</div>';
-          return;
-        }
+        // Phân loại mục tiêu theo trạng thái
+        const activeGoals = goals.filter(g => g.status !== 'COMPLETED' && g.status !== 'EXECUTED');
+        const completedGoals = goals.filter(g => g.status === 'COMPLETED');
+        const executedGoals = goals.filter(g => g.status === 'EXECUTED');
         
-        list.innerHTML = '';
-        if (goals.length === 0) {
-          list.innerHTML = '<div class="alert alert-info">Chưa có mục tiêu nào. Hãy thêm mục tiêu đầu tiên!</div>';
-          return;
-        }
+        // Hiển thị mục tiêu đang thực hiện
+        renderActiveGoals(activeGoals);
         
-        for (const goal of goals) {
-          const div = document.createElement('div');
-          div.className = 'card mb-3';
-          
-          // Format target amount with VND currency
-          const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VND' : 'Chưa xác định';
-          
-          // Format due date
-          const dueDate = goal.dueDate ? new Date(goal.dueDate).toLocaleDateString('vi-VN') : 'Chưa xác định';
-          
-          // Calculate progress
-          const progress = goal.progress || 0;
-          
-          div.innerHTML = `
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="card-title mb-0">${goal.name}</h5>
-                <div>
-                                     <button class="btn btn-sm btn-outline-primary edit" data-id="${goal.id}">Sửa</button>
-                   <button class="btn btn-sm btn-outline-danger ms-2 del" data-id="${goal.id}">Xoá</button>
-                   ${progress >= 100 ? '<button class="btn btn-sm btn-success ms-2 complete" data-id="' + goal.id + '">Hoàn thành</button>' : ''}
-                   ${progress >= 100 && !goal.isExecuted ? '<button class="btn btn-sm btn-warning ms-2 execute" data-id="' + goal.id + '">Thực hiện mục tiêu</button>' : ''}
-                   ${goal.isExecuted ? '<span class="badge bg-success ms-2">Đã thực hiện</span>' : ''}
-                </div>
-              </div>
-              <div class="mb-2">
-                <strong>Cần đạt:</strong> ${targetAmount}<br>
-                <strong>Đến:</strong> ${dueDate}
-              </div>
-              <div class="progress mb-2">
-                <div class="progress-bar ${progress >= 100 ? 'bg-success' : progress >= 50 ? 'bg-warning' : 'bg-info'}" 
-                     role="progressbar" 
-                     style="width:${Math.min(progress, 100)}%"
-                     aria-valuenow="${progress}" 
-                     aria-valuemin="0" 
-                     aria-valuemax="100">
-                  ${progress.toFixed(1)}%
-                </div>
-              </div>
-            </div>
-          `;
-          list.appendChild(div);
-        }
-      }).catch(e => {
+        // Hiển thị mục tiêu đã hoàn thành
+        renderCompletedGoals(completedGoals);
+        
+        // Hiển thị mục tiêu đã thực hiện
+        renderExecutedGoals(executedGoals);
+        
+        // Cập nhật số lượng
+        updateGoalCounts();
+        
+        // Cập nhật tổng tiền tiết kiệm
+        updateTotalSavedAmount(goals);
+      })
+      .catch(e => {
         console.error('Error loading goals:', e);
-        list.innerHTML = '<div class="alert alert-danger">Lỗi tải mục tiêu: ' + e.message + '</div>';
+        document.getElementById('goal-list').innerHTML = '<div class="alert alert-danger">Lỗi tải danh sách mục tiêu</div>';
       });
   }
 
@@ -205,6 +185,128 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch(e => {});
   }
 
+  function renderActiveGoals(goals) {
+    const list = document.getElementById('goal-list');
+    list.innerHTML = '';
+    
+    if (goals.length === 0) {
+      list.innerHTML = '<div class="alert alert-info">Chưa có mục tiêu nào đang thực hiện. Hãy thêm mục tiêu đầu tiên!</div>';
+      return;
+    }
+    
+    for (const goal of goals) {
+      const div = document.createElement('div');
+      div.className = 'card mb-3 goal-item';
+      
+      // Format target amount with VND currency
+      const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VND' : 'Chưa xác định';
+      
+      // Format due date
+      const dueDate = goal.dueDate ? new Date(goal.dueDate).toLocaleDateString('vi-VN') : 'Chưa xác định';
+      
+      // Calculate progress
+      const progress = goal.progress || 0;
+      
+      div.innerHTML = `
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title mb-0">${goal.name}</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-primary edit" data-id="${goal.id}">Sửa</button>
+              <button class="btn btn-sm btn-outline-danger ms-2 del" data-id="${goal.id}">Xoá</button>
+              ${progress >= 100 ? '<button class="btn btn-sm btn-success ms-2 complete" data-id="' + goal.id + '">Hoàn thành</button>' : ''}
+              ${progress >= 100 && !goal.isExecuted ? '<button class="btn btn-sm btn-warning ms-2 execute" data-id="' + goal.id + '">Thực hiện mục tiêu</button>' : ''}
+              ${goal.isExecuted ? '<span class="badge bg-success ms-2">Đã thực hiện</span>' : ''}
+            </div>
+          </div>
+          <div class="mb-2">
+            <strong>Cần đạt:</strong> ${targetAmount}<br>
+            <strong>Đến:</strong> ${dueDate}
+          </div>
+          <div class="progress mb-2">
+            <div class="progress-bar ${progress >= 100 ? 'bg-success' : progress >= 50 ? 'bg-warning' : 'bg-info'}" 
+                 role="progressbar" 
+                 style="width:${Math.min(progress, 100)}%"
+                 aria-valuenow="${progress}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+              ${progress.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+    }
+  }
+  
+  function renderCompletedGoals(goals) {
+    const list = document.getElementById('completed-goals-list');
+    list.innerHTML = '';
+    
+    if (goals.length === 0) {
+      list.innerHTML = '<div class="alert alert-info">Chưa có mục tiêu nào đã hoàn thành.</div>';
+      return;
+    }
+    
+    for (const goal of goals) {
+      const div = document.createElement('div');
+      div.className = 'card mb-3 completed-goal-item bg-light';
+      
+      const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VND' : 'Chưa xác định';
+      const completedDate = goal.completedAt ? new Date(goal.completedAt).toLocaleDateString('vi-VN') : 'Chưa xác định';
+      
+      div.innerHTML = `
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="card-title mb-0 text-success">${goal.name}</h6>
+            <span class="badge bg-success">Đã hoàn thành</span>
+          </div>
+          <div class="mb-2">
+            <strong>Mục tiêu:</strong> ${targetAmount}<br>
+            <strong>Hoàn thành:</strong> ${completedDate}
+          </div>
+          <div class="text-center">
+            <button class="btn btn-sm btn-warning execute" data-id="${goal.id}">Thực hiện mục tiêu</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+    }
+  }
+  
+  function renderExecutedGoals(goals) {
+    const list = document.getElementById('completed-goals-list');
+    
+    if (goals.length === 0) {
+      return;
+    }
+    
+    for (const goal of goals) {
+      const div = document.createElement('div');
+      div.className = 'card mb-3 executed-goal-item bg-success text-white';
+      
+      const targetAmount = goal.targetAmount ? Number(goal.targetAmount).toLocaleString('vi-VN') + ' VND' : 'Chưa xác định';
+      const executedDate = goal.executedAt ? new Date(goal.executedAt).toLocaleDateString('vi-VN') : 'Chưa xác định';
+      
+      div.innerHTML = `
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="card-title mb-0">${goal.name}</h6>
+            <span class="badge bg-light text-dark">Đã thực hiện</span>
+          </div>
+          <div class="mb-2">
+            <strong>Số tiền:</strong> ${targetAmount}<br>
+            <strong>Thực hiện:</strong> ${executedDate}
+          </div>
+          <div class="text-center">
+            <span class="badge bg-light text-success">✅ Mục tiêu đã được thực hiện thành công!</span>
+          </div>
+        </div>
+      `;
+      list.appendChild(div);
+    }
+  }
+
   document.getElementById('goal-add-btn').addEventListener('click', function () {
     editing = null;
     f.reset();
@@ -268,7 +370,20 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(response => {
             if (response.success) {
               alert(`✅ ${response.message}\n\nSố tiền: ${Number(response.transaction.amount).toLocaleString('vi-VN')} VND\nVí: ${response.walletName}\nSố dư mới: ${Number(response.newBalance).toLocaleString('vi-VN')} VND`);
-              load(); // Reload để cập nhật UI
+              
+              // Tự động xóa mục tiêu đã thực hiện khỏi danh sách đang thực hiện
+              const goalElement = e.target.closest('.goal-item');
+              if (goalElement) {
+                goalElement.style.animation = 'fadeOut 0.5s ease-out';
+                setTimeout(() => {
+                  goalElement.remove();
+                  // Cập nhật số lượng mục tiêu đang thực hiện
+                  updateGoalCounts();
+                }, 500);
+              }
+              
+              // Reload để cập nhật UI và danh sách mục tiêu đã thực hiện
+              load();
             } else {
               alert('❌ Lỗi: ' + response.error);
             }

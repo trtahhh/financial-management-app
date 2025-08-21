@@ -31,6 +31,15 @@ public class BudgetAlertService {
     @Value("${email.verification.enabled:true}")
     private boolean emailVerificationEnabled;
 
+    @Value("${notification.email.budget-alerts:true}")
+    private boolean budgetAlertsEnabled;
+
+    @Value("${notification.email.budget-warning-threshold:80}")
+    private int budgetWarningThreshold;
+
+    @Value("${notification.email.budget-exceeded-threshold:100}")
+    private int budgetExceededThreshold;
+
     /**
      * Kiểm tra và tạo cảnh báo ngân sách khi có giao dịch mới
      */
@@ -74,13 +83,20 @@ public class BudgetAlertService {
         log.info("💰 Budget check - Category: {}, Spent: {}, Budget: {}, Usage: {}%", 
                 transaction.getCategory().getName(), totalSpent, budget.getAmount(), usagePercent);
 
-        // Kiểm tra các mức cảnh báo
-        if (usagePercent.compareTo(BigDecimal.valueOf(100)) >= 0) {
+        // Kiểm tra các mức cảnh báo dựa trên cấu hình
+        if (usagePercent.compareTo(BigDecimal.valueOf(budgetExceededThreshold)) >= 0) {
             // Vượt ngân sách
+            log.info("🚨 Budget exceeded for category {}: {}% >= {}%", 
+                transaction.getCategory().getName(), usagePercent, budgetExceededThreshold);
             createBudgetNotification(budget, totalSpent, usagePercent, "BUDGET_EXCEEDED");
-        } else if (usagePercent.compareTo(BigDecimal.valueOf(80)) >= 0) {
+        } else if (usagePercent.compareTo(BigDecimal.valueOf(budgetWarningThreshold)) >= 0) {
             // Gần đạt ngân sách
+            log.info("⚠️ Budget warning for category {}: {}% >= {}%", 
+                transaction.getCategory().getName(), usagePercent, budgetWarningThreshold);
             createBudgetNotification(budget, totalSpent, usagePercent, "BUDGET_WARNING");
+        } else {
+            log.info("✅ Budget usage normal for category {}: {}% < {}%", 
+                transaction.getCategory().getName(), usagePercent, budgetWarningThreshold);
         }
 
         // Cập nhật spent amount trong budget
@@ -88,9 +104,13 @@ public class BudgetAlertService {
         budgetRepository.save(budget);
         
         // Gửi email cảnh báo nếu được bật
-        if (emailVerificationEnabled) {
+        if (emailVerificationEnabled && budgetAlertsEnabled) {
             User user = transaction.getUser();
-            if (user.getEmailVerified() != null && user.getEmailVerified()) {
+            log.info("📧 Budget alert email check - User: {}, Email: {}, EmailVerified: {}, BudgetAlertsEnabled: {}", 
+                user.getUsername(), user.getEmail(), user.getEmailVerified(), budgetAlertsEnabled);
+            
+            // Gửi email ngay cả khi chưa verify (để test)
+            if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                 try {
                     emailService.sendBudgetAlertEmail(
                         user.getEmail(),
@@ -103,7 +123,12 @@ public class BudgetAlertService {
                 } catch (Exception e) {
                     log.error("❌ Failed to send budget alert email: {}", e.getMessage());
                 }
+            } else {
+                log.warn("⚠️ User {} không có email để gửi thông báo", user.getUsername());
             }
+        } else {
+            log.info("📧 Budget alert email disabled - EmailVerification: {}, BudgetAlerts: {}", 
+                emailVerificationEnabled, budgetAlertsEnabled);
         }
     }
 
@@ -143,10 +168,14 @@ public class BudgetAlertService {
             );
 
             // Gửi email cảnh báo nếu được bật
-            if (emailVerificationEnabled) {
+            if (emailVerificationEnabled && budgetAlertsEnabled) {
                 try {
                     User user = budget.getUser();
-                    if (user.getEmail() != null && !user.getEmail().isEmpty() && user.getEmailVerified()) {
+                    log.info("📧 Budget notification email check - User: {}, Email: {}, EmailVerified: {}, BudgetAlertsEnabled: {}", 
+                        user.getUsername(), user.getEmail(), user.getEmailVerified(), budgetAlertsEnabled);
+                    
+                    // Gửi email ngay cả khi chưa verify (để test)
+                    if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                         emailService.sendBudgetAlertEmail(
                             user.getEmail(),
                             user.getUsername(),
@@ -154,12 +183,17 @@ public class BudgetAlertService {
                             totalSpent.doubleValue(),
                             budget.getAmount().doubleValue()
                         );
-                        log.info("Budget alert email sent to: {}", user.getEmail());
+                        log.info("📧 Budget notification email sent to: {}", user.getEmail());
+                    } else {
+                        log.warn("⚠️ User {} không có email để gửi thông báo", user.getUsername());
                     }
                 } catch (Exception e) {
-                    log.error("Error sending budget alert email", e);
+                    log.error("❌ Error sending budget notification email: {}", e.getMessage());
                     // Không throw exception, chỉ log lỗi
                 }
+            } else {
+                log.info("📧 Budget notification email disabled - EmailVerification: {}, BudgetAlerts: {}", 
+                    emailVerificationEnabled, budgetAlertsEnabled);
             }
         }
     }

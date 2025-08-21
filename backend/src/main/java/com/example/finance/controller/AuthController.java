@@ -83,18 +83,55 @@ public class AuthController {
                 registerRequest.getBirthday() != null || registerRequest.getGender() != null ||
                 registerRequest.getAddress() != null || registerRequest.getImageUrl() != null) {
                 try {
-                    // Tạo Map từ RegisterRequest thay vì gọi profile.toMap()
-                    Map<String, Object> profileData = new HashMap<>();
-                    profileData.put("fullName", registerRequest.getFullName());
-                    profileData.put("phone", registerRequest.getPhone());
-                    profileData.put("birthday", registerRequest.getBirthday());
-                    profileData.put("gender", registerRequest.getGender());
-                    profileData.put("address", registerRequest.getAddress());
-                    profileData.put("imageUrl", registerRequest.getImageUrl());
+                    log.info("Creating profile for user: {} with data:", savedUser.getId());
+                    log.info("  - fullName: '{}'", registerRequest.getFullName());
+                    log.info("  - phone: '{}'", registerRequest.getPhone());
+                    log.info("  - birthday: '{}'", registerRequest.getBirthday());
+                    log.info("  - gender: '{}'", registerRequest.getGender());
+                    log.info("  - address: '{}'", registerRequest.getAddress());
+                    log.info("  - imageUrl: '{}'", registerRequest.getImageUrl());
                     
-                    // Lưu profile vào bảng User_Profile
-                    UserProfile savedProfile = userService.saveProfile(savedUser.getId(), profileData);
-                    log.info("Profile created successfully for user: {} with profile: {}", savedUser.getId(), savedProfile);
+                    // Tạo Map từ RegisterRequest
+                    Map<String, Object> profileData = new HashMap<>();
+                    
+                    // Chỉ thêm các trường có giá trị
+                    if (registerRequest.getFullName() != null && !registerRequest.getFullName().trim().isEmpty()) {
+                        profileData.put("fullName", registerRequest.getFullName().trim());
+                        log.info("Added fullName to profileData: '{}'", registerRequest.getFullName().trim());
+                    }
+                    if (registerRequest.getPhone() != null && !registerRequest.getPhone().trim().isEmpty()) {
+                        profileData.put("phone", registerRequest.getPhone().trim());
+                        log.info("Added phone to profileData: '{}'", registerRequest.getPhone().trim());
+                    }
+                    if (registerRequest.getBirthday() != null) {
+                        profileData.put("birthday", registerRequest.getBirthday());
+                        log.info("Added birthday to profileData: '{}'", registerRequest.getBirthday());
+                    }
+                    if (registerRequest.getGender() != null && !registerRequest.getGender().trim().isEmpty()) {
+                        profileData.put("gender", registerRequest.getGender().trim());
+                        log.info("Added gender to profileData: '{}'", registerRequest.getGender().trim());
+                    } else {
+                        log.warn("Gender is null or empty: '{}'", registerRequest.getGender());
+                    }
+                    if (registerRequest.getAddress() != null && !registerRequest.getAddress().trim().isEmpty()) {
+                        profileData.put("address", registerRequest.getAddress().trim());
+                        log.info("Added address to profileData: '{}'", registerRequest.getAddress().trim());
+                    }
+                    if (registerRequest.getImageUrl() != null && !registerRequest.getImageUrl().trim().isEmpty()) {
+                        profileData.put("imageUrl", registerRequest.getImageUrl().trim());
+                        log.info("Added imageUrl to profileData: '{}'", registerRequest.getImageUrl().trim());
+                    }
+                    
+                    log.info("Final profileData map: {}", profileData);
+                    
+                    // Chỉ tạo profile nếu có ít nhất một trường có giá trị
+                    if (!profileData.isEmpty()) {
+                        UserProfile savedProfile = userService.saveProfile(savedUser.getId(), profileData);
+                        log.info("Profile created successfully for user: {} with profile data: {}", savedUser.getId(), profileData);
+                        log.info("Saved profile: {}", savedProfile);
+                    } else {
+                        log.info("No profile data to save for user: {}", savedUser.getId());
+                    }
                 } catch (Exception e) {
                     log.error("Error creating profile for user: {}", savedUser.getId(), e);
                     // Không throw exception, chỉ log lỗi để user vẫn được tạo
@@ -274,6 +311,99 @@ public class AuthController {
             log.error("Error during password reset", e);
             return ResponseEntity.badRequest()
                 .body(Map.of("success", false, "message", "Lỗi đặt lại mật khẩu: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Test endpoint để kiểm tra việc tạo profile
+     */
+    @PostMapping("/test-profile")
+    public ResponseEntity<?> testProfileCreation(@RequestBody Map<String, Object> profileData) {
+        try {
+            log.info("Testing profile creation with data: {}", profileData);
+            
+            // Tạo user test
+            User testUser = new User();
+            testUser.setUsername("testuser_" + System.currentTimeMillis());
+            testUser.setEmail("test@example.com");
+            testUser.setPasswordHash(passwordEncoder.encode("password"));
+            testUser.setRole("USER");
+            testUser.setIsActive(true);
+            testUser.setEmailVerified(false);
+            testUser.setCreatedAt(LocalDateTime.now());
+            testUser.setUpdatedAt(LocalDateTime.now());
+            
+            User savedUser = userService.save(testUser);
+            log.info("Test user created with ID: {}", savedUser.getId());
+            
+            // Tạo profile
+            UserProfile savedProfile = userService.saveProfile(savedUser.getId(), profileData);
+            log.info("Test profile created: {}", savedProfile);
+            
+            // Xóa user test
+            userService.deleteUser(savedUser.getId());
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true, 
+                "message", "Profile test successful", 
+                "profileData", profileData,
+                "savedProfile", savedProfile
+            ));
+            
+        } catch (Exception e) {
+            log.error("Error during profile test", e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Profile test failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Test endpoint để kiểm tra việc lưu gender
+     */
+    @PostMapping("/test-gender")
+    public ResponseEntity<?> testGenderSaving(@RequestBody Map<String, String> request) {
+        try {
+            String gender = request.get("gender");
+            log.info("Testing gender saving with value: '{}'", gender);
+            
+            // Tạo user test
+            User testUser = new User();
+            testUser.setUsername("testuser_" + System.currentTimeMillis());
+            testUser.setEmail("test@example.com");
+            testUser.setPasswordHash(passwordEncoder.encode("password"));
+            testUser.setRole("USER");
+            testUser.setIsActive(true);
+            testUser.setEmailVerified(false);
+            testUser.setCreatedAt(LocalDateTime.now());
+            testUser.setUpdatedAt(LocalDateTime.now());
+            
+            User savedUser = userService.save(testUser);
+            log.info("Test user created with ID: {}", savedUser.getId());
+            
+            // Tạo profile với chỉ gender
+            Map<String, Object> profileData = new HashMap<>();
+            profileData.put("gender", gender);
+            
+            log.info("Profile data to save: {}", profileData);
+            
+            // Tạo profile
+            UserProfile savedProfile = userService.saveProfile(savedUser.getId(), profileData);
+            log.info("Test profile created: {}", savedProfile);
+            
+            // Xóa user test
+            userService.deleteUser(savedUser.getId());
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true, 
+                "message", "Gender test successful", 
+                "inputGender", gender,
+                "savedProfile", savedProfile
+            ));
+            
+        } catch (Exception e) {
+            log.error("Error during gender test", e);
+            return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "message", "Gender test failed: " + e.getMessage()));
         }
     }
 

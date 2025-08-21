@@ -57,6 +57,8 @@ public class UserService {
     @Transactional
     public UserProfile saveProfile(Long userId, Map<String, Object> profileData) {
         try {
+            log.info("Starting to save profile for user ID: {} with data: {}", userId, profileData);
+            
             // Tìm profile hiện tại
             UserProfile existingProfile = userProfileRepository.findByUserId(userId)
                 .orElseGet(() -> {
@@ -65,39 +67,72 @@ public class UserService {
                     User user = userRepository.findById(userId)
                         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                     newProfile.setUser(user);
+                    log.info("Created new profile for user ID: {}", userId);
                     return newProfile;
                 });
 
+            log.info("Existing profile found: {}", existingProfile);
+
             // Cập nhật từng field một cách an toàn
-            if (profileData.containsKey("fullName")) {
-                existingProfile.setFullName((String) profileData.get("fullName"));
+            if (profileData.containsKey("fullName") && profileData.get("fullName") != null) {
+                String fullName = (String) profileData.get("fullName");
+                existingProfile.setFullName(fullName);
+                log.info("Set fullName: '{}'", fullName);
             }
-            if (profileData.containsKey("phone")) {
-                existingProfile.setPhone((String) profileData.get("phone"));
+            
+            if (profileData.containsKey("phone") && profileData.get("phone") != null) {
+                String phone = (String) profileData.get("phone");
+                existingProfile.setPhone(phone);
+                log.info("Set phone: '{}'", phone);
             }
-            if (profileData.containsKey("birthday")) {
-                String birthdayStr = (String) profileData.get("birthday");
-                if (birthdayStr != null && !birthdayStr.trim().isEmpty()) {
-                    try {
-                        LocalDate birthday = LocalDate.parse(birthdayStr);
-                        existingProfile.setBirthday(birthday);
-                    } catch (DateTimeParseException e) {
-                        log.warn("Invalid birthday format: {}", birthdayStr);
+            
+            if (profileData.containsKey("birthday") && profileData.get("birthday") != null) {
+                Object birthdayObj = profileData.get("birthday");
+                if (birthdayObj instanceof LocalDate) {
+                    LocalDate birthday = (LocalDate) birthdayObj;
+                    existingProfile.setBirthday(birthday);
+                    log.info("Set birthday: '{}'", birthday);
+                } else if (birthdayObj instanceof String) {
+                    String birthdayStr = (String) birthdayObj;
+                    if (!birthdayStr.trim().isEmpty()) {
+                        try {
+                            LocalDate birthday = LocalDate.parse(birthdayStr);
+                            existingProfile.setBirthday(birthday);
+                            log.info("Set birthday from string: '{}' -> '{}'", birthdayStr, birthday);
+                        } catch (DateTimeParseException e) {
+                            log.warn("Invalid birthday format: {}", birthdayStr);
+                        }
                     }
                 }
             }
-            if (profileData.containsKey("gender")) {
-                existingProfile.setGender((String) profileData.get("gender"));
+            
+            if (profileData.containsKey("gender") && profileData.get("gender") != null) {
+                String gender = (String) profileData.get("gender");
+                existingProfile.setGender(gender);
+                log.info("Set gender: '{}'", gender);
+            } else {
+                log.info("Gender not found in profileData or is null");
             }
-            if (profileData.containsKey("address")) {
-                existingProfile.setAddress((String) profileData.get("address"));
+            
+            if (profileData.containsKey("address") && profileData.get("address") != null) {
+                String address = (String) profileData.get("address");
+                existingProfile.setAddress(address);
+                log.info("Set address: '{}'", address);
             }
-            if (profileData.containsKey("imageUrl")) {
-                existingProfile.setImageUrl((String) profileData.get("imageUrl"));
+            
+            if (profileData.containsKey("imageUrl") && profileData.get("imageUrl") != null) {
+                String imageUrl = (String) profileData.get("imageUrl");
+                existingProfile.setImageUrl(imageUrl);
+                log.info("Set imageUrl: '{}'", imageUrl);
             }
 
+            log.info("Profile before saving: {}", existingProfile);
+
             // Lưu profile
-            return userProfileRepository.save(existingProfile);
+            UserProfile savedProfile = userProfileRepository.save(existingProfile);
+            log.info("Profile saved successfully for user ID: {} with data: {}", userId, profileData);
+            log.info("Final saved profile: {}", savedProfile);
+            return savedProfile;
             
         } catch (Exception e) {
             log.error("Error saving profile for user ID: {}", userId, e);
@@ -148,5 +183,19 @@ public class UserService {
     @Transactional
     public User updateUser(User user){
         return userRepository.save(user);
+    }
+
+    /**
+     * Xóa user theo ID
+     */
+    @Transactional
+    public void deleteUser(Long userId) {
+        try {
+            userRepository.deleteById(userId);
+            log.info("User deleted successfully with ID: {}", userId);
+        } catch (Exception e) {
+            log.error("Error deleting user with ID: {}", userId, e);
+            throw new RuntimeException("Failed to delete user: " + e.getMessage());
+        }
     }
 }

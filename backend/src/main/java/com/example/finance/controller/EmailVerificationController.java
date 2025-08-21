@@ -10,11 +10,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
 public class EmailVerificationController {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailVerificationController.class);
 
     @Autowired
     private EmailService emailService;
@@ -212,6 +218,40 @@ public class EmailVerificationController {
             return ResponseEntity.internalServerError().body(
                 new ApiResponse(false, "Lỗi khi gửi test email: " + e.getMessage(), null)
             );
+        }
+    }
+
+    /**
+     * Test endpoint để kiểm tra email thông báo budget
+     */
+    @PostMapping("/test-budget-email")
+    public ResponseEntity<Map<String, String>> testBudgetEmail(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String username = request.get("username");
+            String categoryName = request.get("categoryName");
+            Double currentAmount = Double.parseDouble(request.get("currentAmount"));
+            Double limitAmount = Double.parseDouble(request.get("limitAmount"));
+            
+            if (email == null || username == null || categoryName == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Thiếu thông tin: email, username, categoryName, currentAmount, limitAmount"));
+            }
+            
+            emailService.sendBudgetAlertEmail(email, username, categoryName, currentAmount, limitAmount);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Email thông báo budget đã được gửi thành công",
+                "email", email,
+                "category", categoryName,
+                "currentAmount", currentAmount.toString(),
+                "limitAmount", limitAmount.toString()
+            ));
+            
+        } catch (Exception e) {
+            log.error("Error testing budget email: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Lỗi gửi email: " + e.getMessage()));
         }
     }
 
