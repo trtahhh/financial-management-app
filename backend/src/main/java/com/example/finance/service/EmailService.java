@@ -17,16 +17,24 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${email.from}")
+    @Value("${email.from:}")
     private String fromEmail;
 
-    @Value("${email.from.name}")
+    @Value("${email.from.name:Financial Management App}")
     private String fromName;
+
+    @Value("${email.verification.enabled:false}")
+    private boolean emailVerificationEnabled;
 
     /**
      * Gửi email verification
      */
     public void sendVerificationEmail(String toEmail, String username, String verificationUrl) {
+        if (!emailVerificationEnabled) {
+            log.info("Email verification is disabled. Skipping verification email for: {}", toEmail);
+            return;
+        }
+        
         String subject = "Xác thực email - Financial Management App";
         
         String htmlContent = generateVerificationEmailTemplate(username, verificationUrl);
@@ -59,6 +67,12 @@ public class EmailService {
      */
     private void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
+            // Kiểm tra cấu hình email
+            if (fromEmail == null || fromEmail.trim().isEmpty()) {
+                log.warn("Email configuration is missing. Skipping email send to: {}", to);
+                return;
+            }
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             

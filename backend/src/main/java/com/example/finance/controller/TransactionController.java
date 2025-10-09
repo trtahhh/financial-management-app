@@ -134,11 +134,7 @@ public class TransactionController {
                     .body(Map.of("success", false, "message", "Transaction date cannot be more than 10 years ago"));
             }
             
-            // Validate note length
-            if (dto.getNote() != null && dto.getNote().length() > 500) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Note is too long (max 500 characters)"));
-            }
+            // Removed note length validation to allow unlimited notes (DB column should support large text)
             
             // Get current user from security context
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

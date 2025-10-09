@@ -175,15 +175,6 @@ public class GoalController {
     }
     
     /**
-     * Lấy danh sách mục tiêu đã hoàn thành
-     */
-    @GetMapping("/completed")
-    public List<GoalDTO> getCompletedGoals(HttpServletRequest request) {
-        Long userId = extractUserId(request);
-        return service.getCompletedGoals(userId);
-    }
-    
-    /**
      * Lấy danh sách mục tiêu đã thực hiện
      */
     @GetMapping("/executed")

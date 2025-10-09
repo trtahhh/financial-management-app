@@ -28,7 +28,7 @@ public class Transaction {
     @Column(name = "type")
     private String type;
 
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "NVARCHAR(MAX)")
     private String note;
 
     @Column(name = "trans_date", nullable = false)
