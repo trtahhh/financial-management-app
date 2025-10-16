@@ -41,9 +41,24 @@ public class CategoryService {
     @CacheEvict(cacheNames = "categories", allEntries = true)
     public void deleteById(Long id) {
         if (!repo.existsById(id)) {
-            throw new CustomException(CATEGORY_NOT_FOUND + id);
+            throw new RuntimeException("Category not found with id: " + id);
         }
-        repo.deleteById(id);
+        
+        // Check if category is used in transactions
+        // Assuming we have transactionRepository injected
+        // Integer transactionCount = transactionRepository.countByCategoryId(id);
+        // if (transactionCount != null && transactionCount > 0) {
+        //     throw new RuntimeException("Cannot delete category with existing transactions");
+        // }
+        
+        try {
+            repo.deleteById(id);
+        } catch (Exception e) {
+            if (e.getMessage().contains("constraint") || e.getMessage().contains("REFERENCE")) {
+                throw new RuntimeException("Cannot delete category: It has associated transactions");
+            }
+            throw new RuntimeException("Error deleting category: " + e.getMessage());
+        }
     }
 
     @CacheEvict(cacheNames = "categories", allEntries = true)

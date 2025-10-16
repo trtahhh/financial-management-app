@@ -91,12 +91,32 @@ public class CategoryController {
             service.deleteById(id);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Xóa danh mục thành công"
+                "message", "Category deleted successfully"
+            ));
+        } catch (RuntimeException e) {
+            log.error("Error deleting category: {}", id, e);
+            if (e.getMessage().contains("transactions")) {
+                return ResponseEntity.status(400).body(Map.of(
+                    "success", false, 
+                    "message", "Cannot delete category: It has associated transactions. Please delete or reassign transactions first."
+                ));
+            }
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).body(Map.of(
+                    "success", false, 
+                    "message", "Category not found with id: " + id
+                ));
+            }
+            return ResponseEntity.status(400).body(Map.of(
+                "success", false, 
+                "message", "Error deleting category: " + e.getMessage()
             ));
         } catch (Exception e) {
             log.error("Error deleting category: {}", id, e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "Lỗi xóa danh mục: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false, 
+                "message", "Internal server error: " + e.getMessage()
+            ));
         }
     }
 

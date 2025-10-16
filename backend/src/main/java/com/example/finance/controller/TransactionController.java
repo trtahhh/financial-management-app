@@ -324,7 +324,7 @@ public class TransactionController {
             service.deleteById(id);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Xóa giao dịch thành công"
+                "message", "Transaction deleted successfully"
             ));
         } catch (Exception e) {
             log.error("Error deleting transaction: {}", id, e);

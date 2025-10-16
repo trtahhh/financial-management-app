@@ -2,9 +2,11 @@ package com.example.finance.repository;
 
 import com.example.finance.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import com.example.finance.dto.CategoryStatisticDTO;
 import com.example.finance.dto.WalletStatDTO;
 
@@ -137,6 +139,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     // Check if wallet has any transactions - Using Integer return type
     @Query(value = "SELECT COUNT(*) FROM Transactions WHERE wallet_id = :walletId AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)
     Integer countByWalletId(@Param("walletId") Long walletId);
+
+    // Check if wallet has any transactions for specific user
+    @Query(value = "SELECT COUNT(*) FROM Transactions WHERE wallet_id = :walletId AND user_id = :userId AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)
+    Integer countByWalletIdAndUserId(@Param("walletId") Long walletId, @Param("userId") Long userId);
+
+    // Delete all transactions for specific wallet and user (soft delete)
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Transactions SET is_deleted = 1 WHERE wallet_id = :walletId AND user_id = :userId", nativeQuery = true)
+    void deleteByWalletIdAndUserId(@Param("walletId") Long walletId, @Param("userId") Long userId);
 
     // Sum transactions by wallet and type for balance calculation
     @Query(value = "SELECT COALESCE(SUM(amount), 0) FROM Transactions WHERE wallet_id = :walletId AND type = :type AND (is_deleted = 0 OR is_deleted IS NULL)", nativeQuery = true)

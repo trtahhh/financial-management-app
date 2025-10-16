@@ -5,12 +5,17 @@ import com.example.finance.entity.Wallet;
 import com.example.finance.mapper.WalletMapper;
 import com.example.finance.repository.WalletRepository;
 import com.example.finance.repository.TransactionRepository;
+import com.example.finance.repository.NotificationRepository;
+import com.example.finance.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +23,7 @@ public class WalletService {
 
     private final WalletRepository repo;
     private final TransactionRepository transactionRepository;
+    private final NotificationRepository notificationRepository;
     private final WalletMapper mapper;
 
     public List<WalletDTO> findAll(Long userId) {
@@ -87,21 +93,69 @@ public class WalletService {
             throw new RuntimeException("Wallet not found with id: " + id);
         }
         
-        // Kiểm tra xem có transaction nào liên kết với ví này không
-        Integer transactionCount = transactionRepository.countByWalletId(id);
-        boolean hasTransactions = transactionCount != null && transactionCount > 0;
-        if (hasTransactions) {
-            throw new RuntimeException("Cannot delete wallet with existing transactions. Please delete related transactions first.");
+        // Lấy user hiện tại từ authentication context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+        
+        // Kiểm tra xem wallet có thuộc về user hiện tại không
+        Optional<Wallet> walletOpt = repo.findById(id);
+        if (walletOpt.isPresent()) {
+            Wallet wallet = walletOpt.get();
+            if (!wallet.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Access denied: Wallet does not belong to current user");
+            }
+            
+            // Kiểm tra xem có transaction nào của user này liên kết với ví này không
+            Integer transactionCount = transactionRepository.countByWalletIdAndUserId(id, userId);
+            boolean hasTransactions = transactionCount != null && transactionCount > 0;
+            if (hasTransactions) {
+                throw new RuntimeException("Cannot delete wallet with existing transactions. Please delete related transactions first.");
+            }
+            
+            // TODO: Kiểm tra các bảng khác có liên kết với wallet
+            // - Notifications
+            // - Budgets 
+            // - Goals
+            // - RecurringTransactions
+            // Tạm thời chỉ check transactions, có thể mở rộng sau
         }
         
         try {
+            // Xóa cascade: xóa tất cả records liên quan trước
+            deleteWalletCascade(id, userId);
+            
+            // Sau đó xóa wallet
             repo.deleteById(id);
         } catch (Exception e) {
-            throw new RuntimeException("Error deleting wallet: " + e.getMessage());
+            String errorMsg = e.getMessage();
+            if (errorMsg.contains("FK__Notificat__walle") || errorMsg.contains("REFERENCE constraint")) {
+                throw new RuntimeException("Cannot delete wallet: Has related notifications or other dependencies. Please contact administrator.");
+            }
+            throw new RuntimeException("Error deleting wallet: " + errorMsg);
         }
     }
 
+    /**
+     * Xóa cascade tất cả records liên quan đến wallet
+     */
     @Transactional
+    private void deleteWalletCascade(Long walletId, Long userId) {
+        // 1. Xóa tất cả transactions của wallet này thuộc về user hiện tại
+        transactionRepository.deleteByWalletIdAndUserId(walletId, userId);
+        
+    // 2. Xóa notifications liên quan đến wallet
+    notificationRepository.deleteByWalletIdAndUserId(walletId, userId);
+        
+        // 3. TODO: Xóa budgets liên quan (cần thêm method) 
+        // budgetRepository.deleteByWalletId(walletId);
+        
+        // 4. TODO: Xóa goals liên quan (cần thêm method)
+        // goalRepository.deleteByWalletId(walletId);
+        
+        System.out.println("Cascade deleted all related records for wallet: " + walletId);
+    }
+
     public WalletDTO update(WalletDTO dto) {
         if (!repo.existsById(dto.getId())) {
             throw new RuntimeException("Wallet not found with id: " + dto.getId());

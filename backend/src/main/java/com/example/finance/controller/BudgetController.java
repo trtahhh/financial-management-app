@@ -101,12 +101,32 @@ public class BudgetController {
             service.deleteBudget(id);
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Xóa ngân sách thành công"
+                "message", "Budget deleted successfully"
+            ));
+        } catch (RuntimeException e) {
+            log.error("Error deleting budget: {}", id, e);
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).body(Map.of(
+                    "success", false, 
+                    "message", "Budget not found with id: " + id
+                ));
+            }
+            if (e.getMessage().contains("access denied")) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false, 
+                    "message", "Access denied: Budget does not belong to current user"
+                ));
+            }
+            return ResponseEntity.status(400).body(Map.of(
+                "success", false, 
+                "message", "Error deleting budget: " + e.getMessage()
             ));
         } catch (Exception e) {
             log.error("Error deleting budget: {}", id, e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "Lỗi xóa ngân sách: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false, 
+                "message", "Internal server error: " + e.getMessage()
+            ));
         }
     }
 }

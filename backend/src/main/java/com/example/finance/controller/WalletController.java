@@ -73,16 +73,25 @@ public class WalletController {
     public ResponseEntity<?> delete(@PathVariable("id") Long id) { 
         try {
             service.deleteById(id); 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok().body("Wallet deleted successfully");
+        } catch (RuntimeException e) {
+            System.err.println("Error deleting wallet: " + e.getMessage());
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).body("Wallet not found with id: " + id);
+            }
+            if (e.getMessage().contains("existing transactions")) {
+                return ResponseEntity.status(400).body("Cannot delete wallet with existing transactions. Please delete related transactions first.");
+            }
+            return ResponseEntity.status(400).body("Error deleting wallet: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Error deleting wallet: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Error deleting wallet: " + e.getMessage());
+            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<WalletDTO> update(@PathVariable("id") Long id, @RequestBody WalletDTO dto) {
+    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody WalletDTO dto) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -90,11 +99,18 @@ public class WalletController {
             
             dto.setId(id);
             dto.setUserId(userId); // Set userId from authentication
-            return ResponseEntity.ok(service.update(dto)); 
+            WalletDTO updated = service.update(dto);
+            return ResponseEntity.ok(updated); 
+        } catch (RuntimeException e) {
+            System.err.println("Error updating wallet: " + e.getMessage());
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).body("Wallet not found with id: " + id);
+            }
+            return ResponseEntity.status(400).body("Error updating wallet: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Error updating wallet: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
         }
     }
 

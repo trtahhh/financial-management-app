@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import com.example.finance.security.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,12 +69,35 @@ public class GoalController {
     }
 
     @DeleteMapping("/{id}")
-    public Map<String, String> delete(@PathVariable("id") Long id) {
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         try {
             service.deleteById(id);
-            return Map.of("message", "Đã xóa mục tiêu thành công");
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Goal deleted successfully"
+            ));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).body(Map.of(
+                    "success", false, 
+                    "message", "Goal not found with id: " + id
+                ));
+            }
+            if (e.getMessage().contains("access denied")) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false, 
+                    "message", "Access denied: Goal does not belong to current user"
+                ));
+            }
+            return ResponseEntity.status(400).body(Map.of(
+                "success", false, 
+                "message", "Error deleting goal: " + e.getMessage()
+            ));
         } catch (Exception e) {
-            return Map.of("error", "Lỗi khi xóa mục tiêu: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false, 
+                "message", "Internal server error: " + e.getMessage()
+            ));
         }
     }
 
