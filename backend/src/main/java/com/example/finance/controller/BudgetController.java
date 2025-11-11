@@ -22,111 +22,111 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class BudgetController {
 
-    private final BudgetService service;
+ private final BudgetService service;
 
-    @GetMapping
-    public ResponseEntity<?> getAll() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            Long userId = userDetails.getId();
-            
-            List<BudgetDTO> budgets = service.getAllBudgets(userId);
-            log.info("Retrieved {} budgets for user {}", budgets.size(), userId);
-            return ResponseEntity.ok(budgets);
-        } catch (Exception e) {
-            log.error("Error getting budgets", e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "Lỗi lấy danh sách ngân sách: " + e.getMessage()));
-        }
-    }
+ @GetMapping
+ public ResponseEntity<?> getAll() {
+ try {
+ Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+ CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+ Long userId = userDetails.getId();
+ 
+ List<BudgetDTO> budgets = service.getAllBudgets(userId);
+ log.info("Retrieved {} budgets for user {}", budgets.size(), userId);
+ return ResponseEntity.ok(budgets);
+ } catch (Exception e) {
+ log.error("Error getting budgets", e);
+ return ResponseEntity.badRequest()
+ .body(Map.of("success", false, "message", "Lỗi lấy danh sách ngân sách: " + e.getMessage()));
+ }
+ }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        try {
-            BudgetDTO budget = service.getBudgetById(id);
-            if (budget == null) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Không tìm thấy ngân sách"));
-            }
-            return ResponseEntity.ok(budget);
-        } catch (Exception e) {
-            log.error("Error getting budget by id: {}", id, e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "Lỗi lấy thông tin ngân sách: " + e.getMessage()));
-        }
-    }
+ @GetMapping("/{id}")
+ public ResponseEntity<?> getById(@PathVariable Long id) {
+ try {
+ BudgetDTO budget = service.getBudgetById(id);
+ if (budget == null) {
+ return ResponseEntity.badRequest()
+ .body(Map.of("success", false, "message", "Không tìm thấy ngân sách"));
+ }
+ return ResponseEntity.ok(budget);
+ } catch (Exception e) {
+ log.error("Error getting budget by id: {}", id, e);
+ return ResponseEntity.badRequest()
+ .body(Map.of("success", false, "message", "Lỗi lấy thông tin ngân sách: " + e.getMessage()));
+ }
+ }
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody BudgetDTO dto) {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            Long userId = userDetails.getId();
-            dto.setUserId(userId);
+ @PostMapping
+ public ResponseEntity<?> create(@RequestBody BudgetDTO dto) {
+ try {
+ Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+ CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+ Long userId = userDetails.getId();
+ dto.setUserId(userId);
 
-            log.info("Creating budget with data: {}", dto);
-            BudgetDTO result = service.createBudget(dto);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Tạo ngân sách thành công",
-                "data", result
-            ));
-        } catch (Exception e) {
-            log.error("Error creating budget", e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "Lỗi tạo ngân sách: " + e.getMessage()));
-        }
-    }
+ log.info("Creating budget with data: {}", dto);
+ BudgetDTO result = service.createBudget(dto);
+ return ResponseEntity.ok(Map.of(
+ "success", true,
+ "message", "Tạo ngân sách thành công",
+ "data", result
+ ));
+ } catch (Exception e) {
+ log.error("Error creating budget", e);
+ return ResponseEntity.badRequest()
+ .body(Map.of("success", false, "message", "Lỗi tạo ngân sách: " + e.getMessage()));
+ }
+ }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody BudgetDTO dto) {
-        try {
-            BudgetDTO result = service.updateBudget(id, dto);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Cập nhật ngân sách thành công",
-                "data", result
-            ));
-        } catch (Exception e) {
-            log.error("Error updating budget: {}", id, e);
-            return ResponseEntity.badRequest()
-                .body(Map.of("success", false, "message", "Lỗi cập nhật ngân sách: " + e.getMessage()));
-        }
-    }
+ @PutMapping("/{id}")
+ public ResponseEntity<?> update(@PathVariable Long id, @RequestBody BudgetDTO dto) {
+ try {
+ BudgetDTO result = service.updateBudget(id, dto);
+ return ResponseEntity.ok(Map.of(
+ "success", true,
+ "message", "Cập nhật ngân sách thành công",
+ "data", result
+ ));
+ } catch (Exception e) {
+ log.error("Error updating budget: {}", id, e);
+ return ResponseEntity.badRequest()
+ .body(Map.of("success", false, "message", "Lỗi cập nhật ngân sách: " + e.getMessage()));
+ }
+ }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        try {
-            service.deleteBudget(id);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Budget deleted successfully"
-            ));
-        } catch (RuntimeException e) {
-            log.error("Error deleting budget: {}", id, e);
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.status(404).body(Map.of(
-                    "success", false, 
-                    "message", "Budget not found with id: " + id
-                ));
-            }
-            if (e.getMessage().contains("access denied")) {
-                return ResponseEntity.status(403).body(Map.of(
-                    "success", false, 
-                    "message", "Access denied: Budget does not belong to current user"
-                ));
-            }
-            return ResponseEntity.status(400).body(Map.of(
-                "success", false, 
-                "message", "Error deleting budget: " + e.getMessage()
-            ));
-        } catch (Exception e) {
-            log.error("Error deleting budget: {}", id, e);
-            return ResponseEntity.status(500).body(Map.of(
-                "success", false, 
-                "message", "Internal server error: " + e.getMessage()
-            ));
-        }
-    }
+ @DeleteMapping("/{id}")
+ public ResponseEntity<?> delete(@PathVariable Long id) {
+ try {
+ service.deleteBudget(id);
+ return ResponseEntity.ok(Map.of(
+ "success", true,
+ "message", "Budget deleted successfully"
+ ));
+ } catch (RuntimeException e) {
+ log.error("Error deleting budget: {}", id, e);
+ if (e.getMessage().contains("not found")) {
+ return ResponseEntity.status(404).body(Map.of(
+ "success", false, 
+ "message", "Budget not found with id: " + id
+ ));
+ }
+ if (e.getMessage().contains("access denied")) {
+ return ResponseEntity.status(403).body(Map.of(
+ "success", false, 
+ "message", "Access denied: Budget does not belong to current user"
+ ));
+ }
+ return ResponseEntity.status(400).body(Map.of(
+ "success", false, 
+ "message", "Error deleting budget: " + e.getMessage()
+ ));
+ } catch (Exception e) {
+ log.error("Error deleting budget: {}", id, e);
+ return ResponseEntity.status(500).body(Map.of(
+ "success", false, 
+ "message", "Internal server error: " + e.getMessage()
+ ));
+ }
+ }
 }

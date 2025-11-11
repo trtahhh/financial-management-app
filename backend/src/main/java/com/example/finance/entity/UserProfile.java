@@ -9,22 +9,22 @@ import java.time.LocalDate;
 @Data
 @Table(name = "User_Profile")
 public class UserProfile {
-    @Id
-    @Column(name = "user_id")
-    private Long userId;
+ @Id
+ @Column(name = "user_id")
+ private Long userId;
 
-    private String fullName;
-    private LocalDate birthday;
-    private String gender;
-    private String phone;
-    private String address;
-    @Column(name = "image_url")
-    private String imageUrl;
+ private String fullName;
+ private LocalDate birthday;
+ private String gender;
+ private String phone;
+ private String address;
+ @Column(name = "image_url")
+ private String imageUrl;
 
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "user_id")
-    @JsonIgnore
-    private User user;
+ @OneToOne
+ @MapsId
+ @JoinColumn(name = "user_id")
+ @JsonIgnore
+ private User user;
 
 }

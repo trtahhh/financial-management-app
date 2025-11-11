@@ -17,58 +17,58 @@ import java.util.List;
 @CacheConfig(cacheNames = "categories")
 public class CategoryService {
 
-    private final CategoryRepository repo;
-    private final CategoryMapper mapper;
-    private static final String CATEGORY_NOT_FOUND = "Category not found with id: ";
+ private final CategoryRepository repo;
+ private final CategoryMapper mapper;
+ private static final String CATEGORY_NOT_FOUND = "Category not found with id: ";
 
-    @Cacheable(cacheNames = "categories")
-    public List<CategoryDTO> findAll() {
-        return repo.findAll().stream().map(mapper::toDto).toList();
-    }
+ @Cacheable(cacheNames = "categories")
+ public List<CategoryDTO> findAll() {
+ return repo.findAll().stream().map(mapper::toDto).toList();
+ }
 
-    @CacheEvict(cacheNames = "categories", allEntries = true)
-    public CategoryDTO save(CategoryDTO dto) {
-        return mapper.toDto(repo.save(mapper.toEntity(dto)));
-    }
+ @CacheEvict(cacheNames = "categories", allEntries = true)
+ public CategoryDTO save(CategoryDTO dto) {
+ return mapper.toDto(repo.save(mapper.toEntity(dto)));
+ }
 
-    @Cacheable
-    public CategoryDTO findById(Long id) {
-        return repo.findById(id)
-                .map(mapper::toDto)
-                .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND + id));
-    }
+ @Cacheable
+ public CategoryDTO findById(Long id) {
+ return repo.findById(id)
+ .map(mapper::toDto)
+ .orElseThrow(() -> new CustomException(CATEGORY_NOT_FOUND + id));
+ }
 
-    @CacheEvict(cacheNames = "categories", allEntries = true)
-    public void deleteById(Long id) {
-        if (!repo.existsById(id)) {
-            throw new RuntimeException("Category not found with id: " + id);
-        }
-        
-        // Check if category is used in transactions
-        // Assuming we have transactionRepository injected
-        // Integer transactionCount = transactionRepository.countByCategoryId(id);
-        // if (transactionCount != null && transactionCount > 0) {
-        //     throw new RuntimeException("Cannot delete category with existing transactions");
-        // }
-        
-        try {
-            repo.deleteById(id);
-        } catch (Exception e) {
-            if (e.getMessage().contains("constraint") || e.getMessage().contains("REFERENCE")) {
-                throw new RuntimeException("Cannot delete category: It has associated transactions");
-            }
-            throw new RuntimeException("Error deleting category: " + e.getMessage());
-        }
-    }
+ @CacheEvict(cacheNames = "categories", allEntries = true)
+ public void deleteById(Long id) {
+ if (!repo.existsById(id)) {
+ throw new RuntimeException("Category not found with id: " + id);
+ }
+ 
+ // Check if category is used in transactions
+ // Assuming we have transactionRepository injected
+ // Integer transactionCount = transactionRepository.countByCategoryId(id);
+ // if (transactionCount != null && transactionCount > 0) {
+ // throw new RuntimeException("Cannot delete category with existing transactions");
+ // }
+ 
+ try {
+ repo.deleteById(id);
+ } catch (Exception e) {
+ if (e.getMessage().contains("constraint") || e.getMessage().contains("REFERENCE")) {
+ throw new RuntimeException("Cannot delete category: It has associated transactions");
+ }
+ throw new RuntimeException("Error deleting category: " + e.getMessage());
+ }
+ }
 
-    @CacheEvict(cacheNames = "categories", allEntries = true)
-    public CategoryDTO update(CategoryDTO dto) {
-        if (!repo.existsById(dto.getId()))
-            throw new CustomException("Category not found with id: " + dto.getId());
-        return mapper.toDto(repo.save(mapper.toEntity(dto)));
-    }
+ @CacheEvict(cacheNames = "categories", allEntries = true)
+ public CategoryDTO update(CategoryDTO dto) {
+ if (!repo.existsById(dto.getId()))
+ throw new CustomException("Category not found with id: " + dto.getId());
+ return mapper.toDto(repo.save(mapper.toEntity(dto)));
+ }
 
-    public boolean existsById(Long id) {
-        return repo.existsById(id);
-    }
+ public boolean existsById(Long id) {
+ return repo.existsById(id);
+ }
 }

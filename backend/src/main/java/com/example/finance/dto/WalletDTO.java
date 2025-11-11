@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 
 @Data
 public class WalletDTO {
-    private Long id;
-    private String name;
-    private String type;
-    private BigDecimal balance;
-    private Long userId;
+ private Long id;
+ private String name;
+ private String type;
+ private BigDecimal balance;
+ private Long userId;
 }

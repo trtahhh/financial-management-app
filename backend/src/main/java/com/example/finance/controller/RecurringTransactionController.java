@@ -14,31 +14,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecurringTransactionController {
 
-    private final RecurringTransactionService service;
+ private final RecurringTransactionService service;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<RecurringTransactionDTO>> getByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(service.findByUserId(userId));
-    }
+ @GetMapping("/user/{userId}")
+ public ResponseEntity<List<RecurringTransactionDTO>> getByUserId(@PathVariable Long userId) {
+ return ResponseEntity.ok(service.findByUserId(userId));
+ }
 
-    @PostMapping
-    public ResponseEntity<RecurringTransactionDTO> create(@RequestBody RecurringTransactionDTO dto) {
-        return ResponseEntity.ok(service.create(dto));
-    }
+ @PostMapping
+ public ResponseEntity<RecurringTransactionDTO> create(@RequestBody RecurringTransactionDTO dto) {
+ return ResponseEntity.ok(service.create(dto));
+ }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<RecurringTransactionDTO> update(@PathVariable Long id, @RequestBody RecurringTransactionDTO dto) {
-        return ResponseEntity.ok(service.update(id, dto));
-    }
+ @PutMapping("/{id}")
+ public ResponseEntity<RecurringTransactionDTO> update(@PathVariable Long id, @RequestBody RecurringTransactionDTO dto) {
+ return ResponseEntity.ok(service.update(id, dto));
+ }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.ok().build();
-    }
+ @DeleteMapping("/{id}")
+ public ResponseEntity<Void> delete(@PathVariable Long id) {
+ service.delete(id);
+ return ResponseEntity.ok().build();
+ }
 
-    @PostMapping("/{id}/toggle")
-    public ResponseEntity<RecurringTransactionDTO> toggleActive(@PathVariable Long id) {
-        return ResponseEntity.ok(service.toggleActive(id));
-    }
+ @PostMapping("/{id}/toggle")
+ public ResponseEntity<RecurringTransactionDTO> toggleActive(@PathVariable Long id) {
+ return ResponseEntity.ok(service.toggleActive(id));
+ }
 }

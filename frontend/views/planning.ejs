@@ -1,0 +1,397 @@
+<%- include('partials/header') %>
+
+<!-- Planning Page Content -->
+<div class="main-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-chart-line text-success me-2"></i>
+                    Kế Hoạch Tài Chính Thông Minh
+                </h1>
+                <p class="text-muted mb-0">AI phân tích và đưa ra gợi ý kế hoạch tài chính cá nhân hóa</p>
+            </div>
+            <div>
+                <button class="btn btn-success" id="generatePlanBtn">
+                    <i class="fas fa-magic me-1"></i>
+                    Tạo Kế Hoạch AI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card bg-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-content">
+                    <h4 id="monthlyIncomeDisplay">0₫</h4>
+                    <p>Thu Nhập Tháng</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                    <h4 id="monthlySpendingDisplay">0₫</h4>
+                    <p>Chi Tiêu Tháng</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-success">
+                <div class="stat-icon">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <div class="stat-content">
+                    <h4 id="savingsRateDisplay">0%</h4>
+                    <p>Tỷ Lệ Tiết Kiệm</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-info">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-content">
+                    <h4 id="financialScoreDisplay">--</h4>
+                    <p>Điểm Tài Chính</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Planning Input Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Thông Tin Tài Chính
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="planningForm">
+                        <div class="mb-3">
+                            <label class="form-label">Thu Nhập Hàng Tháng</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="monthlyIncome" 
+                                       placeholder="Nhập thu nhập tháng" min="0" step="1000">
+                                <span class="input-group-text">₫</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Mục Tiêu Tài Chính</label>
+                            <div id="goalsContainer">
+                                <div class="goal-item mb-2">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control goal-name" 
+                                               placeholder="Tên mục tiêu (VD: Mua nhà)">
+                                        <input type="number" class="form-control goal-amount" 
+                                               placeholder="Số tiền" min="0" step="1000000">
+                                        <span class="input-group-text">₫</span>
+                                        <button type="button" class="btn btn-outline-danger remove-goal">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addGoalBtn">
+                                <i class="fas fa-plus me-1"></i>
+                                Thêm Mục Tiêu
+                            </button>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Thời Gian Phân Tích</label>
+                            <select class="form-select" id="analysisperiod">
+                                <option value="current_month">Tháng hiện tại</option>
+                                <option value="last_3_months">3 tháng gần đây</option>
+                                <option value="last_6_months">6 tháng gần đây</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-chart-line me-1"></i>
+                            Phân Tích Kế Hoạch Tài Chính
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Gợi Ý AI Nhanh
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="quickInsights">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-robot fa-3x mb-3"></i>
+                            <p>Nhập thông tin tài chính để nhận gợi ý từ AI</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Analysis Results -->
+    <div id="analysisResults" class="mt-4" style="display: none;">
+        <!-- Spending Insights -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Phân Tích Chi Tiêu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="spendingInsights"></div>
+            </div>
+        </div>
+
+        <!-- 🆕 Savings Tips Library - Thư viện Mẹo Tiết Kiệm -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    📚 Thư Viện Mẹo Tiết Kiệm Thông Minh
+                </h5>
+                <small>Hơn 100+ mẹo tiết kiệm được AI cá nhân hóa</small>
+            </div>
+            <div class="card-body">
+                <!-- Search bar -->
+                <div class="mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="tips-search-input" placeholder="Tìm kiếm mẹo tiết kiệm...">
+                        <button class="btn btn-primary" id="tips-search-btn">Tìm kiếm</button>
+                    </div>
+                </div>
+
+                <!-- Category tabs -->
+                <ul class="nav nav-pills mb-3" id="tips-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-category="general" type="button">Chung</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="food" type="button">🍔 Ăn uống</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="transport" type="button">🚗 Di chuyển</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="shopping" type="button">🛒 Mua sắm</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="bills" type="button">📄 Hóa đơn</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-category="entertainment" type="button">🎮 Giải trí</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link btn-danger" data-category="emergency" type="button">🚨 Khẩn cấp</button>
+                    </li>
+                </ul>
+
+                <!-- Tips display area -->
+                <div id="savings-tips-content" class="mt-3">
+                    <div class="text-center text-muted">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p>Đang tải mẹo tiết kiệm...</p>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="alert alert-info mt-3" id="tips-stats" style="display: none;">
+                    <small><strong>Thống kê:</strong> <span id="tips-count">0</span> mẹo được tìm thấy</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goal Plans -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-target me-2"></i>
+                    Kế Hoạch Mục Tiêu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="goalPlans"></div>
+            </div>
+        </div>
+
+        <!-- Next Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>
+                    Hành Động Tiếp Theo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="nextActions"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Đang phân tích...</span>
+        </div>
+        <p class="mt-3">AI đang phân tích kế hoạch tài chính của bạn...</p>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark) 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stat-card.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.stat-card.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+}
+
+.stat-card.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.stat-card.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-right: 1rem;
+    opacity: 0.8;
+}
+
+.stat-content h4 {
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    font-size: 1.5rem;
+}
+
+.stat-content p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.goal-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: #f8f9fa;
+}
+
+.insight-card {
+    border-left: 4px solid;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.insight-card.severity-high {
+    border-color: #dc3545;
+    background: #f8d7da;
+}
+
+.insight-card.severity-medium {
+    border-color: #ffc107;
+    background: #fff3cd;
+}
+
+.insight-card.severity-low {
+    border-color: #28a745;
+    background: #d4edda;
+}
+
+.recommendation-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.recommendation-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.goal-progress {
+    background: #e9ecef;
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.goal-progress-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+</style>
+
+<script src="/js/planning.js"></script>
+
+<%- include('partials/footer') %>

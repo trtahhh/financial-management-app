@@ -6,5 +6,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 public class SchedulerConfig {
-    // Spring Boot sẽ tự động enable scheduling
+ // Spring Boot sẽ tự động enable scheduling
 }

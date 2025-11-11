@@ -1,0 +1,404 @@
+// Gamification functionality
+document.addEventListener('DOMContentLoaded', function() {
+    loadGamificationStats();
+    loadAchievements();
+    loadLeaderboard();
+    loadActiveChallenges();
+    checkNewAchievements();
+});
+
+// Load user gamification statistics
+async function loadGamificationStats() {
+    try {
+        const response = await fetch('/api/gamification/stats', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load stats');
+        
+        const stats = await response.json();
+        displayGamificationStats(stats);
+    } catch (error) {
+        console.error('Error loading gamification stats:', error);
+    }
+}
+
+// Display gamification statistics
+function displayGamificationStats(stats) {
+    const statsContainer = document.getElementById('gamification-stats');
+    if (!statsContainer) return;
+    
+    statsContainer.innerHTML = `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">${stats.totalPoints}</div>
+                <div class="stat-label">Total Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value">Level ${stats.level}</div>
+                <div class="stat-label">Current Level</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${stats.levelProgress}%"></div>
+                </div>
+                <div class="stat-sublabel">${stats.pointsToNextLevel} points to next level</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value">${stats.currentStreak} days</div>
+                <div class="stat-label">Current Streak</div>
+                <div class="stat-sublabel">Longest: ${stats.longestStreak} days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">#${stats.rank}</div>
+                <div class="stat-label">Global Rank</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎖️</div>
+                <div class="stat-value">${stats.achievementsUnlocked}</div>
+                <div class="stat-label">Achievements</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">${stats.challengesCompleted}</div>
+                <div class="stat-label">Challenges Completed</div>
+            </div>
+        </div>
+        
+        <div class="activity-summary">
+            <h3>Activity Summary</h3>
+            <div class="activity-stats">
+                <div class="activity-item">
+                    <span>📝 Transactions:</span>
+                    <strong>${stats.totalTransactions}</strong>
+                </div>
+                <div class="activity-item">
+                    <span>📋 Budgets:</span>
+                    <strong>${stats.totalBudgets}</strong>
+                </div>
+                <div class="activity-item">
+                    <span>🎯 Goals:</span>
+                    <strong>${stats.totalGoals}</strong>
+                </div>
+                <div class="activity-item">
+                    <span>💰 Total Savings:</span>
+                    <strong>${formatCurrency(stats.totalSavings)}</strong>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Load achievements with progress
+async function loadAchievements() {
+    try {
+        const response = await fetch('/api/gamification/achievements', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load achievements');
+        
+        const achievements = await response.json();
+        displayAchievements(achievements);
+    } catch (error) {
+        console.error('Error loading achievements:', error);
+    }
+}
+
+// Display achievements
+function displayAchievements(achievements) {
+    const achievementsContainer = document.getElementById('achievements-list');
+    if (!achievementsContainer) return;
+    
+    // Group by category
+    const grouped = achievements.reduce((acc, item) => {
+        const category = item.achievement.category;
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(item);
+        return acc;
+    }, {});
+    
+    let html = '';
+    for (const [category, items] of Object.entries(grouped)) {
+        html += `
+            <div class="achievement-category">
+                <h3>${capitalizeFirst(category)} Achievements</h3>
+                <div class="achievement-grid">
+        `;
+        
+        items.forEach(item => {
+            const achievement = item.achievement;
+            const unlocked = item.unlocked;
+            const progress = unlocked ? 100 : item.progress.percentage;
+            
+            html += `
+                <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'} tier-${achievement.tier}">
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-info">
+                        <h4>${achievement.name}</h4>
+                        <p>${achievement.description}</p>
+                        ${!unlocked ? `
+                            <div class="achievement-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                                <span class="progress-text">${item.progress.current}/${item.progress.required}</span>
+                            </div>
+                        ` : `
+                            <div class="unlocked-date">Unlocked: ${formatDate(item.unlockedAt)}</div>
+                        `}
+                    </div>
+                    <div class="achievement-points">
+                        ${unlocked ? '✅' : '🔒'} ${achievement.points} pts
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    achievementsContainer.innerHTML = html;
+}
+
+// Load leaderboard
+async function loadLeaderboard() {
+    try {
+        const response = await fetch('/api/gamification/leaderboard?limit=10', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load leaderboard');
+        
+        const leaderboard = await response.json();
+        displayLeaderboard(leaderboard);
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
+    }
+}
+
+// Display leaderboard
+function displayLeaderboard(leaderboard) {
+    const leaderboardContainer = document.getElementById('leaderboard');
+    if (!leaderboardContainer) return;
+    
+    let html = `
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>User</th>
+                    <th>Level</th>
+                    <th>Points</th>
+                    <th>Streak</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    leaderboard.forEach((entry, index) => {
+        const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+        html += `
+            <tr class="rank-${index + 1}">
+                <td>${rankIcon} #${index + 1}</td>
+                <td>${entry.username}</td>
+                <td>Level ${entry.level}</td>
+                <td>${entry.totalPoints}</td>
+                <td>🔥 ${entry.currentStreak} days</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+    `;
+    
+    leaderboardContainer.innerHTML = html;
+}
+
+// Load active challenges
+async function loadActiveChallenges() {
+    try {
+        const [challengesRes, userChallengesRes] = await Promise.all([
+            fetch('/api/gamification/challenges', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }),
+            fetch('/api/gamification/challenges/user', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+        ]);
+        
+        if (!challengesRes.ok || !userChallengesRes.ok) {
+            throw new Error('Failed to load challenges');
+        }
+        
+        const allChallenges = await challengesRes.json();
+        const userChallenges = await userChallengesRes.json();
+        
+        displayChallenges(allChallenges, userChallenges);
+    } catch (error) {
+        console.error('Error loading challenges:', error);
+    }
+}
+
+// Display challenges
+function displayChallenges(allChallenges, userChallenges) {
+    const challengesContainer = document.getElementById('challenges-list');
+    if (!challengesContainer) return;
+    
+    const userChallengeIds = new Set(userChallenges.map(uc => uc.challenge.id));
+    
+    let html = `
+        <div class="challenges-section">
+            <h3>Active Challenges</h3>
+            <div class="challenges-grid">
+    `;
+    
+    allChallenges.forEach(challenge => {
+        const joined = userChallengeIds.has(challenge.id);
+        const userChallenge = userChallenges.find(uc => uc.challenge.id === challenge.id);
+        const progress = userChallenge ? userChallenge.progressPercentage : 0;
+        
+        html += `
+            <div class="challenge-card ${challenge.type}">
+                <div class="challenge-header">
+                    <span class="challenge-type">${challenge.type}</span>
+                    <span class="challenge-reward">🎁 ${challenge.rewardPoints} pts</span>
+                </div>
+                <h4>${challenge.name}</h4>
+                <p>${challenge.description}</p>
+                <div class="challenge-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    ${joined ? `
+                        <span class="progress-text">${progress.toFixed(0)}% complete</span>
+                    ` : ''}
+                </div>
+                <div class="challenge-footer">
+                    <span class="challenge-end">Ends: ${formatDate(challenge.endDate)}</span>
+                    ${!joined ? `
+                        <button class="btn-join-challenge" onclick="joinChallenge(${challenge.id})">
+                            Join Challenge
+                        </button>
+                    ` : `
+                        <span class="challenge-joined">✅ Joined</span>
+                    `}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    challengesContainer.innerHTML = html;
+}
+
+// Join a challenge
+async function joinChallenge(challengeId) {
+    try {
+        const response = await fetch(`/api/gamification/challenges/${challengeId}/join`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to join challenge');
+        
+        showNotification('Successfully joined challenge!', 'success');
+        loadActiveChallenges();
+    } catch (error) {
+        console.error('Error joining challenge:', error);
+        showNotification('Failed to join challenge', 'error');
+    }
+}
+
+// Check for new achievements
+async function checkNewAchievements() {
+    try {
+        const response = await fetch('/api/gamification/achievements/unnotified', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) return;
+        
+        const newAchievements = await response.json();
+        
+        if (newAchievements.length > 0) {
+            showAchievementNotifications(newAchievements);
+        }
+    } catch (error) {
+        console.error('Error checking new achievements:', error);
+    }
+}
+
+// Show achievement notifications
+function showAchievementNotifications(achievements) {
+    achievements.forEach(userAchievement => {
+        const achievement = userAchievement.achievement;
+        
+        showNotification(
+            `🎉 Achievement Unlocked: ${achievement.name}! +${achievement.points} points`,
+            'achievement',
+            5000
+        );
+        
+        // Mark as notified
+        fetch(`/api/gamification/achievements/${userAchievement.id}/notify`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+    });
+}
+
+// Utility functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('vi-VN');
+}
+
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function showNotification(message, type = 'info', duration = 3000) {
+    // Implement notification display
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, duration);
+}

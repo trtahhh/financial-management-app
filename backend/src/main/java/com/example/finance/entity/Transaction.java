@@ -19,56 +19,56 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Transaction {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+ @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
 
-    @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
+ @Column(name = "amount", nullable = false)
+ private BigDecimal amount;
 
-    @Column(name = "type")
-    private String type;
+ @Column(name = "type")
+ private String type;
 
-    @Column(name = "note", columnDefinition = "NVARCHAR(MAX)")
-    private String note;
+ @Column(name = "note", columnDefinition = "NVARCHAR(MAX)")
+ private String note;
 
-    @Column(name = "trans_date", nullable = false)
-    private LocalDate date;
+ @Column(name = "trans_date", nullable = false)
+ private LocalDate date;
 
-    @Column(name = "file_path")
-    private String filePath;
+ @Column(name = "file_path")
+ private String filePath;
 
-    @Column(name = "status")
-    private String status;
+ @Column(name = "status")
+ private String status;
 
-    @Column(name = "tags")
-    private String tags;
+ @Column(name = "tags")
+ private String tags;
 
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
-    private boolean isDeleted = false;
+ @Column(name = "is_deleted", nullable = false, columnDefinition = "BIT DEFAULT 0")
+ private boolean isDeleted = false;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+ @Column(name = "deleted_at")
+ private LocalDateTime deletedAt;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+ @CreationTimestamp
+ @Column(name = "created_at", updatable = false)
+ private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+ @UpdateTimestamp
+ @Column(name = "updated_at")
+ private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
-    private User user;
+ @ManyToOne(fetch = FetchType.LAZY, optional = false)
+ @JoinColumn(name = "user_id", nullable = false)
+ @JsonIgnore
+ private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wallet_id")
-    @JsonIgnore
-    private Wallet wallet;
+ @ManyToOne(fetch = FetchType.LAZY)
+ @JoinColumn(name = "wallet_id")
+ @JsonIgnore
+ private Wallet wallet;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    @JsonIgnore
-    private Category category;
+ @ManyToOne(fetch = FetchType.LAZY)
+ @JoinColumn(name = "category_id")
+ @JsonIgnore
+ private Category category;
 }

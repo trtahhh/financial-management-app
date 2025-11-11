@@ -17,68 +17,68 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+ @Value("${jwt.secret}")
+ private String jwtSecret;
 
-    @Value("${jwt.expiration}")
-    private int jwtExpirationInMs;
+ @Value("${jwt.expiration}")
+ private int jwtExpirationInMs;
 
-    @Autowired
-    private UserService userService;
+ @Autowired
+ private UserService userService;
 
-    private SecretKey getSigningKey() {
-        try {
-            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-        } catch (Exception e) {
-            throw new IllegalStateException("Invalid JWT_SECRET format. Must be valid Base64", e);
-        }
-    }
+ private SecretKey getSigningKey() {
+ try {
+ return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+ } catch (Exception e) {
+ throw new IllegalStateException("Invalid JWT_SECRET format. Must be valid Base64", e);
+ }
+ }
 
-    public String generateToken(Authentication authentication) {
-        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
+ public String generateToken(Authentication authentication) {
+ UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
-        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationInMs);
+ Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationInMs);
 
-        String token = Jwts.builder()
-                .subject(userPrincipal.getUsername())
-                .issuedAt(new Date())
-                .expiration(expiryDate)
-                .claim("userId", getUserIdFromUsername(userPrincipal.getUsername()))
-                .signWith(getSigningKey())
-                .compact();
-                
-        System.out.println("Generated JWT token for user: " + userPrincipal.getUsername());
-        return token;
-    }
+ String token = Jwts.builder()
+ .subject(userPrincipal.getUsername())
+ .issuedAt(new Date())
+ .expiration(expiryDate)
+ .claim("userId", getUserIdFromUsername(userPrincipal.getUsername()))
+ .signWith(getSigningKey())
+ .compact();
+ 
+ System.out.println("Generated JWT token for user: " + userPrincipal.getUsername());
+ return token;
+ }
 
-    public String getUsernameFromJWT(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+ public String getUsernameFromJWT(String token) {
+ Claims claims = Jwts.parser()
+ .verifyWith(getSigningKey())
+ .build()
+ .parseSignedClaims(token)
+ .getPayload();
 
-        return claims.getSubject();
-    }
+ return claims.getSubject();
+ }
 
-    public boolean validateToken(String authToken) {
-        try {
-            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);
-            return true;
-        } catch (JwtException ex) {
-            System.err.println("Invalid JWT token: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            System.err.println("JWT claims string is empty");
-        }
-        return false;
-    }
+ public boolean validateToken(String authToken) {
+ try {
+ Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);
+ return true;
+ } catch (JwtException ex) {
+ System.err.println("Invalid JWT token: " + ex.getMessage());
+ } catch (IllegalArgumentException ex) {
+ System.err.println("JWT claims string is empty");
+ }
+ return false;
+ }
 
-    private Long getUserIdFromUsername(String username) {
-        try {
-            return userService.findByUsername(username).getId();
-        } catch (Exception e) {
-            System.err.println("Error getting userId for username " + username + ": " + e.getMessage());
-            return null;
-        }
-    }
+ private Long getUserIdFromUsername(String username) {
+ try {
+ return userService.findByUsername(username).getId();
+ } catch (Exception e) {
+ System.err.println("Error getting userId for username " + username + ": " + e.getMessage());
+ return null;
+ }
+ }
 }

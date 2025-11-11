@@ -58,7 +58,10 @@
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Mục tiêu đang thực hiện</h5>
-      <button id="goal-add-btn" class="btn btn-success btn-sm">+ Thêm mục tiêu</button>
+      <div>
+        <button id="ai-planning-btn" class="btn btn-info btn-sm me-2">🤖 Lập kế hoạch dài hạn</button>
+        <button id="goal-add-btn" class="btn btn-success btn-sm">+ Thêm mục tiêu</button>
+      </div>
     </div>
     <div class="card-body">
       <div id="goal-list"></div>
@@ -107,6 +110,67 @@
           <button class="btn btn-success" type="submit">Lưu</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🆕 AI Long-term Planning Wizard Modal -->
+<div id="ai-planning-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">🤖 Trợ lý lập kế hoạch tài chính dài hạn</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Step 1: Input -->
+        <div id="planning-step-1">
+          <h6 class="mb-3">Bước 1: Nhập thông tin mục tiêu</h6>
+          <form id="ai-planning-form">
+            <div class="mb-3">
+              <label class="form-label">Thời gian lập kế hoạch</label>
+              <select class="form-control" id="plan-months" required>
+                <option value="3">3 tháng</option>
+                <option value="6" selected>6 tháng</option>
+                <option value="12">12 tháng</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mục tiêu tiết kiệm (VNĐ)</label>
+              <input type="number" class="form-control" id="target-savings" min="0" step="100000" placeholder="Ví dụ: 10000000" required>
+              <small class="text-muted">Số tiền bạn muốn tiết kiệm được trong thời gian trên</small>
+            </div>
+            <div class="alert alert-info">
+              <strong>💡 AI sẽ phân tích:</strong>
+              <ul class="mb-0">
+                <li>Thu nhập trung bình của bạn</li>
+                <li>Chi tiêu hiện tại theo từng danh mục</li>
+                <li>Đề xuất mức tiết kiệm hàng tháng</li>
+                <li>Gợi ý tối ưu hóa chi tiêu</li>
+              </ul>
+            </div>
+            <button type="submit" class="btn btn-info w-100">Tạo kế hoạch với AI</button>
+          </form>
+        </div>
+
+        <!-- Step 2: AI Plan Result -->
+        <div id="planning-step-2" style="display: none;">
+          <h6 class="mb-3">Bước 2: Kế hoạch được AI đề xuất</h6>
+          <div id="ai-plan-result"></div>
+          <div class="mt-3">
+            <button class="btn btn-secondary" onclick="backToPlanningStep1()">« Quay lại</button>
+            <button class="btn btn-success" onclick="applyPlanAsGoal()">✓ Áp dụng kế hoạch này</button>
+          </div>
+        </div>
+
+        <!-- Loading spinner -->
+        <div id="planning-loading" style="display: none;" class="text-center py-4">
+          <div class="spinner-border text-info" role="status">
+            <span class="visually-hidden">Đang phân tích...</span>
+          </div>
+          <p class="mt-2">AI đang phân tích dữ liệu của bạn...</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>

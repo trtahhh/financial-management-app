@@ -103,12 +103,22 @@
               <option value="expense">Chi tiêu</option>
             </select>
           </div>
-          
+
+          <!-- AI Auto-suggested Category (Read-only) -->
+          <input type="hidden" name="category" id="suggestedCategoryId">
           <div class="mb-3">
-            <label class="form-label">Danh mục</label>
-            <select name="category" class="form-select" required>
-              <option value="">Chọn danh mục</option>
-            </select>
+            <label class="form-label">
+              <i class="fas fa-robot text-success me-1"></i>Danh mục (AI gợi ý tự động)
+            </label>
+            <div class="input-group">
+              <input type="text" id="suggestedCategoryName" class="form-control" readonly 
+                     placeholder="Nhập ghi chú để AI gợi ý danh mục..." 
+                     style="background-color: #f8f9fa;">
+              <span class="input-group-text" id="categoryConfidence" style="display: none;">
+                <i class="fas fa-check-circle text-success"></i>
+              </span>
+            </div>
+            <small class="text-muted" id="categoryHint">AI sẽ tự động phân loại sau khi bạn nhập ghi chú</small>
           </div>
 
           <div class="mb-3">
@@ -150,4 +160,5 @@
   </div>
 </div>
 
+<!-- Transaction Scripts (includes AI auto-categorization) -->
 <script src="/js/transactions.js"></script>

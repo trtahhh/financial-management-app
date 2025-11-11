@@ -15,13 +15,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function getAuthHeaders() {
     const token = localStorage.getItem('authToken');
-    console.log('Current token:', token); // Debug log
+    // Token validation
     const headers = {
       'Content-Type': 'application/json'
     };
     if (token) {
       headers['Authorization'] = 'Bearer ' + token;
-      console.log('Auth header set:', headers['Authorization']); // Debug log
+      // Authorization header configured
     } else {
       console.error('No auth token found in localStorage');
     }
@@ -40,8 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
       .then(safeJson)
       .then(d => {
-        console.log('Wallets list data:', d); // Debug log
-        d.forEach(w => console.log(`Wallet ${w.id}: name=${w.name}, balance=${w.balance} (${typeof w.balance})`)); // Debug each wallet
+        // Wallets data loaded successfully
         
         t.innerHTML =
           '<thead><tr><th>Tên ví</th><th>Số dư</th><th></th></tr></thead><tbody>' +
@@ -95,8 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
         .then(safeJson)
         .then(w => {
-          console.log('Wallet data from API:', w); // Debug log
-          console.log('Raw balance value:', w.balance, 'Type:', typeof w.balance); // Debug balance
+          // Wallet data retrieved from API
           editing = id;
           f.name.value = w.name || '';
           
@@ -111,11 +109,11 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           
           f.balance.value = balanceValue;
-          console.log('Final balance set to input:', f.balance.value); // Debug log
+          // Balance value updated in form
           title.textContent = 'Sửa ví';
           m.show();
         }).catch(e => {
-          console.error('Error fetching wallet:', e); // Debug error
+          console.error('Error fetching wallet:', e);
           if (e.message.includes('401') || e.message.includes('Unauthorized')) {
             alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
             localStorage.removeItem('authToken');

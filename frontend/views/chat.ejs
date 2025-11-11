@@ -1,827 +1,484 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat - Trợ lý AI Thông minh</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <style>
-        /* Chat Interface Styles */
-        .chat-container {
-            display: flex;
-            height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            overflow: hidden;
-        }
-
-        .chat-sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        .chat-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-        }
-
-        .sidebar-header {
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-            text-align: center;
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        .new-chat-btn {
-            margin: 15px 20px;
-            padding: 10px 18px;
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .new-chat-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4);
-        }
-
-        .chat-history {
-            flex: 1;
-            padding: 0 20px;
-            overflow-y: auto;
-        }
-
-        .chat-header {
-            padding: 20px 30px;
-            text-align: center;
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-        }
-
-        .chat-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 15px;
-        }
-
-        .ai-status-container {
-            margin: 15px 0;
-        }
-
-        .ai-status {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-
-        .ai-status.online {
-            background: rgba(76, 175, 80, 0.2);
-            color: #4caf50;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-
-        .ai-status.offline {
-            background: rgba(244, 67, 54, 0.2);
-            color: #f44336;
-            border: 1px solid rgba(244, 67, 54, 0.3);
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px 20px;
-            overflow-y: auto;
-            background: rgba(255, 255, 255, 0.8);
-        }
-
-        .welcome-message {
-            text-align: center;
-            padding: 30px 20px;
-            color: #333;
-        }
-
-        .welcome-message h1 {
-            font-size: 2.2rem;
-            color: #42b883;
-            margin-bottom: 15px;
-        }
-
-        .welcome-message p {
-            font-size: 1.1rem;
-            margin-bottom: 25px;
-            color: #666;
-        }
-
-        .report-templates {
-            max-width: 750px;
-            margin: 0 auto;
-        }
-
-        .template-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin: 15px 0;
-        }
-
-        .template-btn {
-            padding: 12px 18px;
-            border: 2px solid #42b883;
-            background: white;
-            color: #42b883;
-            border-radius: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .template-btn:hover, .template-btn.primary {
-            background: #42b883;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .template-btn.success {
-            border-color: #4caf50;
-            color: #4caf50;
-        }
-
-        .template-btn.success:hover {
-            background: #4caf50;
-            color: white;
-        }
-
-        .template-btn.info {
-            border-color: #2196f3;
-            color: #2196f3;
-        }
-
-        .template-btn.info:hover {
-            background: #2196f3;
-            color: white;
-        }
-
-        .message {
-            display: flex;
-            margin-bottom: 15px;
-            animation: fadeInUp 0.5s ease;
-        }
-
-        .message.user-message {
-            justify-content: flex-end;
-        }
-
-        .message.ai-message {
-            justify-content: flex-start;
-        }
-
-        .message-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin: 0 8px;
-            flex-shrink: 0;
-        }
-
-        .user-avatar {
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-        }
-
-        .ai-avatar {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .message-content {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-        }
-
-        .user-message .message-content {
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-
-        .ai-message .message-content {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-height: 300px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            line-height: 1.5;
-        }
-
-        /* Scrollbar cho tin nhắn AI */
-        .ai-message .message-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .ai-message .message-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .ai-message .message-content::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-
-        .ai-message .message-content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-
-        .message-content pre {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin: 10px 0;
-            max-width: 100%;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .message-content code {
-            background: #f5f5f5;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-        }
-
-        .message-content strong {
-            font-weight: 600;
-        }
-
-        /* Xử lý tin nhắn AI dài */
-        .ai-message .message-content p {
-            margin: 8px 0;
-            line-height: 1.6;
-        }
-
-        .ai-message .message-content ul,
-        .ai-message .message-content ol {
-            margin: 8px 0;
-            padding-left: 20px;
-        }
-
-        .ai-message .message-content li {
-            margin: 4px 0;
-            line-height: 1.5;
-        }
-
-        /* Đảm bảo tin nhắn không bị tràn */
-        .message {
-            max-width: 100%;
-            margin: 15px 0;
-        }
-
-        /* Responsive cho tin nhắn dài */
-        @media (max-width: 768px) {
-            .message-content {
-                max-width: 85%;
-            }
-            
-            .ai-message .message-content {
-                max-height: 250px;
-                font-size: 0.9rem;
-            }
-        }
-
-        .chat-input-area {
-            padding: 15px 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .export-section {
-            margin: 0 0 15px 0;
-            padding: 12px 15px;
-            background: rgba(66, 184, 131, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(66, 184, 131, 0.2);
-        }
-
-        .export-section h6 {
-            color: #42b883;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-        }
-
-        .export-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .export-btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .export-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .export-btn.excel { background: #4caf50; color: white; }
-        .export-btn.pdf { background: #f44336; color: white; }
-
-        .input-container {
-            display: flex;
-            align-items: flex-end;
-            gap: 10px;
-            background: #f8f9fa;
-            border-radius: 25px;
-            padding: 8px;
-            border: 2px solid transparent;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-container:focus-within {
-            border-color: #42b883;
-        }
-
-        #message-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 8px 12px;
-            resize: none;
-            outline: none;
-            font-size: 0.95rem;
-            max-height: 100px;
-            min-height: 20px;
-        }
-
-        #send-button {
-            width: 40px;
-            height: 40px;
-            border: none;
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #send-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4);
-        }
-
-        .chat-actions {
-            margin-top: 12px;
-            text-align: center;
-        }
-
-        .clear-chat-btn {
-            padding: 6px 14px;
-            border: 1px solid #dc3545;
-            background: white;
-            color: #dc3545;
-            border-radius: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-        }
-
-        .clear-chat-btn:hover {
-            background: #dc3545;
-            color: white;
-        }
-
-        .typing-indicator {
-            display: none;
-            margin-bottom: 15px;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: #42b883;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Export Modal */
-        .export-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .export-modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 480px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .export-modal-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .export-modal-header h3 {
-            color: #42b883;
-            margin-bottom: 8px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus {
-            border-color: #42b883;
-            outline: none;
-        }
-
-        .quick-date-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-            gap: 8px;
-            margin: 15px 0;
-        }
-
-        .quick-date-btn {
-            padding: 6px 10px;
-            border: 1px solid #42b883;
-            background: white;
-            color: #42b883;
-            border-radius: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-        }
-
-        .quick-date-btn:hover {
-            background: #42b883;
-            color: white;
-        }
-
-        .export-modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .export-modal-actions .btn {
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #42b883, #347474);
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: 500;
-            z-index: 1001;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .toast-success { background: #4caf50; }
-        .toast-error { background: #f44336; }
-        .toast-info { background: #2196f3; }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .chat-sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1000;
-                transform: translateX(-100%);
-            }
-
-            .chat-sidebar.show {
-                transform: translateX(0);
-            }
-
-            .mobile-toggle {
-                display: block;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1001;
-                background: #42b883;
-                color: white;
-                border: none;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-                cursor: pointer;
-            }
-
-            .chat-header h2 {
-                font-size: 1.8rem;
-            }
-
-            .export-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .template-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .message-content {
-                max-width: 85%;
-            }
-        }
-
-        /* Hide mobile toggle on desktop */
-        .mobile-toggle {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <button class="mobile-toggle" onclick="toggleSidebar()">
-        <i class="bi bi-list"></i>
-    </button>
-
-    <div class="chat-container">
-        <!-- Sidebar -->
-        <div class="chat-sidebar" id="chat-sidebar">
-            <div class="sidebar-header">
-                <h3>🤖 Finance AI</h3>
+<main class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-robot me-2 fs-4"></i>
+            <div>
+              <h5 class="mb-0">🤖 AI Tư vấn tài chính</h5>
+              <small>Trợ lý AI thông minh cho quản lý tài chính cá nhân</small>
             </div>
-            
-            <button class="new-chat-btn" onclick="newChat()">
-                <i class="bi bi-plus-circle"></i> Cuộc trò chuyện mới
-            </button>
-            
-            <div class="chat-history" id="chat-history">
-                <!-- Chat history will be populated here -->
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <!-- Chat Messages Area -->
+          <div class="chat-messages" id="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background-color: #f8f9fa;">
+            <div class="alert alert-info border-0">
+              <div class="d-flex align-items-start">
+                <span class="badge bg-success me-2 mt-1">🤖 AI</span>
+                <div>
+                  <strong>Xin chào!</strong> Tôi là trợ lý AI tài chính của bạn. Tôi có thể giúp bạn:
+                  <ul class="mb-0 mt-2">
+                    <li>💰 Tư vấn lập ngân sách cá nhân</li>
+                    <li>📊 Phân tích thói quen chi tiêu</li>
+                    <li>🎯 Đặt mục tiêu tài chính thông minh</li>
+                    <li>📈 Hướng dẫn đầu tư cơ bản cho sinh viên</li>
+                    <li>🏦 Mẹo tiết kiệm hiệu quả hàng ngày</li>
+                  </ul>
+                  <div class="mt-2">
+                    <strong>Hãy bắt đầu bằng cách hỏi tôi điều gì đó!</strong>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div class="sidebar-footer" style="margin-top: auto; padding: 15px;">
-                <button class="clear-chat-btn" onclick="clearChat()">
-                    <i class="bi bi-trash"></i> Xóa chat
+          </div>
+          
+          <!-- Quick Action Buttons -->
+          <div class="border-top p-3 bg-white">
+            <div class="row g-2">
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-primary btn-sm w-100" onclick="quickQuestion('budget')">
+                  💰 Ngân sách
                 </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-success btn-sm w-100" onclick="quickQuestion('saving')">
+                  🏦 Tiết kiệm
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-info btn-sm w-100" onclick="quickQuestion('spending')">
+                  📊 Chi tiêu
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-warning btn-sm w-100" onclick="quickQuestion('investment')">
+                  📈 Đầu tư
+                </button>
+              </div>
             </div>
+          </div>
         </div>
-
-        <!-- Main Chat Area -->
-        <div class="chat-main">
-            <!-- Chat Header -->
-            <div class="chat-header">
-                <h2>AI Trợ lý</h2>
-                <div class="subtitle">Trả lời tất cả mọi câu hỏi của bạn 24/7 - Tài chính, Kiến thức, Giải trí và nhiều hơn nữa!</div>
-                
-                <!-- AI Status -->
-                <div class="ai-status-container">
-                    <div id="ai-status" class="ai-status">
-                        <span class="status-loading">⏳ Đang kiểm tra...</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chat Messages Area -->
-            <div class="chat-messages" id="chat-messages">
-                <!-- Welcome Message -->
-                <div class="welcome-message">
-                    <h1>Chào mừng đến với AI Trợ lý Thông minh! 🚀</h1>
-                    <p>Tôi có thể trả lời <strong>tất cả mọi câu hỏi</strong> của bạn, bao gồm tài chính, đầu tư, tiết kiệm, quản lý ngân sách và nhiều chủ đề khác!</p>
-                    
-                    <div class="report-templates">
-                        <h6><strong>📊 Báo cáo tài chính</strong></h6>
-                        <div class="template-buttons">
-                            <button class="template-btn primary" onclick="useTemplate('Tạo báo cáo tổng hợp tháng này')">
-                                📈 Báo cáo tổng hợp
-                            </button>
-                            <button class="template-btn success" onclick="useTemplate('Báo cáo giao dịch tháng này')">
-                                💰 Báo cáo giao dịch
-                            </button>
-                            <button class="template-btn info" onclick="useTemplate('Báo cáo ngân sách tháng này')">
-                                📋 Báo cáo ngân sách
-                            </button>
-                        </div>
-                        
-                        <h6><strong>💡 Ví dụ câu hỏi</strong></h6>
-                        <div class="template-buttons">
-                            <button class="template-btn" onclick="sendSuggestion('Làm thế nào để tiết kiệm tiền hiệu quả?')">
-                                💰 Tiết kiệm thông minh
-                            </button>
-                            <button class="template-btn" onclick="sendSuggestion('Tôi nên đầu tư như thế nào?')">
-                                📈 Hướng dẫn đầu tư
-                            </button>
-                            <button class="template-btn" onclick="sendSuggestion('Cách lập ngân sách gia đình?')">
-                                🏠 Ngân sách gia đình
-                            </button>
-                            <button class="template-btn" onclick="sendSuggestion('Quản lý nợ thông minh ra sao?')">
-                                💳 Quản lý nợ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chat Input Area -->
-            <div class="chat-input-area">
-                <!-- Export Section -->
-                <div class="export-section">
-                    <h6><strong>📁 XUẤT FILE TRỰC TIẾP</strong></h6>
-                    <div class="export-buttons">
-                        <button class="export-btn excel" onclick="showExportModal('excel')">
-                            📊 Excel (.xlsx)
-                        </button>
-                        <button class="export-btn pdf" onclick="showExportModal('pdf')">
-                            📄 PDF (.pdf)
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="input-container">
-                    <textarea 
-                        id="message-input" 
-                        placeholder="Nhập câu hỏi của bạn..."
-                        rows="1"
-                    ></textarea>
-                    <button id="send-button" type="button">
-                        <i class="bi bi-send-fill"></i>
-                    </button>
-                </div>
-                <div class="chat-actions">
-                    <button class="clear-chat-btn" onclick="clearChat()">
-                        <i class="bi bi-trash"></i>
-                        Xóa chat
-                    </button>
-                </div>
-            </div>
+        
+        <!-- Chat Input -->
+        <div class="card-footer bg-white border-top">
+          <div class="input-group">
+            <input type="text" class="form-control" id="chat-input" 
+                   placeholder="Nhập câu hỏi của bạn..." 
+                   onkeypress="handleKeyPress(event)"
+                   style="border-radius: 25px 0 0 25px;">
+            <button class="btn btn-primary px-4" onclick="sendMessage()" style="border-radius: 0 25px 25px 0;">
+              <i class="bi bi-send"></i>
+            </button>
+          </div>
+          <div class="mt-2 text-center">
+            <small class="text-muted">
+              💡 Thử hỏi: "Làm sao để tiết kiệm tiền hiệu quả?" • "Cách lập ngân sách cho sinh viên?"
+            </small>
+          </div>
         </div>
+      </div>
+      
+      <!-- AI Features Overview -->
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card border-0 bg-light">
+            <div class="card-body text-center">
+              <i class="bi bi-lightbulb text-warning fs-2"></i>
+              <h6 class="mt-2">Tư vấn thông minh</h6>
+              <small class="text-muted">AI phân tích tài chính cá nhân và đưa ra lời khuyên phù hợp</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 bg-light">
+            <div class="card-body text-center">
+              <i class="bi bi-graph-up text-success fs-2"></i>
+              <h6 class="mt-2">Phân tích dữ liệu</h6>
+              <small class="text-muted">Hiểu sâu về thói quen tài chính và xu hướng chi tiêu của bạn</small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</main>
 
-    <!-- Export Modal -->
-    <div class="export-modal" id="export-modal">
-        <div class="export-modal-content">
-            <div class="export-modal-header">
-                <h3 id="export-modal-title">📊 Xuất báo cáo Excel</h3>
-                <p id="export-modal-subtitle">Chọn khoảng thời gian để xuất báo cáo</p>
-            </div>
-            
-            <form id="export-form">
-                <div class="form-group">
-                    <label for="start-date">📅 Từ ngày:</label>
-                    <input type="date" id="start-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="end-date">📅 Đến ngày:</label>
-                    <input type="date" id="end-date" required>
-                </div>
-                
-                <div class="quick-date-buttons">
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('today')">Hôm nay</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('yesterday')">Hôm qua</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('thisWeek')">Tuần này</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('lastWeek')">Tuần trước</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('thisMonth')">Tháng này</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('lastMonth')">Tháng trước</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('thisYear')">Năm nay</button>
-                    <button type="button" class="quick-date-btn" onclick="setQuickDate('lastYear')">Năm trước</button>
-                </div>
-                
-                <div class="export-modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">❌ Hủy</button>
-                    <button type="submit" class="btn btn-primary" id="export-submit-btn">📊 Xuất file</button>
-                </div>
-            </form>
+<script>
+let chatHistory = [];
+let isProcessing = false;
+
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+function quickQuestion(type) {
+  const questions = {
+    budget: "Làm thế nào để lập ngân sách hiệu quả cho sinh viên với thu nhập không ổn định?",
+    saving: "Có những cách nào để tiết kiệm tiền hàng ngày mà vẫn đảm bảo chất lượng cuộc sống?",
+    spending: "Hãy phân tích và đưa ra lời khuyên về thói quen chi tiêu của tôi",
+    investment: "Sinh viên như tôi nên bắt đầu đầu tư như thế nào với số tiền ít?"
+  };
+  
+  const input = document.getElementById('chat-input');
+  input.value = questions[type];
+  input.focus();
+  sendMessage();
+}
+
+async function sendMessage() {
+  if (isProcessing) return;
+  
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  isProcessing = true;
+  
+  // Add user message
+  addMessage('user', message);
+  input.value = '';
+  
+  // Show typing indicator
+  const typingId = addMessage('ai', 'Đang suy nghĩ...', true);
+  
+  try {
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    
+    // Remove typing indicator
+    removeMessage(typingId);
+    
+    // Generate and add AI response
+    const response = generateAIResponse(message);
+    addMessage('ai', response);
+    
+  } catch (error) {
+    console.error('Chat error:', error);
+    removeMessage(typingId);
+    addMessage('ai', 'Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi. Vui lòng thử lại sau. 😅');
+  } finally {
+    isProcessing = false;
+  }
+}
+
+function generateAIResponse(message) {
+  const lowerMessage = message.toLowerCase();
+  
+  // Advanced keyword matching with context
+  if (lowerMessage.includes('ngân sách') || lowerMessage.includes('budget') || lowerMessage.includes('lập kế hoạch')) {
+    return `🎯 **Hướng dẫn lập ngân sách thông minh:**
+
+**Bước 1: Tính thu nhập thực tế**
+- Thu nhập từ học bổng, làm thêm, hỗ trợ gia đình
+- Trừ đi thuế và các khoản bắt buộc
+
+**Bước 2: Áp dụng quy tắc 50/30/20**
+- **50% nhu cầu thiết yếu:** Ăn, ở, học phí, đi lại
+- **30% mong muốn:** Giải trí, mua sắm, hẹn hò
+- **20% tương lai:** Tiết kiệm, trả nợ, đầu tư
+
+**Bước 3: Theo dõi và điều chỉnh**
+- Dùng app này để ghi chép chi tiêu hàng ngày
+- Xem xét lại ngân sách mỗi tháng
+- Điều chỉnh tỷ lệ phù hợp với tình hình
+
+💡 **Mẹo hay:** Đặt mục tiêu tiết kiệm cụ thể (VD: mua laptop, đi du lịch) để có động lực!`;
+  }
+  
+  if (lowerMessage.includes('tiết kiệm') || lowerMessage.includes('saving') || lowerMessage.includes('save money')) {
+    return `💰 **Chiến lược tiết kiệm hiệu quả:**
+
+**🍳 Ăn uống:**
+- Nấu ăn tại nhà: tiết kiệm 60-70% so với ăn ngoài
+- Mang cơm trưa đi học/làm
+- Mua thực phẩm theo mùa, đi chợ cuối ngày
+
+**🚌 Di chuyển:**
+- Sử dụng phương tiện công cộng
+- Đi bộ/xe đạp cho quãng đường ngắn
+- Chia sẻ xe với bạn bè
+
+**🛒 Mua sắm thông minh:**
+- Lập danh sách trước khi mua
+- So sánh giá trước khi quyết định
+- Mua đồ cũ chất lượng tốt
+- Chờ sale/khuyến mãi cho đồ không gấp
+
+**💡 Rule 24h:** Chờ 24h trước khi mua đồ > 500k để tránh mua impulsive!
+
+🎯 **Mục tiêu:** Bắt đầu với tiết kiệm 100k/tháng, tăng dần theo thu nhập!`;
+  }
+  
+  if (lowerMessage.includes('đầu tư') || lowerMessage.includes('investment') || lowerMessage.includes('invest')) {
+    return `📈 **Đầu tư cơ bản cho người mới:**
+
+**💎 Nguyên tắc vàng:**
+1. **Có quỹ khẩn cấp trước:** 3-6 tháng chi tiêu
+2. **Bắt đầu sớm, dù ít:** 100k/tháng cũng tốt
+3. **Đầu tư định kỳ:** Dollar Cost Averaging
+4. **Đa dạng hóa:** Không bỏ hết trứng vào 1 giỏ
+
+**🏆 Kênh phù hợp sinh viên:**
+- **Quỹ mở (Mutual Fund):** Ít rủi ro, chuyên gia quản lý
+- **Vàng SJC mini:** Bảo toàn giá trị, dễ mua bán
+- **Tiết kiệm có kỳ hạn:** 6-12 tháng, lãi suất ổn định
+- **ETF:** Đầu tư chỉ số, phí thấp
+
+**⚠️ Tránh:**
+- Đầu tư bằng tiền vay
+- Bỏ hết vào 1 cổ phiếu
+- Tin theo "tips" trên mạng
+- FOMO (Fear of Missing Out)
+
+🎯 **Bắt đầu:** 200-500k/tháng vào quỹ mở, tăng dần theo thu nhập!`;
+  }
+  
+  if (lowerMessage.includes('phân tích') || lowerMessage.includes('chi tiêu') || lowerMessage.includes('spending')) {
+    return `📊 **Phân tích chi tiêu thông minh:**
+
+**🔍 Các chỉ số cần theo dõi:**
+- **Chi tiêu theo danh mục:** Xem đâu tốn nhiều nhất
+- **Tỷ lệ chi/thu:** Không nên > 80% thu nhập
+- **Xu hướng theo tháng:** Tăng/giảm ra sao?
+- **Chi tiêu bất thường:** Những khoản lớn ngoài dự kiến
+
+**📱 Cách sử dụng app hiệu quả:**
+1. Ghi chép ngay sau khi chi tiêu
+2. Dùng AI phân loại tự động
+3. Xem báo cáo Dashboard hàng tuần
+4. Đặt alert khi sắp vượt ngân sách
+
+**💡 Phương pháp 80/20:**
+- 20% nguyên nhân tạo ra 80% chi tiêu
+- Tập trung kiểm soát những khoản chi lớn nhất
+
+**🎯 Mẹo hay:**
+- Chụp ảnh hóa đơn → AI sẽ tự động nhập liệu
+- Đặt budget alert ở 80% để kịp thời điều chỉnh
+- Review chi tiêu mỗi chủ nhật
+
+📈 **Mục tiêu:** Giảm 10-15% chi tiêu không cần thiết mỗi tháng!`;
+  }
+  
+  if (lowerMessage.includes('mục tiêu') || lowerMessage.includes('goal') || lowerMessage.includes('kế hoạch')) {
+    return `🎯 **Đặt mục tiêu tài chính SMART:**
+
+**S - Specific (Cụ thể):**
+- "Mua laptop 20 triệu" thay vì "mua laptop"
+- "Tiết kiệm 500k/tháng" thay vì "tiết kiệm nhiều"
+
+**M - Measurable (Đo được):**
+- Số tiền cụ thể: 5 triệu, 10 triệu
+- Thời gian rõ ràng: 6 tháng, 1 năm
+
+**A - Achievable (Khả thi):**
+- Phù hợp với thu nhập hiện tại
+- Không ảnh hưởng đến nhu cầu cơ bản
+
+**R - Relevant (Phù hợp):**
+- Phù hợp với hoàn cảnh sinh viên
+- Ưu tiên theo tầm quan trọng
+
+**T - Time-bound (Có thời hạn):**
+- Deadline cụ thể để tạo pressure tích cực
+
+**🎯 Ví dụ mục tiêu sinh viên:**
+- **Ngắn hạn (3-6 tháng):** Mua điện thoại mới 8 triệu
+- **Trung hạn (6-12 tháng):** Du lịch Đà Lạt 3 triệu
+- **Dài hạn (1-2 năm):** Quỹ khẩn cấp 15 triệu
+
+💡 **Trick:** Chia mục tiêu lớn thành milestone nhỏ để dễ đạt được!`;
+  }
+  
+  if (lowerMessage.includes('sinh viên') || lowerMessage.includes('student') || lowerMessage.includes('học sinh')) {
+    return `🎓 **Tài chính thông minh cho sinh viên:**
+
+**💰 Tối ưu thu nhập:**
+- **Part-time:** Gia sư, phục vụ, content creator
+- **Online:** Freelance thiết kế, viết content, dịch thuật
+- **Passive:** Bán đồ cũ, cho thuê sách, affiliate marketing
+
+**🏠 Tiết kiệm chi phí:**
+- **Ở:** Ở ghép, ở ký túc xá thay vì thuê riêng
+- **Ăn:** Nấu cơm tập thể với bạn, mang cơm trưa
+- **Học:** Sách photocopy, tài liệu online, thư viện
+
+**📚 Đầu tư vào bản thân:**
+- Khóa học kỹ năng (marketing, IT, ngoại ngữ)
+- Chứng chỉ nghề nghiệp
+- Networking, tham gia CLB
+
+**🎯 Lộ trình tài chính 4 năm đại học:**
+- **Năm 1:** Học quản lý tiền, tạo thói quen ghi chép
+- **Năm 2:** Xây dựng quỹ khẩn cấp 3-5 triệu
+- **Năm 3:** Bắt đầu đầu tư nhỏ, làm thêm ổn định
+- **Năm 4:** Chuẩn bị tài chính cho sau tốt nghiệp
+
+💡 **Golden rule:** Sống dưới khả năng tài chính, đầu tư vào kỹ năng!`;
+  }
+  
+  // Default comprehensive response
+  return `🤔 Cảm ơn câu hỏi thú vị của bạn về "${message}"!
+
+Tôi là chuyên gia AI về tài chính cá nhân, đặc biệt hiểu rõ về tình hình của sinh viên và người trẻ ở Việt Nam.
+
+**🎯 Tôi có thể giúp bạn:**
+- 💰 **Lập ngân sách cá nhân** phù hợp với thu nhập không ổn định
+- 🏦 **Chiến lược tiết kiệm** hiệu quả cho người trẻ
+- 📊 **Phân tích chi tiêu** và tìm ra các "lỗ hổng" tài chính
+- 📈 **Hướng dẫn đầu tư** cơ bản với vốn ít
+- 🎯 **Đặt mục tiêu tài chính** SMART và khả thi
+- 💡 **Mẹo hay** quản lý tiền bạc hàng ngày
+
+**Hãy hỏi cụ thể hơn** hoặc chọn một chủ đề ở phía trên nhé! Tôi sẽ đưa ra lời khuyên chi tiết và thực tế nhất cho bạn. 😊
+
+*Ví dụ: "Làm sao để tiết kiệm 2 triệu trong 6 tháng với lương part-time 3 triệu?"*`;
+}
+
+function addMessage(sender, content, isTyping = false) {
+  const messagesContainer = document.getElementById('chat-messages');
+  const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'mb-3';
+  messageDiv.id = messageId;
+  
+  if (sender === 'user') {
+    messageDiv.innerHTML = `
+      <div class="d-flex justify-content-end">
+        <div class="bg-primary text-white p-3 rounded-start rounded-bottom shadow-sm" style="max-width: 85%;">
+          <div class="d-flex align-items-center mb-1">
+            <span class="badge bg-light text-primary me-2">👤</span>
+            <small style="opacity: 0.9;">Bạn</small>
+          </div>
+          <div>${escapeHtml(content)}</div>
         </div>
-    </div>
+      </div>
+    `;
+  } else {
+    let displayContent = content;
+    if (isTyping) {
+      displayContent = `
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+          <span class="text-muted">${content}</span>
+        </div>
+      `;
+    } else {
+      // Format content with markdown-like styling
+      displayContent = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>')
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    }
+    
+    messageDiv.innerHTML = `
+      <div class="d-flex justify-content-start">
+        <div class="bg-white border p-3 rounded-end rounded-bottom shadow-sm" style="max-width: 90%;">
+          <div class="d-flex align-items-center mb-2">
+            <span class="badge bg-success me-2">🤖</span>
+            <small class="text-success fw-bold">AI Assistant</small>
+          </div>
+          <div class="text-dark">${displayContent}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // Add to history (except typing messages)
+  if (!isTyping) {
+    chatHistory.push({ sender, content, timestamp: new Date() });
+  }
+  
+  return messageId;
+}
 
-    <script src="/js/chat.js"></script>
-</body>
-</html>
+function removeMessage(messageId) {
+  const messageElement = document.getElementById(messageId);
+  if (messageElement) {
+    messageElement.remove();
+  }
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function clearChat() {
+  if (confirm('Bạn có chắc muốn xóa toàn bộ cuộc trò chuyện?')) {
+    document.getElementById('chat-messages').innerHTML = `
+      <div class="alert alert-info border-0">
+        <div class="d-flex align-items-start">
+          <span class="badge bg-success me-2 mt-1">🤖 AI</span>
+          <div>
+            <strong>Chat đã được xóa!</strong> Tôi sẵn sàng giúp bạn với những câu hỏi mới. 😊
+          </div>
+        </div>
+      </div>
+    `;
+    chatHistory = [];
+  }
+}
+
+// Auto-resize textarea and focus on load
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('chat-input');
+  input.focus();
+  
+  // Add clear chat button
+  const footer = document.querySelector('.card-footer');
+  if (footer) {
+    const clearBtn = document.createElement('div');
+    clearBtn.className = 'mt-2 text-center';
+    clearBtn.innerHTML = '<button class="btn btn-link btn-sm text-muted" onclick="clearChat()"><i class="bi bi-trash me-1"></i>Xóa cuộc trò chuyện</button>';
+    footer.appendChild(clearBtn);
+  }
+});
+</script>
+
+<style>
+.chat-messages {
+  scroll-behavior: smooth;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#chat-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+</style>

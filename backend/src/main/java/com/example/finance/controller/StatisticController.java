@@ -14,25 +14,25 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/statistics")
 @RequiredArgsConstructor
 public class StatisticController {
-    private final StatisticService statisticService;
+ private final StatisticService statisticService;
 
-    @GetMapping("/summary")
-    public SummaryDTO getSummary(
-            @RequestParam Long userId,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer year
-    ) {
-        System.out.println("📥 API CALLED: userId=" + userId + ", month=" + month + ", year=" + year);
-        return statisticService.getSummary(userId, month, year);
-    }
+ @GetMapping("/summary")
+ public SummaryDTO getSummary(
+ @RequestParam Long userId,
+ @RequestParam(required = false) Integer month,
+ @RequestParam(required = false) Integer year
+ ) {
+ System.out.println("📥 API CALLED: userId=" + userId + ", month=" + month + ", year=" + year);
+ return statisticService.getSummary(userId, month, year);
+ }
 
-    @GetMapping("/by-category")
-    public ResponseEntity<List<CategoryStatisticDTO>> byCategory(
-        @RequestParam Long userId,
-        @RequestParam(required = false) Integer month,
-        @RequestParam(required = false) Integer year
-    ) {
-        List<CategoryStatisticDTO> stats = statisticService.getByCategory(userId, month, year);
-        return ResponseEntity.ok(stats);
-    }
+ @GetMapping("/by-category")
+ public ResponseEntity<List<CategoryStatisticDTO>> byCategory(
+ @RequestParam Long userId,
+ @RequestParam(required = false) Integer month,
+ @RequestParam(required = false) Integer year
+ ) {
+ List<CategoryStatisticDTO> stats = statisticService.getByCategory(userId, month, year);
+ return ResponseEntity.ok(stats);
+ }
 }

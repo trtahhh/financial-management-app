@@ -17,57 +17,57 @@ import java.util.Objects;
 @Setter
 @Table(name = "Goals")
 public class Goal {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
 
-    private String name;
-    private BigDecimal targetAmount;
-    private BigDecimal currentAmount;
-    private LocalDate dueDate;
+ private String name;
+ private BigDecimal targetAmount;
+ private BigDecimal currentAmount;
+ private LocalDate dueDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
-    private User user;
-    
-    @ManyToMany
-    @JoinTable(
-        name = "Goal_Categories",
-        joinColumns = @JoinColumn(name = "goal_id"),
-        inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    @JsonIgnore
-    private Set<Category> categories = new HashSet<>();
+ @ManyToOne(fetch = FetchType.LAZY)
+ @JoinColumn(name = "user_id", nullable = false)
+ @JsonIgnore
+ private User user;
+ 
+ @ManyToMany
+ @JoinTable(
+ name = "Goal_Categories",
+ joinColumns = @JoinColumn(name = "goal_id"),
+ inverseJoinColumns = @JoinColumn(name = "category_id")
+ )
+ @JsonIgnore
+ private Set<Category> categories = new HashSet<>();
 
-    @Column(name = "status")
-    private String status; 
+ @Column(name = "status")
+ private String status; 
 
-    @Column(name ="completed_at")
-    private LocalDateTime completedAt;
-    
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
-    
-    @Column(name = "is_executed")
-    private Boolean isExecuted = false;
-    
-    @Column(name = "executed_at")
-    private LocalDateTime executedAt;
-    
-    @Column(name = "executed_transaction_id")
-    private Long executedTransactionId;
+ @Column(name ="completed_at")
+ private LocalDateTime completedAt;
+ 
+ @Column(name = "is_deleted")
+ private Boolean isDeleted = false;
+ 
+ @Column(name = "is_executed")
+ private Boolean isExecuted = false;
+ 
+ @Column(name = "executed_at")
+ private LocalDateTime executedAt;
+ 
+ @Column(name = "executed_transaction_id")
+ private Long executedTransactionId;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Goal goal = (Goal) o;
-        return Objects.equals(id, goal.id);
-    }
+ @Override
+ public boolean equals(Object o) {
+ if (this == o) return true;
+ if (o == null || getClass() != o.getClass()) return false;
+ Goal goal = (Goal) o;
+ return Objects.equals(id, goal.id);
+ }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+ @Override
+ public int hashCode() {
+ return Objects.hash(id);
+ }
 }

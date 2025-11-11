@@ -1,26 +1,44 @@
-<main class="container py-4">
-  <h2 class="mb-4">Ngân sách</h2>
-  <table id="budget-table" class="table table-striped mb-3"></table>
-  <button id="budget-add-btn" class="btn btn-success">+ Thêm ngân sách</button>
+<main class="container py-4 budget-container">
+  
+  <!-- Smart Budget Section will be added by JavaScript -->
+  
+  <div class="card">
+    <div class="card-header">
+      <h5>💰 Ngân sách hiện tại</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="budget-table" class="table table-striped">
+          <thead>
+            <tr>
+              <th>Danh mục</th>
+              <th>Số tiền</th>
+              <th>Kỳ hạn</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button id="budget-add-btn" class="btn btn-success" onclick="showAddBudgetModal()">
+        + Thêm ngân sách thủ công
+      </button>
+    </div>
+  </div>
+  
 </main>
+
+<!-- Budget Form Modal -->
 <div id="budget-modal" class="modal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="budget-form">
-        <div class="modal-header">
-          <h5 id="budget-modal-title" class="modal-title"></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
+      <div class="modal-header">
+        <h5 id="budget-modal-title" class="modal-title">Thêm ngân sách</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="budget-form">
           <input type="hidden" name="id">
-          <div class="mb-3">
-            <label class="form-label">Tháng</label>
-            <input type="number" class="form-control" name="month" min="1" max="12" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Năm</label>
-            <input type="number" class="form-control" name="year" required>
-          </div>
           <div class="mb-3">
             <label class="form-label">Danh mục</label>
             <select class="form-select" name="category_id" required>
@@ -31,13 +49,24 @@
             <label class="form-label">Số tiền</label>
             <input type="number" class="form-control" name="amount" required>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
-          <button class="btn btn-success" type="submit">Lưu</button>
-        </div>
-      </form>
+          <div class="mb-3">
+            <label class="form-label">Kỳ hạn (YYYY-MM)</label>
+            <input type="month" class="form-control" name="period" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button class="btn btn-success" type="button" onclick="saveBudget()">Lưu</button>
+      </div>
     </div>
   </div>
 </div>
-<script src="/js/budgets.js"></script>
+
+<script>
+function showAddBudgetModal() {
+  const modal = new bootstrap.Modal(document.getElementById('budget-modal'));
+  modal.show();
+}
+</script>
+<script src="/js/budgets-simple.js"></script>

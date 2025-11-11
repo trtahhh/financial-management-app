@@ -42,3 +42,26 @@ backend/src/main/resources/application-secret.properties
 target/
 **/target/
 *.class
+
+# Batch files and scripts
+*.bat
+
+# GitHub Copilot files
+.gitcopilot
+
+# Temporary JWT files
+temp_jwt.txt
+**/temp_jwt.txt
+
+# Test HTML files
+test-*.html
+**/test-*.html
+
+# Backup files
+*.backup
+**/*.backup
+
+# Markdown docs except README
+*.md
+!README.md
+!**/README.md

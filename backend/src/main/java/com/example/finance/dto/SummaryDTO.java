@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class SummaryDTO {
-    private Double totalIncome;
-    private Double totalExpense;
-    private Double balance;
+ private Double totalIncome;
+ private Double totalExpense;
+ private Double balance;
 }

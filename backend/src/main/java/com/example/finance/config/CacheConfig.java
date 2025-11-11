@@ -12,18 +12,48 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CacheConfig {
 
+    /**
+     * Configure Caffeine cache manager
+     * Using Caffeine for in-memory caching (lightweight, high-performance)
+     */
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(
+            "users",
+            "categories",
+            "budgets",
+            "transactions",
+            "wallets",
+            "achievements",
+            "leaderboard",
+            "statistics",
+            "dashboard"
+        );
+        
+        cacheManager.setCaffeine(caffeineCacheBuilder());
+        return cacheManager;
+    }
+
+    /**
+     * Caffeine cache builder with configurations
+     */
+    private Caffeine<Object, Object> caffeineCacheBuilder() {
+        return Caffeine.newBuilder()
+            .initialCapacity(100)
+            .maximumSize(1000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .recordStats();
+    }
+
+    /**
+     * Short-lived cache for frequently accessed data
+     */
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
         return Caffeine.newBuilder()
-                .expireAfterWrite(60, TimeUnit.MINUTES)
-                .initialCapacity(100)
-                .maximumSize(500);
-    }
-
-    @Bean
-    public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.setCaffeine(caffeine);
-        return cacheManager;
+            .expireAfterWrite(1, TimeUnit.MINUTES)
+            .initialCapacity(50)
+            .maximumSize(500)
+            .recordStats();
     }
 }

@@ -19,36 +19,36 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-    private final CorsConfigurationSource corsConfigurationSource;
+ private final JwtFilter jwtFilter;
+ private final CorsConfigurationSource corsConfigurationSource;
 
-    @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints (must match JwtFilter.PUBLIC_ENDPOINTS)
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/verify-email", "/api/register", 
-                               "/api/test/generate-hash", "/actuator/health", "/actuator/info",
-                               "/api/chat/status").permitAll()
-                .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
-                // Allow public access to uploaded files
-                .requestMatchers("/api/files/uploads/**").permitAll()
-                // Protected endpoints
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+ @Bean
+ SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+ http.csrf(csrf -> csrf.disable())
+ .cors(cors -> cors.configurationSource(corsConfigurationSource))
+ .authorizeHttpRequests(auth -> auth
+ // Public endpoints (must match JwtFilter.PUBLIC_ENDPOINTS)
+ .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/verify-email", "/api/register", 
+ "/api/test/generate-hash", "/api/test/send-email", "/actuator/health", "/actuator/info",
+ "/api/chat/status").permitAll()
+ .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+ // Allow public access to uploaded files
+ .requestMatchers("/api/files/uploads/**").permitAll()
+ // Protected endpoints
+ .requestMatchers("/api/**").authenticated()
+ .anyRequest().permitAll()
+ )
+ .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+ return http.build();
+ }
 
-    @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
-        return cfg.getAuthenticationManager();
-    }
+ @Bean
+ AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+ return cfg.getAuthenticationManager();
+ }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+ @Bean
+ PasswordEncoder passwordEncoder() {
+ return new BCryptPasswordEncoder();
+ }
 }

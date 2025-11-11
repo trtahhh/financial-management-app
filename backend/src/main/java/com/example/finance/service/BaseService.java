@@ -14,46 +14,46 @@ import java.util.Optional;
  * @param <DTO> DTO type
  */
 public abstract class BaseService<T, ID, DTO> {
-    
-    protected final JpaRepository<T, ID> repository;
-    
-    protected BaseService(JpaRepository<T, ID> repository) {
-        this.repository = repository;
-    }
-    
-    @Transactional(readOnly = true)
-    public List<DTO> findAll() {
-        return repository.findAll().stream()
-                .map(this::toDto)
-                .toList();
-    }
-    
-    @Transactional(readOnly = true)
-    public Optional<DTO> findById(ID id) {
-        return repository.findById(id)
-                .map(this::toDto);
-    }
-    
-    @Transactional
-    public DTO save(DTO dto) {
-        T entity = toEntity(dto);
-        T saved = repository.save(entity);
-        return toDto(saved);
-    }
-    
-    @Transactional
-    public void deleteById(ID id) {
-        if (!repository.existsById(id)) {
-            throw new CustomException("Entity not found with id: " + id);
-        }
-        repository.deleteById(id);
-    }
-    
-    public boolean existsById(ID id) {
-        return repository.existsById(id);
-    }
-    
-    // Abstract methods to be implemented by subclasses
-    protected abstract DTO toDto(T entity);
-    protected abstract T toEntity(DTO dto);
+ 
+ protected final JpaRepository<T, ID> repository;
+ 
+ protected BaseService(JpaRepository<T, ID> repository) {
+ this.repository = repository;
+ }
+ 
+ @Transactional(readOnly = true)
+ public List<DTO> findAll() {
+ return repository.findAll().stream()
+ .map(this::toDto)
+ .toList();
+ }
+ 
+ @Transactional(readOnly = true)
+ public Optional<DTO> findById(ID id) {
+ return repository.findById(id)
+ .map(this::toDto);
+ }
+ 
+ @Transactional
+ public DTO save(DTO dto) {
+ T entity = toEntity(dto);
+ T saved = repository.save(entity);
+ return toDto(saved);
+ }
+ 
+ @Transactional
+ public void deleteById(ID id) {
+ if (!repository.existsById(id)) {
+ throw new CustomException("Entity not found with id: " + id);
+ }
+ repository.deleteById(id);
+ }
+ 
+ public boolean existsById(ID id) {
+ return repository.existsById(id);
+ }
+ 
+ // Abstract methods to be implemented by subclasses
+ protected abstract DTO toDto(T entity);
+ protected abstract T toEntity(DTO dto);
 }

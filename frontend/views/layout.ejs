@@ -1,469 +1,343 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Finance AI</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/styles.css">
-  <style>
-    .sidebar {
-      min-height: 100vh;
-      background: #198754;
-      color: white;
-    }
-    .sidebar .nav-link {
-      color: rgba(255,255,255,0.8);
-      padding: 12px 20px;
-      border-radius: 0;
-    }
-    .sidebar .nav-link:hover,
-    .sidebar .nav-link.active {
-      color: white;
-      background: rgba(255,255,255,0.1);
-    }
-    .main-content {
-      margin-left: 250px;
-    }
-    @media (max-width: 768px) {
-      .main-content {
-        margin-left: 0;
-      }
-      .sidebar {
-        position: fixed;
-        z-index: 1000;
-        width: 250px;
-        transform: translateX(-100%);
-        transition: transform 0.3s;
-      }
-      .sidebar.show {
-        transform: translateX(0);
-      }
-    }
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 999;
-      display: none;
-    }
-    .overlay.show {
-      display: block;
-    }
-  </style>
-</head>
-<body>
-  <!-- Overlay for mobile -->
-  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finance AI</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="/css/styles.css"><style>
+ .sidebar {
+ min-height: 100vh;
+ background: #198754;
+ color: white;
+ }
+ .sidebar .nav-link {
+ color: rgba(255,255,255,0.8);
+ padding: 12px 20px;
+ border-radius: 0;
+ }
+ .sidebar .nav-link:hover,
+ .sidebar .nav-link.active {
+ color: white;
+ background: rgba(255,255,255,0.1);
+ }
+ .main-content {
+ margin-left: 250px;
+ }
+ @media (max-width: 768px) {
+ .main-content {
+ margin-left: 0;
+ }
+ .sidebar {
+ position: fixed;
+ z-index: 1000;
+ width: 250px;
+ transform: translateX(-100%);
+ transition: transform 0.3s;
+ }
+ .sidebar.show {
+ transform: translateX(0);
+ }
+ }
+ .overlay {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.5);
+ z-index: 999;
+ display: none;
+ }
+ .overlay.show {
+ display: block;
+ }
+ </style></head><body><!-- Overlay for mobile --><div class="overlay" id="overlay" onclick="toggleSidebar()"></div><!-- Sidebar --><nav class="sidebar position-fixed" id="sidebar"><div class="p-3"><h4 class="mb-4">Finance AI</h4><div class="user-info mb-4 p-2 bg-dark bg-opacity-25 rounded"><img id="userAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='20' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E" 
+ class="rounded-circle me-2" width="40" height="40" alt="Avatar"><div class="d-inline-block"><div id="userName" class="fw-bold">Người dùng</div><small id="userRole" class="text-light">USER</small></div></div></div><ul class="nav flex-column"><li class="nav-item"><a href="/dashboard" class="nav-link">
+ Tổng quan
+ </a></li><li class="nav-item"><a href="/profile" class="nav-link">
+ Hồ sơ
+ </a></li><li class="nav-item"><a href="/wallets" class="nav-link">
+ Ví tiền
+ </a></li><li class="nav-item"><a href="/categories" class="nav-link">
+ Danh mục
+ </a></li><li class="nav-item"><a href="/transactions" class="nav-link">
+ Giao dịch
+ </a></li><li class="nav-item"><a href="/budgets" class="nav-link">
+ Ngân sách
+ </a></li><li class="nav-item"><a href="/goals" class="nav-link">
+ Mục tiêu
+ </a></li><li class="nav-item"><a href="/chat" class="nav-link">
+ AI Chat
+ </a></li><li class="nav-item mt-3 border-top pt-3"><a href="#" class="nav-link" onclick="logout()">
+ Đăng xuất
+ </a></li></ul></nav><!-- Main Content --><div class="main-content"><!-- Top Navigation for mobile --><nav class="navbar navbar-light bg-light d-md-none"><div class="container-fluid"><button class="btn btn-outline-success" type="button" onclick="toggleSidebar()">
+ Menu
+ </button><span class="navbar-brand mb-0 h1">Finance AI</span><!-- Notification badge for mobile --><div class="ms-auto"><span id="notification-badge-mobile" class="badge bg-danger rounded-pill" style="display: none;">0</span></div></div></nav><!-- Top Navigation for desktop --><nav class="navbar navbar-light bg-light d-none d-md-block"><div class="container-fluid"><div class="ms-auto d-flex align-items-center"><!-- Notification dropdown --><div class="dropdown me-3"><button class="btn btn-outline-success position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+ Thông báo
+ <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+ 0
+ </span></button><ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style="width: 350px; max-height: 400px; overflow-y: auto;"><li><h6 class="dropdown-header">Thông báo gần đây</h6></li><li><hr class="dropdown-divider"></li><div id="notification-list"><li class="dropdown-item text-center text-muted">Đang tải...</li></div><li><hr class="dropdown-divider"></li><li><a class="dropdown-item text-center" href="#" onclick="markAllNotificationsAsRead()">Đánh dấu tất cả đã đọc</a></li></ul></div></div></div></nav><!-- Page Content --><div class="container-fluid p-4"><!-- Breadcrumb --><nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/dashboard">Trang chủ</a></li><li class="breadcrumb-item active" aria-current="page" id="currentPage">Tổng quan</li></ol></nav><!-- Main content --><%- body %></div></div><footer class="text-center p-3 mt-5 border-top text-muted" style="margin-left: 250px;">
+ Finance AI &copy; 2025
+ </footer><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script><script src="/js/auth-utils.js"></script><script src="/js/integration.js"></script><script src="/js/smart-navigation.js"></script><script>
+ // Kiểm tra authentication khi tải trang
+ document.addEventListener('DOMContentLoaded', function() {
+ const token = localStorage.getItem('authToken');
+ const currentPath = window.location.pathname;
+ 
+ // Nếu không có token và không phải trang public
+ if (!token && !isPublicPage(currentPath)) {
+ window.location.href = '/login';
+ return;
+ }
+ 
+ // Nếu có token, load thông tin user
+ if (token) {
+ loadUserInfo();
+ setActiveNavItem();
+ }
+ });
+ 
+ function isPublicPage(path) {
+ const publicPages = ['/', '/login', '/register', '/home'];
+ return publicPages.includes(path);
+ }
+ 
+ async function loadUserInfo() {
+ try {
+ const response = await fetch('/api/users/profile', {
+ headers: {
+ 'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+ }
+ });
+ 
+ if (response.ok) {
+ const data = await response.json();
+ if (data.success && data.user) {
+ const user = data.user;
+ const profile = data.profile || {};
+ 
+ // Combine user and profile data
+ const combinedData = { ...user, ...profile };
+ 
+ // Update user info globally using auth-utils
+ if (window.authUtils && window.authUtils.updateGlobalUserInfo) {
+ window.authUtils.updateGlobalUserInfo(combinedData);
+ } else {
+ // Fallback if auth-utils not loaded yet
+ document.getElementById('userName').textContent = combinedData.fullName || combinedData.username || 'Người dùng';
+ document.getElementById('userRole').textContent = combinedData.role || 'USER';
+ document.getElementById('userAvatar').src = combinedData.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='20' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E";
+ }
+ }
+ } else if (response.status === 401) {
+ // Token không hợp lệ
+ logout();
+ }
+ } catch (error) {
+ console.error('Lỗi tải thông tin user:', error);
+ }
+ }
+ 
+ function setActiveNavItem() {
+ const currentPath = window.location.pathname;
+ const navLinks = document.querySelectorAll('.sidebar .nav-link');
+ 
+ // Update breadcrumb based on current page
+ updateBreadcrumb(currentPath);
+ 
+ navLinks.forEach(link => {
+ link.classList.remove('active');
+ if (link.getAttribute('href') === currentPath) {
+ link.classList.add('active');
+ }
+ });
+ }
+ 
+ function toggleSidebar() {
+ const sidebar = document.getElementById('sidebar');
+ const overlay = document.getElementById('overlay');
+ 
+ if (window.innerWidth <= 768) {
+ sidebar.classList.toggle('show');
+ overlay.classList.toggle('show');
+ }
+ }
+ 
+ function updateBreadcrumb(currentPath) {
+ const currentPageElement = document.getElementById('currentPage');
+ if (!currentPageElement) return;
+ 
+ // Map paths to page names
+ const pageNames = {
+ '/dashboard': 'Tổng quan',
+ '/profile': 'Hồ sơ cá nhân',
+ '/wallets': 'Ví tiền',
+ '/categories': 'Danh mục',
+ '/transactions': 'Giao dịch',
+ '/budgets': 'Ngân sách',
+ '/goals': 'Mục tiêu',
+ '/chat': 'AI Chat'
+ };
+ 
+ const pageName = pageNames[currentPath] || 'Trang hiện tại';
+ currentPageElement.textContent = pageName;
+ 
+ // Update page title for better SEO
+ const pageTitle = pageNames[currentPath] || 'Trang hiện tại';
+ document.title = `Finance AI - ${pageTitle}`;
+ }
+ 
+ function logout() {
+ localStorage.removeItem('authToken');
+ localStorage.removeItem('user');
+ window.location.href = '/';
+ }
+ 
+ // Đóng sidebar khi click outside trên mobile
+ document.addEventListener('click', function(e) {
+ const sidebar = document.getElementById('sidebar');
+ const isClickInsideSidebar = sidebar.contains(e.target);
+ const isToggleButton = e.target.closest('[onclick="toggleSidebar()"]');
+ 
+ if (!isClickInsideSidebar && !isToggleButton && window.innerWidth <= 768 && sidebar.classList.contains('show')) {
+ toggleSidebar();
+ }
+ });
 
-  <!-- Sidebar -->
-  <nav class="sidebar position-fixed" id="sidebar">
-    <div class="p-3">
-      <h4 class="mb-4">Finance AI</h4>
-      <div class="user-info mb-4 p-2 bg-dark bg-opacity-25 rounded">
-        <img id="userAvatar" src="https://via.placeholder.com/40/ffffff/198754?text=U" 
-             class="rounded-circle me-2" width="40" height="40" alt="Avatar">
-        <div class="d-inline-block">
-          <div id="userName" class="fw-bold">Người dùng</div>
-          <small id="userRole" class="text-light">USER</small>
-        </div>
-      </div>
-    </div>
-    
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a href="/dashboard" class="nav-link">
-          Tổng quan
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/profile" class="nav-link">
-          Hồ sơ
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/wallets" class="nav-link">
-          Ví tiền
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/categories" class="nav-link">
-          Danh mục
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/transactions" class="nav-link">
-          Giao dịch
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/budgets" class="nav-link">
-          Ngân sách
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/goals" class="nav-link">
-          Mục tiêu
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="/chat" class="nav-link">
-          AI Chat
-        </a>
-      </li>
-      <li class="nav-item mt-3 border-top pt-3">
-        <a href="#" class="nav-link" onclick="logout()">
-          Đăng xuất
-        </a>
-      </li>
-    </ul>
-  </nav>
+ // Khởi tạo hệ thống tích hợp khi trang được tải
+ document.addEventListener('DOMContentLoaded', function() {
+ // Khởi tạo hệ thống thông báo sau khi auth-utils đã load
+ setTimeout(() => {
+ if (window.IntegrationSystem && window.IntegrationSystem.init) {
+ window.IntegrationSystem.init();
+ }
+ }, 1000);
+ });
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Top Navigation for mobile -->
-    <nav class="navbar navbar-light bg-light d-md-none">
-      <div class="container-fluid">
-        <button class="btn btn-outline-success" type="button" onclick="toggleSidebar()">
-          Menu
-        </button>
-        <span class="navbar-brand mb-0 h1">Finance AI</span>
-        <!-- Notification badge for mobile -->
-        <div class="ms-auto">
-          <span id="notification-badge-mobile" class="badge bg-danger rounded-pill" style="display: none;">0</span>
-        </div>
-      </div>
-    </nav>
-    
-    <!-- Top Navigation for desktop -->
-    <nav class="navbar navbar-light bg-light d-none d-md-block">
-      <div class="container-fluid">
-        <div class="ms-auto d-flex align-items-center">
-          <!-- Notification dropdown -->
-          <div class="dropdown me-3">
-            <button class="btn btn-outline-success position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              Thông báo
-              <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                0
-              </span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style="width: 350px; max-height: 400px; overflow-y: auto;">
-              <li><h6 class="dropdown-header">Thông báo gần đây</h6></li>
-              <li><hr class="dropdown-divider"></li>
-              <div id="notification-list">
-                <li class="dropdown-item text-center text-muted">Đang tải...</li>
-              </div>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-center" href="#" onclick="markAllNotificationsAsRead()">Đánh dấu tất cả đã đọc</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </nav>
+ // Hàm xử lý thông báo
+ async function loadNotifications() {
+ try {
+ const userId = getUserIdFromToken();
+ if (!userId) return;
 
-    <!-- Page Content -->
-    <div class="container-fluid p-4">
-      <!-- Breadcrumb -->
-      <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/dashboard">Trang chủ</a></li>
-          <li class="breadcrumb-item active" aria-current="page" id="currentPage">Tổng quan</li>
-        </ol>
-      </nav>
-      
-      <!-- Main content -->
-      <%- body %>
-    </div>
-  </div>
-  
-  <footer class="text-center p-3 mt-5 border-top text-muted" style="margin-left: 250px;">
-    Finance AI &copy; 2025
-  </footer>
+ const response = await fetch(`/api/notifications/${userId}/unread`, {
+ headers: {
+ 'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+ }
+ });
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-  <script src="/js/integration.js"></script>
-  <script src="/js/smart-navigation.js"></script>
-  
-  <script>
-    // Kiểm tra authentication khi tải trang
-    document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('authToken');
-      const currentPath = window.location.pathname;
-      
-      // Nếu không có token và không phải trang public
-      if (!token && !isPublicPage(currentPath)) {
-        window.location.href = '/login';
-        return;
-      }
-      
-      // Nếu có token, load thông tin user
-      if (token) {
-        loadUserInfo();
-        setActiveNavItem();
-      }
-    });
-    
-    function isPublicPage(path) {
-      const publicPages = ['/', '/login', '/register', '/home'];
-      return publicPages.includes(path);
-    }
-    
-    async function loadUserInfo() {
-      try {
-        const response = await fetch('/api/users/profile', {
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            const user = data.user;
-            const profile = data.profile || {};
-            
-            // Combine user and profile data
-            const combinedData = { ...user, ...profile };
-            
-            // Update user info globally using auth-utils
-            if (window.authUtils && window.authUtils.updateGlobalUserInfo) {
-              window.authUtils.updateGlobalUserInfo(combinedData);
-            } else {
-              // Fallback if auth-utils not loaded yet
-              document.getElementById('userName').textContent = combinedData.fullName || combinedData.username || 'Người dùng';
-              document.getElementById('userRole').textContent = combinedData.role || 'USER';
-              document.getElementById('userAvatar').src = combinedData.imageUrl || 'https://via.placeholder.com/40/ffffff/198754?text=U';
-            }
-          }
-        } else if (response.status === 401) {
-          // Token không hợp lệ
-          logout();
-        }
-      } catch (error) {
-        console.error('Lỗi tải thông tin user:', error);
-      }
-    }
-    
-         function setActiveNavItem() {
-       const currentPath = window.location.pathname;
-       const navLinks = document.querySelectorAll('.sidebar .nav-link');
-       
-       // Update breadcrumb based on current page
-       updateBreadcrumb(currentPath);
-       
-       navLinks.forEach(link => {
-         link.classList.remove('active');
-         if (link.getAttribute('href') === currentPath) {
-           link.classList.add('active');
-         }
-       });
-     }
-    
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('overlay');
-      
-      if (window.innerWidth <= 768) {
-        sidebar.classList.toggle('show');
-        overlay.classList.toggle('show');
-      }
-    }
-    
-         function updateBreadcrumb(currentPath) {
-       const currentPageElement = document.getElementById('currentPage');
-       if (!currentPageElement) return;
-       
-       // Map paths to page names
-       const pageNames = {
-         '/dashboard': 'Tổng quan',
-         '/profile': 'Hồ sơ cá nhân',
-         '/wallets': 'Ví tiền',
-         '/categories': 'Danh mục',
-         '/transactions': 'Giao dịch',
-         '/budgets': 'Ngân sách',
-         '/goals': 'Mục tiêu',
-         '/chat': 'AI Chat'
-       };
-       
-       const pageName = pageNames[currentPath] || 'Trang hiện tại';
-       currentPageElement.textContent = pageName;
-       
-       // Update page title for better SEO
-       const pageTitle = pageNames[currentPath] || 'Trang hiện tại';
-       document.title = `Finance AI - ${pageTitle}`;
-     }
-    
-    function logout() {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/';
-    }
-    
-    // Đóng sidebar khi click outside trên mobile
-    document.addEventListener('click', function(e) {
-      const sidebar = document.getElementById('sidebar');
-      const isClickInsideSidebar = sidebar.contains(e.target);
-      const isToggleButton = e.target.closest('[onclick="toggleSidebar()"]');
-      
-      if (!isClickInsideSidebar && !isToggleButton && window.innerWidth <= 768 && sidebar.classList.contains('show')) {
-        toggleSidebar();
-      }
-    });
+ if (response.ok) {
+ const notifications = await response.json();
+ displayNotifications(notifications);
+ }
+ } catch (error) {
+ console.error('Error loading notifications:', error);
+ }
+ }
 
-    // Khởi tạo hệ thống tích hợp khi trang được tải
-    document.addEventListener('DOMContentLoaded', function() {
-      // Khởi tạo hệ thống thông báo sau khi auth-utils đã load
-      setTimeout(() => {
-        if (window.IntegrationSystem && window.IntegrationSystem.init) {
-          window.IntegrationSystem.init();
-        }
-      }, 1000);
-    });
+ function displayNotifications(notifications) {
+ const notificationList = document.getElementById('notification-list');
+ if (!notificationList) return;
 
-    // Hàm xử lý thông báo
-    async function loadNotifications() {
-      try {
-        const userId = getUserIdFromToken();
-        if (!userId) return;
+ if (notifications.length === 0) {
+ notificationList.innerHTML = '<li class="dropdown-item text-center text-muted">Không có thông báo mới</li>';
+ return;
+ }
 
-        const response = await fetch(`/api/notifications/${userId}/unread`, {
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-          }
-        });
+ notificationList.innerHTML = notifications.map(notification => `
+ <li class="dropdown-item"><div class="d-flex align-items-start"><div class="flex-grow-1"><div class="fw-bold">${notification.message}</div><small class="text-muted">${formatDateTime(notification.createdAt)}</small></div><button class="btn btn-sm btn-outline-secondary ms-2" onclick="markNotificationAsRead(${notification.id})">
+ Đọc
+ </button></div></li>
+ `).join('');
+ }
 
-        if (response.ok) {
-          const notifications = await response.json();
-          displayNotifications(notifications);
-        }
-      } catch (error) {
-        console.error('Error loading notifications:', error);
-      }
-    }
+ function getNotificationIcon(type) {
+ const icons = {
+ 'GOAL_COMPLETED': '',
+ 'GOAL_PROGRESS': '',
+ 'GOAL_80_PERCENT': '',
+ 'GOAL_50_PERCENT': '',
+ 'GOAL_25_PERCENT': '',
+ 'OVER_BUDGET': '',
+ 'LOW_BALANCE': '',
+ 'default': 'ℹ'
+ };
+ return icons[type] || icons.default;
+ }
 
-    function displayNotifications(notifications) {
-      const notificationList = document.getElementById('notification-list');
-      if (!notificationList) return;
+ function formatDateTime(dateTimeString) {
+ const date = new Date(dateTimeString);
+ const now = new Date();
+ const diffMs = now - date;
+ const diffMins = Math.floor(diffMs / 60000);
+ const diffHours = Math.floor(diffMs / 3600000);
+ const diffDays = Math.floor(diffMs / 86400000);
 
-      if (notifications.length === 0) {
-        notificationList.innerHTML = '<li class="dropdown-item text-center text-muted">Không có thông báo mới</li>';
-        return;
-      }
+ if (diffMins < 1) return 'Vừa xong';
+ if (diffMins < 60) return `${diffMins} phút trước`;
+ if (diffHours < 24) return `${diffHours} giờ trước`;
+ if (diffDays < 7) return `${diffDays} ngày trước`;
+ return date.toLocaleDateString('vi-VN');
+ }
 
-      notificationList.innerHTML = notifications.map(notification => `
-        <li class="dropdown-item">
-          <div class="d-flex align-items-start">
-            <div class="flex-grow-1">
-              <div class="fw-bold">${notification.message}</div>
-              <small class="text-muted">${formatDateTime(notification.createdAt)}</small>
-            </div>
-            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="markNotificationAsRead(${notification.id})">
-              Đọc
-            </button>
-          </div>
-        </li>
-      `).join('');
-    }
+ async function markNotificationAsRead(notificationId) {
+ try {
+ await fetch(`/api/notifications/read/${notificationId}`, {
+ method: 'PUT',
+ headers: {
+ 'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+ }
+ });
+ 
+ // Reload notifications
+ loadNotifications();
+ 
+ // Update badge count
+ if (window.IntegrationSystem && window.IntegrationSystem.checkNotifications) {
+ window.IntegrationSystem.checkNotifications();
+ }
+ } catch (error) {
+ console.error('Error marking notification as read:', error);
+ }
+ }
 
-    function getNotificationIcon(type) {
-      const icons = {
-        'GOAL_COMPLETED': '🎉',
-        'GOAL_PROGRESS': '🎯',
-        'GOAL_80_PERCENT': '🎯',
-        'GOAL_50_PERCENT': '🎯',
-        'GOAL_25_PERCENT': '🎯',
-        'OVER_BUDGET': '⚠️',
-        'LOW_BALANCE': '💰',
-        'default': 'ℹ️'
-      };
-      return icons[type] || icons.default;
-    }
+ async function markAllNotificationsAsRead() {
+ try {
+ const userId = getUserIdFromToken();
+ if (!userId) return;
 
-    function formatDateTime(dateTimeString) {
-      const date = new Date(dateTimeString);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
+ await fetch(`/api/notifications/${userId}/read-all`, {
+ method: 'PUT',
+ headers: {
+ 'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+ }
+ });
+ 
+ // Reload notifications
+ loadNotifications();
+ 
+ // Update badge count
+ if (window.IntegrationSystem && window.IntegrationSystem.checkNotifications) {
+ window.IntegrationSystem.checkNotifications();
+ }
+ } catch (error) {
+ console.error('Error marking all notifications as read:', error);
+ }
+ }
 
-      if (diffMins < 1) return 'Vừa xong';
-      if (diffMins < 60) return `${diffMins} phút trước`;
-      if (diffHours < 24) return `${diffHours} giờ trước`;
-      if (diffDays < 7) return `${diffDays} ngày trước`;
-      return date.toLocaleDateString('vi-VN');
-    }
+ function getUserIdFromToken() {
+ try {
+ const token = localStorage.getItem('authToken');
+ if (!token) return null;
+ 
+ const payload = token.split('.')[1];
+ const decoded = JSON.parse(atob(payload));
+ return decoded.userId || null;
+ } catch (error) {
+ console.error('Error extracting userId from token:', error);
+ return null;
+ }
+ }
 
-    async function markNotificationAsRead(notificationId) {
-      try {
-        await fetch(`/api/notifications/read/${notificationId}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-          }
-        });
-        
-        // Reload notifications
-        loadNotifications();
-        
-        // Update badge count
-        if (window.IntegrationSystem && window.IntegrationSystem.checkNotifications) {
-          window.IntegrationSystem.checkNotifications();
-        }
-      } catch (error) {
-        console.error('Error marking notification as read:', error);
-      }
-    }
-
-    async function markAllNotificationsAsRead() {
-      try {
-        const userId = getUserIdFromToken();
-        if (!userId) return;
-
-        await fetch(`/api/notifications/${userId}/read-all`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-          }
-        });
-        
-        // Reload notifications
-        loadNotifications();
-        
-        // Update badge count
-        if (window.IntegrationSystem && window.IntegrationSystem.checkNotifications) {
-          window.IntegrationSystem.checkNotifications();
-        }
-      } catch (error) {
-        console.error('Error marking all notifications as read:', error);
-      }
-    }
-
-    function getUserIdFromToken() {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (!token) return null;
-        
-        const payload = token.split('.')[1];
-        const decoded = JSON.parse(atob(payload));
-        return decoded.userId || null;
-      } catch (error) {
-        console.error('Error extracting userId from token:', error);
-        return null;
-      }
-    }
-
-    // Load notifications when dropdown is opened
-    document.addEventListener('DOMContentLoaded', function() {
-      const notificationDropdown = document.getElementById('notificationDropdown');
-      if (notificationDropdown) {
-        notificationDropdown.addEventListener('click', loadNotifications);
-      }
-    });
-  </script>
-</body>
-</html>
+ // Load notifications when dropdown is opened
+ document.addEventListener('DOMContentLoaded', function() {
+ const notificationDropdown = document.getElementById('notificationDropdown');
+ if (notificationDropdown) {
+ notificationDropdown.addEventListener('click', loadNotifications);
+ }
+ });
+ </script></body></html>

@@ -24,7 +24,7 @@
       <div class="card profile-card mb-4">
         <div class="profile-header text-center">
           <div class="avatar-container">
-            <img id="profileImage" src="https://via.placeholder.com/150/198754/ffffff?text=User" 
+            <img id="profileImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Ccircle cx='75' cy='75' r='75' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='60' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E" 
                  class="rounded-circle border border-3 border-white" width="150" height="150" alt="Avatar"
                  onclick="showAvatarMenu()" style="cursor: pointer;">
             <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAndUploadAvatar(this)">
@@ -452,7 +452,7 @@
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Profile API Response:', data); // Debug log
+        // Profile data loaded successfully
         
         if (data.success && data.user) {
           const user = data.user;
@@ -564,7 +564,7 @@
           if (originalProfileData.imageUrl) {
             document.getElementById('profileImage').src = originalProfileData.imageUrl;
           } else {
-            document.getElementById('profileImage').src = 'https://via.placeholder.com/150/198754/ffffff?text=User';
+            document.getElementById('profileImage').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Ccircle cx='75' cy='75' r='75' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='60' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E";
           }
         }
       } else {
@@ -577,7 +577,7 @@
       if (originalProfileData.imageUrl) {
         document.getElementById('profileImage').src = originalProfileData.imageUrl;
       } else {
-        document.getElementById('profileImage').src = 'https://via.placeholder.com/150/198754/ffffff?text=User';
+        document.getElementById('profileImage').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Ccircle cx='75' cy='75' r='75' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='60' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E";
       }
     }
   }
@@ -621,7 +621,7 @@
         if (originalProfileData.imageUrl) {
           document.getElementById('profileImage').src = originalProfileData.imageUrl;
         } else {
-          document.getElementById('profileImage').src = 'https://via.placeholder.com/150/198754/ffffff?text=User';
+          document.getElementById('profileImage').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Ccircle cx='75' cy='75' r='75' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='60' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E";
         }
       }
     } catch (error) {
@@ -631,7 +631,7 @@
       if (originalProfileData.imageUrl) {
         document.getElementById('profileImage').src = originalProfileData.imageUrl;
       } else {
-        document.getElementById('profileImage').src = 'https://via.placeholder.com/150/198754/ffffff?text=User';
+        document.getElementById('profileImage').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Ccircle cx='75' cy='75' r='75' fill='%23198754'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='60' font-family='Arial'%3EU%3C/text%3E%3C/svg%3E";
       }
     }
   }
@@ -658,7 +658,7 @@
         profileData.imageUrl = originalProfileData.imageUrl;
       }
 
-      console.log('Sending profile data:', profileData); // Debug log
+      // Sending profile update request
 
       const response = await fetch('/api/users/profile', {
         method: 'PUT',
@@ -669,11 +669,11 @@
         body: JSON.stringify(profileData)
       });
 
-      console.log('Response status:', response.status); // Debug log
+      // Response received
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Save result:', result); // Debug log
+        // Profile saved successfully
         
         // Check if the backend returned success
         if (result && result.success === true) {

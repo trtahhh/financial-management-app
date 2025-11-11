@@ -16,77 +16,77 @@ import java.util.UUID;
 @RequestMapping("/api/files")
 public class FileController {
 
-    @Value("${app.upload.dir:uploads}")
-    private String uploadDir;
+ @Value("${app.upload.dir:uploads}")
+ private String uploadDir;
 
-    @PostMapping("/upload")
-    public ResponseEntity<ApiResponse> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest()
-                    .body(new ApiResponse(false, "File không được để trống", null));
-            }
+ @PostMapping("/upload")
+ public ResponseEntity<ApiResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+ try {
+ if (file.isEmpty()) {
+ return ResponseEntity.badRequest()
+ .body(new ApiResponse(false, "File không được để trống", null));
+ }
 
-            // Kiểm tra loại file
-            String contentType = file.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                return ResponseEntity.badRequest()
-                    .body(new ApiResponse(false, "Chỉ chấp nhận file ảnh", null));
-            }
+ // Kiểm tra loại file
+ String contentType = file.getContentType();
+ if (contentType == null || !contentType.startsWith("image/")) {
+ return ResponseEntity.badRequest()
+ .body(new ApiResponse(false, "Chỉ chấp nhận file ảnh", null));
+ }
 
-            // Tạo thư mục uploads nếu chưa có
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+ // Tạo thư mục uploads nếu chưa có
+ Path uploadPath = Paths.get(uploadDir);
+ if (!Files.exists(uploadPath)) {
+ Files.createDirectories(uploadPath);
+ }
 
-            // Tạo tên file unique
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String filename = UUID.randomUUID().toString() + extension;
+ // Tạo tên file unique
+ String originalFilename = file.getOriginalFilename();
+ String extension = "";
+ if (originalFilename != null && originalFilename.contains(".")) {
+ extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+ }
+ String filename = UUID.randomUUID().toString() + extension;
 
-            // Lưu file
-            Path filePath = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath);
+ // Lưu file
+ Path filePath = uploadPath.resolve(filename);
+ Files.copy(file.getInputStream(), filePath);
 
-            // Trả về URL của file - sử dụng /uploads để frontend có thể proxy
-            String fileUrl = "/uploads/" + filename;
-            
-            return ResponseEntity.ok(
-                new ApiResponse(true, "Upload file thành công", fileUrl)
-            );
+ // Trả về URL của file - sử dụng /uploads để frontend có thể proxy
+ String fileUrl = "/uploads/" + filename;
+ 
+ return ResponseEntity.ok(
+ new ApiResponse(true, "Upload file thành công", fileUrl)
+ );
 
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError()
-                .body(new ApiResponse(false, "Lỗi lưu file: " + e.getMessage(), null));
-        }
-    }
+ } catch (IOException e) {
+ return ResponseEntity.internalServerError()
+ .body(new ApiResponse(false, "Lỗi lưu file: " + e.getMessage(), null));
+ }
+ }
 
-    @GetMapping("/uploads/{filename:.+}")
-    public ResponseEntity<byte[]> getFile(@PathVariable String filename) {
-        try {
-            Path filePath = Paths.get(uploadDir).resolve(filename);
-            if (!Files.exists(filePath)) {
-                return ResponseEntity.notFound().build();
-            }
+ @GetMapping("/uploads/{filename:.+}")
+ public ResponseEntity<byte[]> getFile(@PathVariable String filename) {
+ try {
+ Path filePath = Paths.get(uploadDir).resolve(filename);
+ if (!Files.exists(filePath)) {
+ return ResponseEntity.notFound().build();
+ }
 
-            byte[] fileContent = Files.readAllBytes(filePath);
-            
-            // Xác định content type
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
+ byte[] fileContent = Files.readAllBytes(filePath);
+ 
+ // Xác định content type
+ String contentType = Files.probeContentType(filePath);
+ if (contentType == null) {
+ contentType = "application/octet-stream";
+ }
 
-            return ResponseEntity.ok()
-                .header("Content-Type", contentType)
-                .body(fileContent);
+ return ResponseEntity.ok()
+ .header("Content-Type", contentType)
+ .body(fileContent);
 
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
+ } catch (IOException e) {
+ return ResponseEntity.internalServerError().build();
+ }
+ }
 }

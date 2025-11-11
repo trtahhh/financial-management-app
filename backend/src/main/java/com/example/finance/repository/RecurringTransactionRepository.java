@@ -11,12 +11,12 @@ import java.util.List;
 
 @Repository
 public interface RecurringTransactionRepository extends JpaRepository<RecurringTransaction, Long> {
-    
-    List<RecurringTransaction> findByUserIdAndIsActiveTrue(Long userId);
-    
-    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.nextExecution <= :date AND rt.isActive = true")
-    List<RecurringTransaction> findDueTransactions(@Param("date") LocalDate date);
-    
-    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user.id = :userId AND rt.isActive = true")
-    List<RecurringTransaction> findActiveByUserId(@Param("userId") Long userId);
+ 
+ List<RecurringTransaction> findByUserIdAndIsActiveTrue(Long userId);
+ 
+ @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.nextExecution <= :date AND rt.isActive = true")
+ List<RecurringTransaction> findDueTransactions(@Param("date") LocalDate date);
+ 
+ @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user.id = :userId AND rt.isActive = true")
+ List<RecurringTransaction> findActiveByUserId(@Param("userId") Long userId);
 }

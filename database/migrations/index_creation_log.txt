@@ -1,0 +1,62 @@
+Msg 156, Level 15, State 1, Server MSI\SQLEXPRESS, Line 8
+Incorrect syntax near the keyword 'IF'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 8
+Incorrect syntax near 'idx_transactions_user_date'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 13
+Incorrect syntax near 'idx_transactions_user_category'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 18
+Incorrect syntax near 'idx_transactions_user_wallet'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 23
+Incorrect syntax near 'idx_transactions_user_type_date'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 28
+Incorrect syntax near 'idx_transactions_user_amount'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 33
+Incorrect syntax near 'idx_transactions_user_created'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 42
+Incorrect syntax near 'idx_budgets_user_period'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 47
+Incorrect syntax near 'idx_budgets_user_category'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 52
+Incorrect syntax near 'idx_budgets_active'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 61
+Incorrect syntax near 'idx_goals_user_status'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 66
+Incorrect syntax near 'idx_goals_user_deadline'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 71
+Incorrect syntax near 'idx_goals_user_progress'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 80
+Incorrect syntax near 'idx_wallets_user_active'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 85
+Incorrect syntax near 'idx_wallets_user_type'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 94
+Incorrect syntax near 'idx_categories_user_active'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 99
+Incorrect syntax near 'idx_categories_user_type'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 108
+Incorrect syntax near 'idx_notifications_user_unread'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 113
+Incorrect syntax near 'idx_notifications_user_type'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 118
+Incorrect syntax near 'idx_notifications_scheduled'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 127
+Incorrect syntax near 'idx_user_gamification_points'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 131
+Incorrect syntax near 'idx_user_gamification_streak'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 135
+Incorrect syntax near 'idx_user_achievements_user'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 139
+Incorrect syntax near 'idx_user_achievements_unnotified'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 144
+Incorrect syntax near 'idx_challenges_active'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 149
+Incorrect syntax near 'idx_user_challenges_user'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 157
+Incorrect syntax near 'idx_users_email'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 161
+Incorrect syntax near 'idx_users_username'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 165
+Incorrect syntax near 'idx_users_active'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 173
+Incorrect syntax near 'idx_transactions_summary'.
+Msg 102, Level 15, State 1, Server MSI\SQLEXPRESS, Line 179
+Incorrect syntax near 'idx_budgets_performance'.

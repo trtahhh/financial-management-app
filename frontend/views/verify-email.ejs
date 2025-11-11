@@ -1,235 +1,206 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - Financial Management App</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .verification-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            animation: slideUp 0.6s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .verification-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 40px;
-            color: white;
-        }
-        
-        .verification-title {
-            color: #333;
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .verification-message {
-            color: #666;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        
-        .verification-form {
-            margin-top: 30px;
-        }
-        
-        .verification-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .verification-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-        }
-        
-        .verification-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .status-message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-        
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status-loading {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .back-to-login {
-            margin-top: 30px;
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        
-        .back-to-login:hover {
-            color: #764ba2;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="verification-container">
-        <div class="verification-icon">🎯</div>
-        <h1 class="verification-title">Xác thực Email</h1>
-        <p class="verification-message">
-            Chúng tôi đã gửi link xác thực đến email của bạn.<br>
-            Vui lòng nhấn nút bên dưới để xác thực tài khoản.
-        </p>
-        
-        <div class="verification-form">
-            <button id="verifyBtn" class="verification-button" onclick="verifyEmail()">
-                <span id="btnText">Xác thực Email</span>
-                <span id="btnSpinner" class="loading-spinner" style="display: none;"></span>
-            </button>
-            
-            <div id="statusMessage" class="status-message" style="display: none;"></div>
-        </div>
-        
-        <a href="/login" class="back-to-login">← Quay lại trang đăng nhập</a>
-    </div>
-
-    <script>
-        const token = '<%= token %>';
-        
-        async function verifyEmail() {
-            const btn = document.getElementById('verifyBtn');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
-            const statusMessage = document.getElementById('statusMessage');
-            
-            // Disable button và hiển thị loading
-            btn.disabled = true;
-            btnText.textContent = 'Đang xác thực...';
-            btnSpinner.style.display = 'inline-block';
-            statusMessage.style.display = 'none';
-            
-            try {
-                const response = await fetch('/api/auth/verify-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ token: token })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus('success', '🎉 Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.');
-                    btnText.textContent = 'Đã xác thực';
-                    btn.style.background = '#28a745';
-                    
-                    // Redirect sau 3 giây
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 3000);
-                } else {
-                    showStatus('error', '❌ ' + (result.message || 'Xác thực thất bại. Vui lòng thử lại.'));
-                    btn.disabled = false;
-                    btnText.textContent = 'Thử lại';
-                    btnSpinner.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Verification error:', error);
-                showStatus('error', '❌ Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.');
-                btn.disabled = false;
-                btnText.textContent = 'Thử lại';
-                btnSpinner.style.display = 'none';
-            }
-        }
-        
-        function showStatus(type, message) {
-            const statusMessage = document.getElementById('statusMessage');
-            statusMessage.className = `status-message status-${type}`;
-            statusMessage.textContent = message;
-            statusMessage.style.display = 'block';
-        }
-        
-        // Auto-verify khi load trang (optional)
-        // window.onload = () => {
-        //     setTimeout(verifyEmail, 1000);
-        // };
-    </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title><%= title %> - Financial Management App</title><link rel="stylesheet" href="/css/styles.css"><style>
+ body {
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+ margin: 0;
+ padding: 0;
+ min-height: 100vh;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+ 
+ .verification-container {
+ background: white;
+ border-radius: 20px;
+ box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+ padding: 40px;
+ text-align: center;
+ max-width: 500px;
+ width: 90%;
+ animation: slideUp 0.6s ease-out;
+ }
+ 
+ @keyframes slideUp {
+ from {
+ opacity: 0;
+ transform: translateY(30px);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0);
+ }
+ }
+ 
+ .verification-icon {
+ width: 80px;
+ height: 80px;
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ margin: 0 auto 20px;
+ font-size: 40px;
+ color: white;
+ }
+ 
+ .verification-title {
+ color: #333;
+ font-size: 28px;
+ font-weight: 600;
+ margin-bottom: 15px;
+ }
+ 
+ .verification-message {
+ color: #666;
+ font-size: 16px;
+ line-height: 1.6;
+ margin-bottom: 30px;
+ }
+ 
+ .verification-form {
+ margin-top: 30px;
+ }
+ 
+ .verification-button {
+ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+ color: white;
+ border: none;
+ padding: 15px 40px;
+ border-radius: 50px;
+ font-size: 16px;
+ font-weight: 600;
+ cursor: pointer;
+ transition: all 0.3s ease;
+ box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+ }
+ 
+ .verification-button:hover {
+ transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+ }
+ 
+ .verification-button:disabled {
+ background: #ccc;
+ cursor: not-allowed;
+ transform: none;
+ box-shadow: none;
+ }
+ 
+ .status-message {
+ margin-top: 20px;
+ padding: 15px;
+ border-radius: 10px;
+ font-weight: 500;
+ }
+ 
+ .status-success {
+ background: #d4edda;
+ color: #155724;
+ border: 1px solid #c3e6cb;
+ }
+ 
+ .status-error {
+ background: #f8d7da;
+ color: #721c24;
+ border: 1px solid #f5c6cb;
+ }
+ 
+ .status-loading {
+ background: #d1ecf1;
+ color: #0c5460;
+ border: 1px solid #bee5eb;
+ }
+ 
+ .back-to-login {
+ margin-top: 30px;
+ color: #667eea;
+ text-decoration: none;
+ font-weight: 500;
+ transition: color 0.3s ease;
+ }
+ 
+ .back-to-login:hover {
+ color: #764ba2;
+ }
+ 
+ .loading-spinner {
+ display: inline-block;
+ width: 20px;
+ height: 20px;
+ border: 3px solid #ffffff;
+ border-radius: 50%;
+ border-top-color: transparent;
+ animation: spin 1s ease-in-out infinite;
+ margin-right: 10px;
+ }
+ 
+ @keyframes spin {
+ to { transform: rotate(360deg); }
+ }
+ </style></head><body><div class="verification-container"><div class="verification-icon"></div><h1 class="verification-title">Xác thực Email</h1><p class="verification-message">
+ Chúng tôi đã gửi link xác thực đến email của bạn.<br>
+ Vui lòng nhấn nút bên dưới để xác thực tài khoản.
+ </p><div class="verification-form"><button id="verifyBtn" class="verification-button" onclick="verifyEmail()"><span id="btnText">Xác thực Email</span><span id="btnSpinner" class="loading-spinner" style="display: none;"></span></button><div id="statusMessage" class="status-message" style="display: none;"></div></div><a href="/login" class="back-to-login"> Quay lại trang đăng nhập</a></div><script>
+ const token = '<%= token %>';
+ 
+ async function verifyEmail() {
+ const btn = document.getElementById('verifyBtn');
+ const btnText = document.getElementById('btnText');
+ const btnSpinner = document.getElementById('btnSpinner');
+ const statusMessage = document.getElementById('statusMessage');
+ 
+ // Disable button và hiển thị loading
+ btn.disabled = true;
+ btnText.textContent = 'Đang xác thực...';
+ btnSpinner.style.display = 'inline-block';
+ statusMessage.style.display = 'none';
+ 
+ try {
+ const response = await fetch('/api/auth/verify-email', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ },
+ body: JSON.stringify({ token: token })
+ });
+ 
+ const result = await response.json();
+ 
+ if (result.success) {
+ showStatus('success', ' Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.');
+ btnText.textContent = 'Đã xác thực';
+ btn.style.background = '#28a745';
+ 
+ // Redirect sau 3 giây
+ setTimeout(() => {
+ window.location.href = '/login';
+ }, 3000);
+ } else {
+ showStatus('error', ' ' + (result.message || 'Xác thực thất bại. Vui lòng thử lại.'));
+ btn.disabled = false;
+ btnText.textContent = 'Thử lại';
+ btnSpinner.style.display = 'none';
+ }
+ } catch (error) {
+ console.error('Verification error:', error);
+ showStatus('error', ' Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.');
+ btn.disabled = false;
+ btnText.textContent = 'Thử lại';
+ btnSpinner.style.display = 'none';
+ }
+ }
+ 
+ function showStatus(type, message) {
+ const statusMessage = document.getElementById('statusMessage');
+ statusMessage.className = `status-message status-${type}`;
+ statusMessage.textContent = message;
+ statusMessage.style.display = 'block';
+ }
+ 
+ // Auto-verify khi load trang (optional)
+ // window.onload = () => {
+ // setTimeout(verifyEmail, 1000);
+ // };
+ </script></body></html>

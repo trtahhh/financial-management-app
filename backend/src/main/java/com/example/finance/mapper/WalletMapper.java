@@ -12,20 +12,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class WalletMapper {
-    
-    @Autowired
-    protected UserRepository userRepository;
-    
-    @Mapping(target = "userId", source = "user.id")
-    public abstract WalletDTO toDto(Wallet entity);
+ 
+ @Autowired
+ protected UserRepository userRepository;
+ 
+ @Mapping(target = "userId", source = "user.id")
+ public abstract WalletDTO toDto(Wallet entity);
 
-    @Mapping(target = "user", source = "userId", qualifiedByName = "userFromId")
-    public abstract Wallet toEntity(WalletDTO dto);
+ @Mapping(target = "user", source = "userId", qualifiedByName = "userFromId")
+ public abstract Wallet toEntity(WalletDTO dto);
 
-    @Named("userFromId")
-    protected User userFromId(Long id) {
-        if (id == null) return null;
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-    }
+ @Named("userFromId")
+ protected User userFromId(Long id) {
+ if (id == null) return null;
+ return userRepository.findById(id)
+ .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+ }
 }
