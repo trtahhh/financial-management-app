@@ -65,3 +65,17 @@ test-*.html
 *.md
 !README.md
 !**/README.md
+
+# Python virtual environments
+venv/
+env/
+.venv/
+**/venv/
+**/env/
+ai-service/venv/
+ai-service/.venv/
+
+# AI Service data files (too large for git)
+ai-service/compressed/
+ai-service/simple_chroma_db/
+ai-service/massive_vietnamese_dataset*.json
