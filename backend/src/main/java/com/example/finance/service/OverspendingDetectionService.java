@@ -11,6 +11,7 @@ import com.example.finance.repository.BudgetRepository;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,6 @@ public class OverspendingDetectionService {
         }
         
         // Lấy budget của category này trong tháng hiện tại
-        YearMonth currentMonth = YearMonth.now();
         List<Budget> budgets = budgetRepository.findByUserId(userId).stream()
             .filter(b -> b.getCategory() != null && b.getCategory().getId().equals(category.getId()))
             .filter(b -> isCurrentMonth(b))
@@ -60,7 +60,7 @@ public class OverspendingDetectionService {
             .add(newTransaction.getAmount());
         
         BigDecimal budgetAmount = budget.getAmount();
-        double spentPercentage = totalSpent.divide(budgetAmount, 4, BigDecimal.ROUND_HALF_UP)
+        double spentPercentage = totalSpent.divide(budgetAmount, 4, RoundingMode.HALF_UP)
             .multiply(new BigDecimal(100)).doubleValue();
         
         // Phân tích mức độ overspending
@@ -137,7 +137,7 @@ public class OverspendingDetectionService {
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             
-            double percentage = totalSpent.divide(budget.getAmount(), 4, BigDecimal.ROUND_HALF_UP)
+            double percentage = totalSpent.divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal(100)).doubleValue();
             
             if (percentage >= 60) { // Chỉ hiện alert khi >= 60%

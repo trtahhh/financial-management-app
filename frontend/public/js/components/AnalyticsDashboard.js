@@ -63,9 +63,9 @@ class AnalyticsDashboard {
             </div>
             
             <div class="dashboard-actions">
-              <button class="btn-export" id="btn-export-report">📊 Xuất báo cáo</button>
-              <button class="btn-compare" id="btn-compare-periods">🔄 So sánh</button>
-              <button class="btn-forecast" id="btn-show-forecast">🔮 Dự báo</button>
+              <button class="btn-export" id="btn-export-report"> Xuất báo cáo</button>
+              <button class="btn-compare" id="btn-compare-periods"> So sánh</button>
+              <button class="btn-forecast" id="btn-show-forecast"> Dự báo</button>
             </div>
           </div>
         </div>
@@ -92,7 +92,7 @@ class AnalyticsDashboard {
     return `
       <div class="summary-cards">
         <div class="summary-card total-spending">
-          <div class="card-icon">💰</div>
+          <div class="card-icon"></div>
           <div class="card-content">
             <h3>Tổng chi tiêu</h3>
             <p class="amount" id="total-spending">--</p>
@@ -101,7 +101,7 @@ class AnalyticsDashboard {
         </div>
 
         <div class="summary-card avg-transaction">
-          <div class="card-icon">📊</div>
+          <div class="card-icon"></div>
           <div class="card-content">
             <h3>TB giao dịch</h3>
             <p class="amount" id="avg-transaction">--</p>
@@ -110,7 +110,7 @@ class AnalyticsDashboard {
         </div>
 
         <div class="summary-card top-category">
-          <div class="card-icon">🏆</div>
+          <div class="card-icon"></div>
           <div class="card-content">
             <h3>Danh mục hàng đầu</h3>
             <p class="category" id="top-category">--</p>
@@ -119,7 +119,7 @@ class AnalyticsDashboard {
         </div>
 
         <div class="summary-card budget-status">
-          <div class="card-icon">🎯</div>
+          <div class="card-icon"></div>
           <div class="card-content">
             <h3>Trạng thái ngân sách</h3>
             <p class="status" id="budget-status">--</p>

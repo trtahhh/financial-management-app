@@ -182,15 +182,15 @@ class SmartNotificationSystem {
     let title, message, priority;
     
     if (usage >= 1.0) {
-      title = '🚨 Vượt ngân sách!';
+      title = ' Vượt ngân sách!';
       message = `Đã chi ${formatCurrency(spent)} cho ${categoryName}, vượt ${formatCurrency(spent - budget)}`;
       priority = 'high';
     } else if (usage >= 0.9) {
-      title = '⚠️ Sắp hết ngân sách';
+      title = ' Sắp hết ngân sách';
       message = `Đã chi ${(usage * 100).toFixed(0)}% ngân sách ${categoryName}`;
       priority = 'medium';
     } else if (usage >= 0.8) {
-      title = '⚡ Cảnh báo ngân sách';
+      title = ' Cảnh báo ngân sách';
       message = `Đã chi ${(usage * 100).toFixed(0)}% ngân sách ${categoryName}`;
       priority = 'low';
     }
@@ -218,7 +218,7 @@ class SmartNotificationSystem {
       id: `achievement-${achievement.id}`,
       type: 'achievement',
       category: 'gamification',
-      title: '🏆 Thành tích mới!',
+      title: ' Thành tích mới!',
       message: `Bạn đã đạt được: ${achievement.name}`,
       priority: 'medium',
       duration: 8000,
@@ -236,7 +236,7 @@ class SmartNotificationSystem {
       id: `insight-${Date.now()}`,
       type: 'insight',
       category: 'analytics',
-      title: '💡 Thông tin chi tiêu',
+      title: ' Thông tin chi tiêu',
       message: insight.message,
       priority: 'low',
       actions: [
@@ -252,7 +252,7 @@ class SmartNotificationSystem {
       id: `reminder-${reminder.id}`,
       type: 'reminder',
       category: 'reminder',
-      title: '📅 Nhắc nhở',
+      title: ' Nhắc nhở',
       message: reminder.message,
       priority: reminder.priority || 'medium',
       actions: [
@@ -730,13 +730,13 @@ class SmartNotificationSystem {
   // Utility Methods
   getNotificationIcon(notification) {
     const icons = {
-      budget_warning: '⚠️',
-      achievement: '🏆',
-      insight: '💡',
-      reminder: '📅',
-      system: '🔔',
-      error: '❌',
-      success: '✅'
+      budget_warning: '',
+      achievement: '',
+      insight: '',
+      reminder: '',
+      system: '',
+      error: '',
+      success: ''
     };
     
     return icons[notification.type] || icons.system;

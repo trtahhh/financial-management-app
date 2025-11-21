@@ -238,7 +238,7 @@ class StreakTracker {
     notification.className = 'streak-notification';
     notification.innerHTML = `
       <div class="streak-notification-content">
-        <div class="streak-fire">🔥</div>
+        <div class="streak-fire"></div>
         <div class="streak-details">
           <h3 class="streak-title">Chuỗi ngày ${streak}!</h3>
           <p class="streak-text">${text}</p>

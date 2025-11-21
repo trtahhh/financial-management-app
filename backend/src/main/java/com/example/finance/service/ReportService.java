@@ -19,8 +19,6 @@ public class ReportService {
 
  private final TransactionRepository transactionRepository;
  private final BudgetRepository budgetRepository;
- private final CategoryRepository categoryRepository;
- private final WalletRepository walletRepository;
  private final UserRepository userRepository;
 
  public Long getUserIdByUsername(String username) {

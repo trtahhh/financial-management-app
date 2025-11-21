@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 public class EmailNotificationService {
 
  private final EmailService emailService;
- private final GoalService goalService;
  private final UserService userService;
 
  @Value("${notification.email.enabled:true}")

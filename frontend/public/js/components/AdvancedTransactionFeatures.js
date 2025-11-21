@@ -649,8 +649,8 @@ class AdvancedTransactionFeatures {
         
         <div class="modal-content">
           <div class="import-summary">
-            <p class="success">✅ Đã import thành công: ${imported} giao dịch</p>
-            ${errors.length > 0 ? `<p class="error">❌ Lỗi: ${errors.length} dòng</p>` : ''}
+            <p class="success"> Đã import thành công: ${imported} giao dịch</p>
+            ${errors.length > 0 ? `<p class="error"> Lỗi: ${errors.length} dòng</p>` : ''}
           </div>
           
           ${errors.length > 0 ? `

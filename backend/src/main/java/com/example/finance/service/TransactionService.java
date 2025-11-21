@@ -54,6 +54,7 @@ public class TransactionService {
  private final NotificationService notificationService;
  private final BudgetAlertService budgetAlertService;
  private final BudgetService budgetService;
+ private final AICategorizationService aiCategorizationService;
 
  @Transactional
  public TransactionDTO save(TransactionDTO dto, MultipartFile file) {
@@ -142,6 +143,26 @@ public class TransactionService {
  defaultWallet = walletRepo.save(defaultWallet);
  }
  entity.setWallet(defaultWallet);
+ }
+
+ // AI Auto-Categorization: If category not provided, use AI to suggest
+ if (dto.getCategoryId() == null && dto.getNote() != null && !dto.getNote().trim().isEmpty()) {
+ try {
+ log.info("🤖 AI categorizing transaction: '{}', amount: {}", dto.getNote(), dto.getAmount());
+ AICategorizationService.CategorizationResult aiResult = 
+ aiCategorizationService.categorizeExpense(
+ dto.getNote(), 
+ dto.getAmount().doubleValue(), 
+ dto.getUserId()
+ );
+ dto.setCategoryId(aiResult.getCategory());
+ log.info("✅ AI suggested category: {} ({}), confidence: {:.2f}%, reasoning: {}",
+ aiResult.getCategory(), aiResult.getCategoryName(), 
+ aiResult.getConfidence() * 100, aiResult.getReasoning());
+ } catch (Exception e) {
+ log.warn("⚠️ AI categorization failed, transaction will be created without category: {}", e.getMessage());
+ // Continue without category if AI fails
+ }
  }
 
  if (dto.getCategoryId() != null) {

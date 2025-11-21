@@ -21,9 +21,6 @@ public class SmartBudgetService {
     @Autowired
     private TransactionRepository transactionRepository;
     
-    @Autowired
-    private AICategorizationService aiCategorizationService;
-    
     // Student financial health thresholds
     private final Map<String, Double> studentBudgetRatios = new HashMap<String, Double>() {{
         put("food", 0.25);          // 25% cho ăn uống
@@ -392,8 +389,7 @@ public class SmartBudgetService {
                                                                    Double monthlyIncome) {
         List<BudgetRecommendation> recommendations = new ArrayList<>();
         
-        // Emergency fund recommendation
-        double emergencyFundTarget = monthlyIncome * 3; // 3 months
+        // Emergency fund recommendation - 3 months worth of income
         recommendations.add(new BudgetRecommendation(
             "emergency_fund",
             "Quỹ khẩn cấp",

@@ -164,9 +164,8 @@ app.get('/wallets', (req, res) => {
   res.render('wallets', { title: 'Ví tiền' });
 });
 
-app.get('/categories', (req, res) => {
-  res.render('categories', { title: 'Danh mục' });
-});
+// REMOVED: Category management - AI handles categorization automatically
+// app.get('/categories', ...) - Route disabled
 
 app.get('/profile', (req, res) => {
   res.render('profile', { title: 'Hồ sơ' });
@@ -178,7 +177,7 @@ app.get('/chat', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Frontend server running: http://localhost:${PORT}`);
-  console.log(`� EJS Mode: Serving templates from views/`);
-  console.log(`⚡ Health check: http://localhost:${PORT}/health`);
+  console.log(` Frontend server running: http://localhost:${PORT}`);
+  console.log(` EJS Mode: Serving templates from views/`);
+  console.log(` Health check: http://localhost:${PORT}/health`);
 });

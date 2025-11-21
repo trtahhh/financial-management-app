@@ -63,10 +63,131 @@ document.addEventListener('DOMContentLoaded', function() {
  dateInput.value = new Date().toISOString().split('T')[0];
  }
 
- // Auto-categorize event listeners moved to transactions-simple.js
+ // Add AI auto-categorize feature
+ addAIAutoCategorize();
 });
 
-// triggerAutoCategorize function moved to transactions-simple.js (direct API call, no popup)
+// ============= AI AUTO-CATEGORIZE FEATURE =============
+function addAIAutoCategorize() {
+ const noteInput = document.querySelector('input[name="note"], textarea[name="note"]');
+ const amountInput = document.querySelector('input[name="amount"]');
+ 
+ if (!noteInput || !amountInput) return;
+ 
+ let autoCategorizeTimeout;
+ 
+ noteInput.addEventListener('input', function() {
+ clearTimeout(autoCategorizeTimeout);
+ const description = this.value.trim();
+ const amount = parseFloat(amountInput.value);
+ 
+ if (description.length > 3 && amount > 0) {
+ autoCategorizeTimeout = setTimeout(() => {
+ triggerAutoCategorize(description, amount);
+ }, 1500);
+ }
+ });
+ 
+ amountInput.addEventListener('blur', function() {
+ const description = noteInput.value.trim();
+ const amount = parseFloat(this.value);
+ 
+ if (description.length > 3 && amount > 0) {
+ setTimeout(() => triggerAutoCategorize(description, amount), 500);
+ }
+ });
+}
+
+async function triggerAutoCategorize(description, amount) {
+ const categoryIdInput = document.getElementById('suggestedCategoryId');
+ const categoryNameInput = document.getElementById('suggestedCategoryName');
+ const categoryHint = document.getElementById('categoryHint');
+ const categoryConfidence = document.getElementById('categoryConfidence');
+ 
+ if (!categoryIdInput || !categoryNameInput) return;
+ 
+ // Show loading state
+ const originalPlaceholder = categoryNameInput.placeholder;
+ categoryNameInput.placeholder = 'AI đang phân tích...';
+ categoryNameInput.style.backgroundColor = '#fff3cd';
+ 
+ try {
+ const token = localStorage.getItem('authToken');
+ const response = await fetch('http://localhost:8080/api/ai/auto-categorize', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'Authorization': token ? `Bearer ${token}` : ''
+ },
+ body: JSON.stringify({
+ description: description,
+ amount: amount
+ })
+ });
+ 
+ if (!response.ok) throw new Error('AI service error');
+ 
+ const result = await response.json();
+ console.log('🤖 AI Response:', result);
+ 
+ if (result.success && result.primaryCategory) {
+ const category = result.primaryCategory;
+ console.log('📂 Primary Category:', category);
+ 
+ if (category.id) {
+ // Set hidden input value
+ categoryIdInput.value = category.id;
+ console.log('✅ Set categoryId:', category.id);
+ 
+ // Set display name
+ categoryNameInput.value = category.name;
+ categoryNameInput.style.backgroundColor = '#d1e7dd';
+ 
+ // Show confidence badge
+ if (categoryConfidence) {
+ categoryConfidence.style.display = 'block';
+ categoryConfidence.innerHTML = `<i class="fas fa-check-circle text-success"></i> ${category.confidence.toFixed(0)}%`;
+ }
+ 
+ // Update hint
+ if (categoryHint) {
+ categoryHint.textContent = `AI đã phân loại tự động với độ tin cậy ${category.confidence.toFixed(0)}%`;
+ categoryHint.className = 'text-success';
+ }
+ 
+ console.log(' Auto-categorized:', category.name, '(ID:', category.id, ')');
+ 
+ setTimeout(() => {
+ categoryNameInput.style.backgroundColor = '#f8f9fa';
+ }, 2000);
+ }
+ } else {
+ // AI không tìm thấy category phù hợp
+ categoryNameInput.placeholder = 'AI chưa tìm thấy danh mục phù hợp';
+ categoryNameInput.style.backgroundColor = '#f8d7da';
+ 
+ if (categoryHint) {
+ categoryHint.textContent = 'Vui lòng nhập mô tả chi tiết hơn để AI có thể phân loại';
+ categoryHint.className = 'text-danger';
+ }
+ 
+ console.log(' Could not find category ID for:', description);
+ 
+ setTimeout(() => {
+ categoryNameInput.placeholder = originalPlaceholder;
+ categoryNameInput.style.backgroundColor = '#f8f9fa';
+ if (categoryHint) {
+ categoryHint.textContent = 'AI sẽ tự động phân loại sau khi bạn nhập ghi chú';
+ categoryHint.className = 'text-muted';
+ }
+ }, 3000);
+ }
+ } catch (error) {
+ console.error('Auto-categorize error:', error);
+ categoryNameInput.placeholder = originalPlaceholder;
+ categoryNameInput.style.backgroundColor = '#f8f9fa';
+ }
+}
 
 function loadTransactions() {
  const url = `http://localhost:8080/api/transactions`;
@@ -301,6 +422,27 @@ function showAddModal() {
  editingTransaction = null;
  document.getElementById('modalTitle').textContent = 'Thêm giao dịch';
  document.getElementById('tx-form').reset();
+ 
+ // Reset AI suggestion fields
+ const categoryIdInput = document.getElementById('suggestedCategoryId');
+ const categoryNameInput = document.getElementById('suggestedCategoryName');
+ const categoryHint = document.getElementById('categoryHint');
+ const categoryConfidence = document.getElementById('categoryConfidence');
+ 
+ if (categoryIdInput) categoryIdInput.value = '';
+ if (categoryNameInput) {
+ categoryNameInput.value = '';
+ categoryNameInput.placeholder = 'Nhập ghi chú để AI gợi ý danh mục...';
+ categoryNameInput.style.backgroundColor = '#f8f9fa';
+ }
+ if (categoryHint) {
+ categoryHint.textContent = 'AI sẽ tự động phân loại sau khi bạn nhập ghi chú';
+ categoryHint.className = 'text-muted';
+ }
+ if (categoryConfidence) {
+ categoryConfidence.style.display = 'none';
+ categoryConfidence.innerHTML = '';
+ }
  
  // Set default date to today
  const dateInput = document.querySelector('input[name="date"]');
@@ -565,13 +707,6 @@ function saveTransaction() {
  return;
  }
  
- // Check if AI has suggested a category
- const suggestedCategoryId = document.getElementById('suggestedCategoryId');
- if (!suggestedCategoryId || !suggestedCategoryId.value) {
- showAlert('danger', 'Vui lòng nhập ghi chú để AI gợi ý danh mục');
- return;
- }
- 
  const amount = parseFloat(formData.get('amount'));
  if (!amount || amount <= 0) {
  showAlert('danger', 'Vui lòng nhập số tiền hợp lệ (lớn hơn 0)');
@@ -579,20 +714,34 @@ function saveTransaction() {
  }
  
  // Get categoryId from hidden input (AI suggested)
- const categoryId = suggestedCategoryId.value;
+ const suggestedCategoryId = document.getElementById('suggestedCategoryId');
+ const categoryId = suggestedCategoryId ? suggestedCategoryId.value : null;
+ 
+ console.log('🔍 Debug - categoryId from input:', categoryId);
+ console.log('🔍 Debug - suggestedCategoryId element:', suggestedCategoryId);
+ 
+ if (!categoryId) {
+ showAlert('danger', 'Vui lòng nhập ghi chú để AI có thể gợi ý danh mục');
+ return;
+ }
  
  // Wallet selection
  const walletSelect = form.querySelector('select[name="wallet"]');
  const selectedWallet = walletSelect ? walletSelect.options[walletSelect.selectedIndex] : null;
  const walletId = selectedWallet ? (selectedWallet.dataset.walletId || selectedWallet.value) : null;
  
+ if (!walletId) {
+ showAlert('danger', 'Vui lòng chọn ví');
+ return;
+ }
+ 
  const transactionData = {
  date: formData.get('date'),
  type: formData.get('type') === 'income' ? 'income' : 'expense',
- categoryId: categoryId ? parseInt(categoryId) : null,
+ categoryId: parseInt(categoryId),
  amount: amount,
  note: formData.get('note') || '',
- walletId: walletId ? parseInt(walletId) : null
+ walletId: parseInt(walletId)
  };
  
  console.log(" Sending transaction data:", transactionData);
@@ -942,12 +1091,12 @@ async function triggerAutoCategorize(description, amount) {
  
  const result = await response.json();
  
- console.log('🤖 AI Response:', result);
+ console.log(' AI Response:', result);
  
  if (result.success && result.suggestions && result.suggestions.length > 0) {
  const topSuggestion = result.suggestions[0];
  
- console.log('🎯 Top Suggestion:', topSuggestion);
+ console.log(' Top Suggestion:', topSuggestion);
  
  // Try different field name variations
  const categoryName = topSuggestion.categoryName || topSuggestion.name || 'Không xác định';
@@ -963,9 +1112,9 @@ async function triggerAutoCategorize(description, amount) {
  );
  if (matchedCategory) {
  categoryId = matchedCategory.id;
- console.log('📍 Mapped', categoryName, 'to ID:', categoryId);
+ console.log('� Mapped', categoryName, 'to ID:', categoryId);
  } else {
- console.warn('⚠️ Could not find category ID for:', categoryName);
+ console.warn(' Could not find category ID for:', categoryName);
  }
  }
  
@@ -981,7 +1130,7 @@ async function triggerAutoCategorize(description, amount) {
  categoryHint.classList.add('text-success');
  }
  
- console.log('✓ Auto-categorized:', categoryName, '(ID:', categoryId, ')');
+ console.log(' Auto-categorized:', categoryName, '(ID:', categoryId, ')');
  } else {
  throw new Error('No suggestions');
  }

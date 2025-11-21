@@ -168,8 +168,8 @@ class BudgetOverview {
           
           ${this.options.allowEdit ? `
             <div class="budget-actions">
-              <button class="btn-edit-budget" data-budget-id="${budget.id}">✏️</button>
-              <button class="btn-delete-budget" data-budget-id="${budget.id}">🗑️</button>
+              <button class="btn-edit-budget" data-budget-id="${budget.id}"></button>
+              <button class="btn-delete-budget" data-budget-id="${budget.id}"></button>
             </div>
           ` : ''}
         </div>

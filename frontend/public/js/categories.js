@@ -4,6 +4,18 @@ document.addEventListener('DOMContentLoaded', function () {
   const f = document.getElementById('cat-form');
   const title = document.getElementById('cat-modal-title');
   let editing = null;
+  
+  // Show read-only warning banner
+  const container = t.parentElement;
+  const banner = document.createElement('div');
+  banner.className = 'alert alert-info alert-dismissible fade show';
+  banner.innerHTML = `
+    <i class="bi bi-info-circle-fill me-2"></i>
+    <strong>Quản lý tự động:</strong> Danh mục được quản lý bởi hệ thống AI. 
+    Giao dịch của bạn sẽ tự động phân loại với độ chính xác 98%.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  container.insertBefore(banner, t);
 
   function getAuthHeaders() {
     const token = localStorage.getItem('authToken');
@@ -30,19 +42,21 @@ document.addEventListener('DOMContentLoaded', function () {
           throw new Error('Invalid response format');
         }
         
+        // Disable edit/delete buttons - categories are read-only
         t.innerHTML =
-          '<thead><tr><th>Tên danh mục</th><th>Loại</th><th>Thao tác</th></tr></thead><tbody>' +
+          '<thead><tr><th>Tên danh mục</th><th>Loại</th><th>Trạng thái</th></tr></thead><tbody>' +
           categories.map(c =>
             `<tr data-id="${c.id}">
-              <td>${c.name}</td>
+              <td><i class="bi bi-tag-fill me-2"></i>${c.name}</td>
               <td>
                 <span class="badge ${c.type === 'INCOME' ? 'bg-success' : 'bg-danger'}">
-                  ${c.type === 'INCOME' ? 'Thu' : 'Chi'}
+                  ${c.type === 'INCOME' ? 'Thu nhập' : 'Chi tiêu'}
                 </span>
               </td>
               <td>
-                <button class="btn btn-sm btn-outline-primary edit">Sửa</button>
-                <button class="btn btn-sm btn-outline-danger ms-2 del">Xoá</button>
+                <span class="badge bg-primary">
+                  <i class="bi bi-robot me-1"></i>AI Auto
+                </span>
               </td>
             </tr>`
           ).join('') + '</tbody>';
@@ -52,78 +66,35 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
+  // DEPRECATED: Category management disabled - AI handles categorization
+  const addBtn = document.getElementById('cat-add-btn');
+  if (addBtn) {
+    addBtn.style.display = 'none'; // Hide add button
+  }
+
+  /* DISABLED: Edit/Delete/Create operations
   document.getElementById('cat-add-btn').addEventListener('click', function () {
-    editing = null;
-    f.reset();
-    title.textContent = 'Thêm danh mục';
-    m.show();
+    alert('Category creation is disabled. System uses AI auto-categorization with 14 pre-defined categories.');
   });
 
   t.addEventListener('click', function (e) {
     const id = e.target.closest('tr')?.dataset.id;
     if (e.target.classList.contains('edit')) {
-      fetch('http://localhost:8080/api/categories/' + id, {
-        headers: getAuthHeaders()
-      })
-        .then(r => r.json())
-        .then(response => {
-          const category = response.data || response;
-          editing = id;
-          f.name.value = category.name;
-          f.type.value = category.type || 'EXPENSE';
-          title.textContent = 'Sửa danh mục';
-          m.show();
-        }).catch(e => {
-          console.error('Error loading category:', e);
-          alert('Lỗi tải thông tin danh mục: ' + e.message);
-        });
+      alert('Category modification is disabled. Categories are system-managed for AI optimization.');
     }
     if (e.target.classList.contains('del')) {
-      if (confirm('Bạn chắc chắn xoá danh mục này?')) {
-        fetch('http://localhost:8080/api/categories/' + id, { 
-          method: 'DELETE',
-          headers: getAuthHeaders()
-        })
-          .then(r => r.json())
-          .then(response => {
-            if (response.success !== false) {
-              load();
-            } else {
-              alert('Lỗi xóa danh mục: ' + (response.message || 'Unknown error'));
-            }
-          })
-          .catch(e => {
-            console.error('Error deleting category:', e);
-            alert('Lỗi xóa danh mục: ' + e.message);
-          });
-      }
+      alert('Category deletion is disabled. All 14 categories are required for AI categorization model.');
     }
   });
 
   f.addEventListener('submit', function (e) {
     e.preventDefault();
-    const data = {
-      name: f.name.value,
-      type: f.type.value || 'EXPENSE'
-    };
-    
-    if (!data.name.trim()) {
-      alert('Tên danh mục không được để trống');
-      return;
-    }
-    
-    const method = editing ? 'PUT' : 'POST';
-    const url = '/api/categories' + (editing ? '/' + editing : '');
-    
-    fetch(url, {
-      method,
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data)
-    })
-      .then(r => r.json())
-      .then(response => {
-        if (response.success !== false) {
-          m.hide();
+    alert('Category operations are disabled. Use /api/ai/categorize for automatic transaction categorization.');
+  });
+  */
+
+  load();
+});
           load();
         } else {
           alert('Lỗi lưu danh mục: ' + (response.message || 'Unknown error'));

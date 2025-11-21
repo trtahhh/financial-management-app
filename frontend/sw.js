@@ -44,13 +44,13 @@ const API_ENDPOINTS = [
 
 // Install event - cache static files
 self.addEventListener('install', (event) => {
-    console.log('🔧 Service Worker installing...');
+    console.log('Service Worker installing...');
     
     event.waitUntil(
         Promise.all([
             // Cache static files
             caches.open(STATIC_CACHE).then((cache) => {
-                console.log('📦 Caching static files...');
+                console.log('Caching static files...');
                 return cache.addAll(STATIC_FILES.map(url => new Request(url, {
                     cache: 'reload'
                 })));
@@ -58,22 +58,22 @@ self.addEventListener('install', (event) => {
             
             // Initialize data cache
             caches.open(DATA_CACHE).then((cache) => {
-                console.log('📊 Initializing data cache...');
+                console.log('Initializing data cache...');
                 return cache;
             })
         ]).then(() => {
-            console.log('✅ Service Worker installed successfully');
+            console.log('Service Worker installed successfully');
             // Skip waiting to activate immediately
             return self.skipWaiting();
         }).catch((error) => {
-            console.error('❌ Service Worker installation failed:', error);
+            console.error(' Service Worker installation failed:', error);
         })
     );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('🚀 Service Worker activating...');
+    console.log('Service Worker activating...');
     
     event.waitUntil(
         Promise.all([
@@ -84,7 +84,7 @@ self.addEventListener('activate', (event) => {
                         if (cacheName !== STATIC_CACHE && 
                             cacheName !== DATA_CACHE && 
                             cacheName !== CACHE_NAME) {
-                            console.log('🗑️ Deleting old cache:', cacheName);
+                            console.log('Deleting old cache:', cacheName);
                             return caches.delete(cacheName);
                         }
                     })
@@ -94,9 +94,9 @@ self.addEventListener('activate', (event) => {
             // Claim all clients
             self.clients.claim()
         ]).then(() => {
-            console.log('✅ Service Worker activated successfully');
+            console.log('Service Worker activated successfully');
         }).catch((error) => {
-            console.error('❌ Service Worker activation failed:', error);
+            console.error(' Service Worker activation failed:', error);
         })
     );
 });
@@ -271,7 +271,7 @@ async function storeOfflineRequest(request) {
     offlineQueue.push(requestData);
     await setOfflineQueue(offlineQueue);
     
-    console.log('📤 Stored offline request:', requestData);
+    console.log('Stored offline request:', requestData);
 }
 
 // Get offline queue from storage
@@ -321,12 +321,12 @@ async function processOfflineQueue() {
             
             if (response.ok) {
                 processed.push(requestData);
-                console.log('✅ Processed offline request:', requestData.url);
+                console.log('Processed offline request:', requestData.url);
             } else {
-                console.warn('⚠️ Failed to process offline request:', response.status);
+                console.warn('Failed to process offline request:', response.status);
             }
         } catch (error) {
-            console.error('❌ Error processing offline request:', error);
+            console.error('Error processing offline request:', error);
         }
     }
     
@@ -415,7 +415,7 @@ function getOfflinePage() {
         </head>
         <body>
             <div class="offline-container">
-                <div class="offline-icon">📱</div>
+                <div class="offline-icon"></div>
                 <h1 class="offline-title">Chế độ Offline</h1>
                 <p class="offline-message">
                     Bạn đang không có kết nối internet. Ứng dụng sẽ hoạt động với dữ liệu đã lưu trữ.
@@ -464,7 +464,7 @@ self.addEventListener('message', (event) => {
 async function clearAllCaches() {
     const cacheNames = await caches.keys();
     await Promise.all(cacheNames.map(name => caches.delete(name)));
-    console.log('🗑️ All caches cleared');
+    console.log('All caches cleared');
 }
 
 // Update specific cache
@@ -480,12 +480,12 @@ async function updateCache(data) {
 
 // Handle online/offline events
 self.addEventListener('online', () => {
-    console.log('📶 Back online - processing offline queue');
+    console.log('Back online - processing offline queue');
     processOfflineQueue();
 });
 
 self.addEventListener('offline', () => {
-    console.log('📱 Gone offline - requests will be queued');
+    console.log('Gone offline - requests will be queued');
 });
 
-console.log('🔧 Service Worker loaded successfully');
+console.log('Service Worker loaded successfully');

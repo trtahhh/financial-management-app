@@ -453,7 +453,7 @@ class QuickAddTransaction {
   showSuccess() {
     this.container.innerHTML = `
       <div class="success-state">
-        <div class="success-animation">✅</div>
+        <div class="success-animation"></div>
         <h3>Đã lưu thành công!</h3>
         <p>${this.formData.type === 'income' ? 'Thu nhập' : 'Chi tiêu'} ${formatCurrency(parseCurrency(this.formData.amount))} đã được thêm</p>
       </div>

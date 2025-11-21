@@ -43,7 +43,7 @@ class AITransactionAssistant {
       <div class="ai-transaction-assistant">
         <div class="assistant-header">
           <div class="header-info">
-            <h2>💡 AI Transaction Assistant</h2>
+            <h2> AI Transaction Assistant</h2>
             <p>Thêm giao dịch thông minh với AI</p>
           </div>
           <div class="ai-status" id="ai-status">
@@ -83,7 +83,7 @@ class AITransactionAssistant {
     return `
       <div class="input-method text-input">
         <div class="input-header">
-          <h3>📝 Mô tả giao dịch</h3>
+          <h3> Mô tả giao dịch</h3>
           <div class="input-status">
             <span class="typing-indicator" id="typing-indicator">AI đang phân tích...</span>
           </div>
@@ -98,7 +98,7 @@ class AITransactionAssistant {
           
           <div class="input-tools">
             <button class="btn-smart-suggest" id="btn-smart-suggest" disabled>
-              <span class="btn-icon">🤖</span>
+              <span class="btn-icon"></span>
               <span class="btn-text">Phân tích AI</span>
             </button>
             
@@ -119,7 +119,7 @@ class AITransactionAssistant {
     return `
       <div class="input-method voice-input">
         <div class="input-header">
-          <h3>🎤 Nhập bằng giọng nói</h3>
+          <h3> Nhập bằng giọng nói</h3>
           <div class="voice-status">
             <span class="status-text" id="voice-status">Sẵn sàng</span>
           </div>
@@ -147,8 +147,8 @@ class AITransactionAssistant {
         <div class="voice-transcript" id="voice-transcript" style="display: none;">
           <div class="transcript-content"></div>
           <div class="transcript-actions">
-            <button class="btn-voice-accept" id="btn-voice-accept">✓ Xác nhận</button>
-            <button class="btn-voice-retry" id="btn-voice-retry">🔄 Thử lại</button>
+            <button class="btn-voice-accept" id="btn-voice-accept"> Xác nhận</button>
+            <button class="btn-voice-retry" id="btn-voice-retry"> Thử lại</button>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ class AITransactionAssistant {
     return `
       <div class="input-method receipt-scan">
         <div class="input-header">
-          <h3>📷 Quét hóa đơn</h3>
+          <h3> Quét hóa đơn</h3>
           <div class="scan-status">
             <span class="status-text" id="scan-status">Sẵn sàng quét</span>
           </div>
@@ -168,7 +168,7 @@ class AITransactionAssistant {
         <div class="scan-controls">
           <div class="upload-area" id="upload-area">
             <div class="upload-content">
-              <div class="upload-icon">📸</div>
+              <div class="upload-icon"></div>
               <div class="upload-text">
                 <p><strong>Chụp hoặc chọn ảnh hóa đơn</strong></p>
                 <p>Hỗ trợ JPG, PNG</p>
@@ -222,11 +222,11 @@ class AITransactionAssistant {
             <label for="transaction-type">Loại</label>
             <div class="type-selector">
               <button type="button" class="type-btn active" data-type="expense">
-                <span class="type-icon">💸</span>
+                <span class="type-icon"></span>
                 <span class="type-text">Chi tiêu</span>
               </button>
               <button type="button" class="type-btn" data-type="income">
-                <span class="type-icon">💰</span>
+                <span class="type-icon"></span>
                 <span class="type-text">Thu nhập</span>
               </button>
             </div>
@@ -249,17 +249,17 @@ class AITransactionAssistant {
         
         <div class="form-actions">
           <button class="btn-save" id="btn-save-transaction" disabled>
-            <span class="btn-icon">💾</span>
+            <span class="btn-icon"></span>
             <span class="btn-text">Lưu giao dịch</span>
           </button>
           
           <button class="btn-save-template" id="btn-save-template" style="display: none;">
-            <span class="btn-icon">📋</span>
+            <span class="btn-icon"></span>
             <span class="btn-text">Lưu mẫu</span>
           </button>
           
           <button class="btn-clear" id="btn-clear-form">
-            <span class="btn-icon">🗑️</span>
+            <span class="btn-icon"></span>
             <span class="btn-text">Xóa form</span>
           </button>
         </div>
@@ -270,34 +270,34 @@ class AITransactionAssistant {
   renderQuickActions() {
     return `
       <div class="quick-actions-container">
-        <h4>⚡ Thao tác nhanh</h4>
+        <h4> Thao tác nhanh</h4>
         <div class="quick-buttons">
           <button class="quick-btn" data-action="coffee">
-            <span class="quick-icon">☕</span>
+            <span class="quick-icon"></span>
             <span class="quick-text">Cà phê</span>
             <span class="quick-amount">25k</span>
           </button>
           
           <button class="quick-btn" data-action="lunch">
-            <span class="quick-icon">🍽️</span>
+            <span class="quick-icon"></span>
             <span class="quick-text">Ăn trưa</span>
             <span class="quick-amount">50k</span>
           </button>
           
           <button class="quick-btn" data-action="transport">
-            <span class="quick-icon">🚗</span>
+            <span class="quick-icon"></span>
             <span class="quick-text">Đi lại</span>
             <span class="quick-amount">30k</span>
           </button>
           
           <button class="quick-btn" data-action="shopping">
-            <span class="quick-icon">🛒</span>
+            <span class="quick-icon"></span>
             <span class="quick-text">Mua sắm</span>
             <span class="quick-amount">?</span>
           </button>
           
           <button class="quick-btn" data-action="custom" id="btn-add-quick">
-            <span class="quick-icon">➕</span>
+            <span class="quick-icon"></span>
             <span class="quick-text">Tùy chỉnh</span>
           </button>
         </div>
@@ -308,10 +308,10 @@ class AITransactionAssistant {
   renderInsights() {
     return `
       <div class="insights-container">
-        <h4>📊 Thông tin thông minh</h4>
+        <h4> Thông tin thông minh</h4>
         <div class="insights-content" id="insights-content">
           <div class="insight-placeholder">
-            <div class="placeholder-icon">🤖</div>
+            <div class="placeholder-icon"></div>
             <div class="placeholder-text">
               <p>AI sẽ cung cấp thông tin về chi tiêu của bạn</p>
               <p>Thêm vài giao dịch để bắt đầu!</p>
@@ -568,7 +568,7 @@ class AITransactionAssistant {
     container.innerHTML = `
       <div class="ai-insight">
         <div class="insight-header">
-          <span class="insight-icon">🤖</span>
+          <span class="insight-icon"></span>
           <span class="insight-title">AI Analysis</span>
         </div>
         <div class="insight-content">
@@ -755,7 +755,7 @@ class AITransactionAssistant {
     container.innerHTML = `
       <div class="receipt-items">
         <div class="items-header">
-          <span class="items-icon">🧾</span>
+          <span class="items-icon"></span>
           <span class="items-title">Chi tiết hóa đơn</span>
         </div>
         <div class="items-list">
@@ -936,7 +936,7 @@ class AITransactionAssistant {
       if (insights.insights.length === 0) {
         container.innerHTML = `
           <div class="insight-placeholder">
-            <div class="placeholder-icon">📊</div>
+            <div class="placeholder-icon"></div>
             <div class="placeholder-text">
               <p>Chưa có đủ dữ liệu để phân tích</p>
               <p>Thêm vài giao dịch để xem insights!</p>
@@ -973,7 +973,7 @@ class AITransactionAssistant {
           
           ${insights.recommendations.length > 0 ? `
             <div class="recommendations">
-              <h6>💡 Gợi ý cải thiện</h6>
+              <h6> Gợi ý cải thiện</h6>
               ${insights.recommendations.slice(0, 2).map(rec => `
                 <div class="recommendation-item">
                   <span class="rec-title">${rec.title}</span>
@@ -991,11 +991,11 @@ class AITransactionAssistant {
   }
 
   getScoreDescription(score) {
-    if (score >= 80) return 'Tuyệt vời! 🎉';
-    if (score >= 60) return 'Tốt! 👍';
-    if (score >= 40) return 'Khá ổn 👌';
-    if (score >= 20) return 'Cần cải thiện 📈';
-    return 'Cần chú ý nhiều hơn ⚠️';
+    if (score >= 80) return 'Tuyệt vời! �';
+    if (score >= 60) return 'Tốt! �';
+    if (score >= 40) return 'Khá ổn �';
+    if (score >= 20) return 'Cần cải thiện ';
+    return 'Cần chú ý nhiều hơn ';
   }
 
   formatCurrency(amount) {

@@ -36,6 +36,8 @@ public class JwtFilter extends OncePerRequestFilter {
  "/api/register",
  "/api/files/uploads",
  "/api/chat/status",
+ "/api/ai/health",
+ "/api/ai/test-categorize",
  "/api/test/send-email",
  "/api/test/generate-hash",
  "/actuator/health",

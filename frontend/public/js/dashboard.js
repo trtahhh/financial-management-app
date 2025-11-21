@@ -598,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function () {
  // Gọi updateBudgetAlerts để xử lý cảnh báo ngân sách
  updateBudgetAlerts(alerts);
  
- // 🆕 Fetch AI overspending alerts và hiển thị kèm
+ // � Fetch AI overspending alerts và hiển thị kèm
  fetchAndDisplayOverspendingAlerts();
  } catch (e) { console.warn('Budget alerts render error:', e); }
 
@@ -1334,7 +1334,7 @@ function updateBudgetAlerts(budgets) {
 }
 
 /**
- * 🆕 Fetch and display AI overspending alerts
+ * � Fetch and display AI overspending alerts
  * Tích hợp cảnh báo AI thông minh vào dashboard
  */
 async function fetchAndDisplayOverspendingAlerts() {
@@ -1356,7 +1356,7 @@ async function fetchAndDisplayOverspendingAlerts() {
  }
  
  const data = await response.json();
- console.log('🤖 AI Overspending alerts:', data);
+ console.log(' AI Overspending alerts:', data);
  
  // Hiển thị AI alerts cùng với budget alerts
  if (data.success && data.alerts && data.alerts.length > 0) {
@@ -1393,11 +1393,11 @@ function displayAIAlerts(alerts, summary) {
  // Critical alerts (red)
  if (critical.length > 0) {
  aiAlertsHtml += '<div class="alert alert-danger mb-2">';
- aiAlertsHtml += '<strong>🚨 Cảnh báo nghiêm trọng:</strong><br>';
+ aiAlertsHtml += '<strong> Cảnh báo nghiêm trọng:</strong><br>';
  critical.forEach(alert => {
  aiAlertsHtml += `<small>• ${alert.message}</small><br>`;
  if (alert.recommendation) {
- aiAlertsHtml += `<small class="text-muted ms-3">💡 ${alert.recommendation}</small><br>`;
+ aiAlertsHtml += `<small class="text-muted ms-3"> ${alert.recommendation}</small><br>`;
  }
  });
  aiAlertsHtml += '</div>';
@@ -1406,11 +1406,11 @@ function displayAIAlerts(alerts, summary) {
  // Warning alerts (yellow)
  if (warning.length > 0) {
  aiAlertsHtml += '<div class="alert alert-warning mb-2">';
- aiAlertsHtml += '<strong>⚠️ Cảnh báo:</strong><br>';
+ aiAlertsHtml += '<strong> Cảnh báo:</strong><br>';
  warning.forEach(alert => {
  aiAlertsHtml += `<small>• ${alert.message}</small><br>`;
  if (alert.recommendation) {
- aiAlertsHtml += `<small class="text-muted ms-3">💡 ${alert.recommendation}</small><br>`;
+ aiAlertsHtml += `<small class="text-muted ms-3"> ${alert.recommendation}</small><br>`;
  }
  });
  aiAlertsHtml += '</div>';
@@ -1419,7 +1419,7 @@ function displayAIAlerts(alerts, summary) {
  // Info alerts (blue)
  if (info.length > 0) {
  aiAlertsHtml += '<div class="alert alert-info mb-2">';
- aiAlertsHtml += '<strong>ℹ️ Thông tin:</strong><br>';
+ aiAlertsHtml += '<strong>ℹ Thông tin:</strong><br>';
  info.forEach(alert => {
  aiAlertsHtml += `<small>• ${alert.message}</small><br>`;
  });
@@ -1434,7 +1434,7 @@ function displayAIAlerts(alerts, summary) {
  // Combine existing budget warnings + AI alerts
  alertContainer.innerHTML = existingContent + aiAlertsHtml + '<a href="/budgets" class="btn btn-warning btn-sm mt-2">Xem chi tiết</a>';
  
- console.log('✅ AI alerts displayed on dashboard');
+ console.log(' AI alerts displayed on dashboard');
 }
 
 /**

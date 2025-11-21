@@ -6,7 +6,6 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
-import jakarta.servlet.Filter;
 
 @Configuration
 public class PerformanceConfig implements WebMvcConfigurer {

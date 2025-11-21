@@ -180,7 +180,7 @@ class TransactionList {
         <div class="transaction-actions">
           ${this.options.allowEdit ? `<button class="btn-edit" data-id="${transaction.id}">Sửa</button>` : ''}
           ${this.options.allowDelete ? `<button class="btn-delete" data-id="${transaction.id}">Xóa</button>` : ''}
-          ${transaction.receipt ? '<span class="receipt-indicator">📎</span>' : ''}
+          ${transaction.receipt ? '<span class="receipt-indicator">�</span>' : ''}
         </div>
       </div>
     `;

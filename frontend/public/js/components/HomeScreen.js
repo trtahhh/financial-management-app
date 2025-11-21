@@ -76,7 +76,7 @@ class HomeScreen {
             <span class="stat-value">${this.data.level}</span>
           </div>
           <div class="stat-item">
-            <div class="stat-icon streak">🔥</div>
+            <div class="stat-icon streak"></div>
             <span class="stat-value">${this.data.streak}</span>
           </div>
           <div class="xp-progress">

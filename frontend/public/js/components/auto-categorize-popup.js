@@ -102,10 +102,10 @@ class AutoCategorizePopup {
             
             // Just check if we have suggestions array with data
             if (hasValidSuggestions) {
-                console.log('✅ Displaying suggestions');
+                console.log(' Displaying suggestions');
                 this.displaySuggestions(result);
             } else {
-                console.log('❌ No valid suggestions - showing error');
+                console.log(' No valid suggestions - showing error');
                 this.showError('Không thể tạo gợi ý phân loại');
             }
         } catch (error) {
@@ -206,7 +206,7 @@ class AutoCategorizePopup {
         }
         
         // Show success toast
-        this.showToast(`✓ Đã chọn "${categoryName}" (${Math.round(confidence * 100)}% phù hợp)`, 'success');
+        this.showToast(` Đã chọn "${categoryName}" (${Math.round(confidence * 100)}% phù hợp)`, 'success');
     }
 
     showError(message) {

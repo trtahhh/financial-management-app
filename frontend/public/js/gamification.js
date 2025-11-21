@@ -38,7 +38,7 @@ function displayGamificationStats(stats) {
                 <div class="stat-label">Total Points</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🏆</div>
+                <div class="stat-icon"></div>
                 <div class="stat-value">Level ${stats.level}</div>
                 <div class="stat-label">Current Level</div>
                 <div class="progress-bar">
@@ -47,23 +47,23 @@ function displayGamificationStats(stats) {
                 <div class="stat-sublabel">${stats.pointsToNextLevel} points to next level</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🔥</div>
+                <div class="stat-icon"></div>
                 <div class="stat-value">${stats.currentStreak} days</div>
                 <div class="stat-label">Current Streak</div>
                 <div class="stat-sublabel">Longest: ${stats.longestStreak} days</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📊</div>
+                <div class="stat-icon"></div>
                 <div class="stat-value">#${stats.rank}</div>
                 <div class="stat-label">Global Rank</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🎖️</div>
+                <div class="stat-icon"></div>
                 <div class="stat-value">${stats.achievementsUnlocked}</div>
                 <div class="stat-label">Achievements</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🎯</div>
+                <div class="stat-icon"></div>
                 <div class="stat-value">${stats.challengesCompleted}</div>
                 <div class="stat-label">Challenges Completed</div>
             </div>
@@ -73,19 +73,19 @@ function displayGamificationStats(stats) {
             <h3>Activity Summary</h3>
             <div class="activity-stats">
                 <div class="activity-item">
-                    <span>📝 Transactions:</span>
+                    <span> Transactions:</span>
                     <strong>${stats.totalTransactions}</strong>
                 </div>
                 <div class="activity-item">
-                    <span>📋 Budgets:</span>
+                    <span> Budgets:</span>
                     <strong>${stats.totalBudgets}</strong>
                 </div>
                 <div class="activity-item">
-                    <span>🎯 Goals:</span>
+                    <span> Goals:</span>
                     <strong>${stats.totalGoals}</strong>
                 </div>
                 <div class="activity-item">
-                    <span>💰 Total Savings:</span>
+                    <span> Total Savings:</span>
                     <strong>${formatCurrency(stats.totalSavings)}</strong>
                 </div>
             </div>
@@ -155,7 +155,7 @@ function displayAchievements(achievements) {
                         `}
                     </div>
                     <div class="achievement-points">
-                        ${unlocked ? '✅' : '🔒'} ${achievement.points} pts
+                        ${unlocked ? '' : '�'} ${achievement.points} pts
                     </div>
                 </div>
             `;
@@ -208,14 +208,14 @@ function displayLeaderboard(leaderboard) {
     `;
     
     leaderboard.forEach((entry, index) => {
-        const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+        const rankIcon = index === 0 ? '�' : index === 1 ? '' : index === 2 ? '' : '';
         html += `
             <tr class="rank-${index + 1}">
                 <td>${rankIcon} #${index + 1}</td>
                 <td>${entry.username}</td>
                 <td>Level ${entry.level}</td>
                 <td>${entry.totalPoints}</td>
-                <td>🔥 ${entry.currentStreak} days</td>
+                <td> ${entry.currentStreak} days</td>
             </tr>
         `;
     });
@@ -279,7 +279,7 @@ function displayChallenges(allChallenges, userChallenges) {
             <div class="challenge-card ${challenge.type}">
                 <div class="challenge-header">
                     <span class="challenge-type">${challenge.type}</span>
-                    <span class="challenge-reward">🎁 ${challenge.rewardPoints} pts</span>
+                    <span class="challenge-reward">� ${challenge.rewardPoints} pts</span>
                 </div>
                 <h4>${challenge.name}</h4>
                 <p>${challenge.description}</p>
@@ -298,7 +298,7 @@ function displayChallenges(allChallenges, userChallenges) {
                             Join Challenge
                         </button>
                     ` : `
-                        <span class="challenge-joined">✅ Joined</span>
+                        <span class="challenge-joined"> Joined</span>
                     `}
                 </div>
             </div>
@@ -360,7 +360,7 @@ function showAchievementNotifications(achievements) {
         const achievement = userAchievement.achievement;
         
         showNotification(
-            `🎉 Achievement Unlocked: ${achievement.name}! +${achievement.points} points`,
+            `� Achievement Unlocked: ${achievement.name}! +${achievement.points} points`,
             'achievement',
             5000
         );

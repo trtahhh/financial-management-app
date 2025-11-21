@@ -3,14 +3,11 @@ package com.example.finance.service;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.finance.entity.Transaction;
-import com.example.finance.entity.Budget;
 import com.example.finance.entity.User;
 import com.example.finance.repository.TransactionRepository;
-import com.example.finance.repository.BudgetRepository;
 import com.example.finance.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,9 +20,6 @@ public class LongTermPlanningService {
     
     @Autowired
     private TransactionRepository transactionRepository;
-    
-    @Autowired
-    private BudgetRepository budgetRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -43,9 +37,10 @@ public class LongTermPlanningService {
             throw new IllegalArgumentException("Plan months must be 3, 6, or 12");
         }
         
-        // Lấy dữ liệu người dùng
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        // Verify user exists
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("User not found");
+        }
         
         // Phân tích lịch sử chi tiêu 3 tháng gần nhất
         LocalDateTime threeMonthsAgo = LocalDateTime.now().minusMonths(3);
@@ -261,8 +256,17 @@ public class LongTermPlanningService {
         
         // Calculate how much we need to cut
         double targetSpending = income - requiredSavings;
-        double cutPercentage = totalSpending > 0 ? 
-            ((totalSpending - targetSpending) / totalSpending) * 100 : 0;
+        // If targetSpending < 0, we need to cut more than 100% (impossible)
+        // cutPercentage should be: (current - target) / current * 100
+        double cutPercentage = 0;
+        if (totalSpending > 0) {
+            if (targetSpending < 0) {
+                cutPercentage = 100; // Need to cut everything and more
+            } else {
+                cutPercentage = ((totalSpending - targetSpending) / totalSpending) * 100;
+                cutPercentage = Math.max(0, Math.min(cutPercentage, 100)); // Clamp between 0-100%
+            }
+        }
         
         for (Map.Entry<String, Double> entry : avgSpending.entrySet()) {
             String category = entry.getKey();
@@ -386,24 +390,32 @@ public class LongTermPlanningService {
                                                      Map<String, CategoryPlan> categoryPlans) {
         List<String> recommendations = new ArrayList<>();
         
-        // Overall assessment
-        if (feasibility.getLevel().equals("impossible")) {
-            recommendations.add("⚠️ Mục tiêu hiện không khả thi - xem xét giảm target hoặc tăng thời gian");
-            recommendations.add("💡 Tìm cách tăng thu nhập: làm thêm, freelance, bán đồ không dùng");
-        } else if (feasibility.getLevel().contains("difficult")) {
-            recommendations.add("🎯 Mục tiêu đầy thử thách - cần kỷ luật cao");
-            recommendations.add("📊 Theo dõi chi tiêu hàng ngày");
-            recommendations.add("🤝 Tìm accountability partner");
-        } else {
-            recommendations.add("✅ Mục tiêu khả thi - bắt đầu ngay!");
-            recommendations.add("📈 Có thể tăng target nếu muốn");
+        // Overall assessment - match với logic ở assessPlanFeasibility
+        String level = feasibility.getLevel();
+        if (level.equals("impossible")) {
+            recommendations.add("Mục tiêu không khả thi - xem xét giảm target hoặc kéo dài thời gian");
+            recommendations.add("Tìm cách tăng thu nhập: làm thêm, freelance, bán đồ không dùng");
+        } else if (level.equals("very_difficult")) {
+            recommendations.add("Rất khó đạt được - cần cắt giảm chi tiêu mạnh và kỷ luật cao");
+            recommendations.add("Xem xét lại mục tiêu hoặc kéo dài thời gian");
+            recommendations.add("Tìm cách tăng thu nhập bổ sung");
+        } else if (level.equals("difficult")) {
+            recommendations.add("Khó đạt được - cần thay đổi thói quen chi tiêu đáng kể");
+            recommendations.add("Theo dõi chi tiêu hàng ngày chặt chẽ");
+            recommendations.add("Tìm accountability partner để giữ động lực");
+        } else if (level.equals("achievable")) {
+            recommendations.add("Mục tiêu khả thi - có thể đạt được với kỷ luật");
+            recommendations.add("Lập kế hoạch chi tiêu cụ thể và tuân thủ");
+        } else { // easy
+            recommendations.add("Mục tiêu dễ đạt - bắt đầu ngay!");
+            recommendations.add("Có thể tăng target hoặc rút ngắn thời gian nếu muốn");
         }
         
         // Savings rate recommendations
         double rateGap = requiredRate - currentRate;
         if (rateGap > 20) {
-            recommendations.add("📉 Cần tăng tỷ lệ tiết kiệm " + String.format("%.1f%%", rateGap));
-            recommendations.add("🔍 Xem lại chi tiêu Giải trí và Mua sắm đầu tiên");
+            recommendations.add("Cần tăng tỷ lệ tiết kiệm " + String.format("%.1f%%", rateGap));
+            recommendations.add("Xem lại chi tiêu Giải trí và Mua sắm đầu tiên");
         }
         
         // Category-specific recommendations
@@ -412,14 +424,14 @@ public class LongTermPlanningService {
             .sorted((a, b) -> Double.compare(b.getValue().getCutPercentage(), a.getValue().getCutPercentage()))
             .limit(2)
             .forEach(e -> {
-                recommendations.add("🎯 Ưu tiên cắt giảm: " + e.getKey() + 
+                recommendations.add("Ưu tiên cắt giảm: " + e.getKey() + 
                     " (" + String.format("%.0f%%", e.getValue().getCutPercentage()) + ")");
             });
         
         // Additional tips
-        recommendations.add("💰 Tự động chuyển khoản tiết kiệm mỗi đầu tháng");
-        recommendations.add("📱 Xóa app shopping, tắt thông báo khuyến mãi");
-        recommendations.add("🎁 Thưởng cho bản thân khi đạt milestone");
+        recommendations.add("Tự động chuyển khoản tiết kiệm mỗi đầu tháng");
+        recommendations.add("Xóa app shopping, tắt thông báo khuyến mãi");
+        recommendations.add("Thưởng cho bản thân khi đạt milestone");
         
         return recommendations;
     }

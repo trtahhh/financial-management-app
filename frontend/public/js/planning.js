@@ -561,14 +561,14 @@ class FinancialPlanningManager {
 document.addEventListener('DOMContentLoaded', function() {
     window.planningManager = new FinancialPlanningManager();
     
-    console.log('🎯 Financial Planning Manager initialized');
+    console.log(' Financial Planning Manager initialized');
     
-    // 🆕 Initialize Savings Tips Library
+    // � Initialize Savings Tips Library
     initializeSavingsTipsLibrary();
 });
 
 /**
- * 🆕 Savings Tips Library Manager
+ * � Savings Tips Library Manager
  */
 function initializeSavingsTipsLibrary() {
     const tabButtons = document.querySelectorAll('#tips-tabs button[data-category]');
@@ -682,7 +682,7 @@ function initializeSavingsTipsLibrary() {
             const data = await response.json();
             
             if (data.success && data.tips) {
-                displayTips(data.tips, '🚨 Giải pháp khẩn cấp giảm chi tiêu', true);
+                displayTips(data.tips, ' Giải pháp khẩn cấp giảm chi tiêu', true);
                 updateStats(data.tips.length);
             } else {
                 showError('Không thể tải mẹo khẩn cấp');
@@ -748,7 +748,7 @@ function initializeSavingsTipsLibrary() {
             html += `<p class="card-text">${tip.tip || tip.description || tip}</p>`;
             
             if (tip.potentialSavings) {
-                html += `<p class="text-success mb-0"><strong>💰 Tiết kiệm: ${tip.potentialSavings.toLocaleString('vi-VN')} VNĐ/tháng</strong></p>`;
+                html += `<p class="text-success mb-0"><strong> Tiết kiệm: ${tip.potentialSavings.toLocaleString('vi-VN')} VNĐ/tháng</strong></p>`;
             }
             
             if (tip.difficulty) {

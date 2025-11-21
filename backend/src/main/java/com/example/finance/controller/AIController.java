@@ -4,17 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.finance.service.AICategorizationService;
 import com.example.finance.service.SmartBudgetService;
 import com.example.finance.service.OverspendingDetectionService;
 import com.example.finance.service.LongTermPlanningService;
 import com.example.finance.service.SavingsKnowledgeBase;
-import com.example.finance.entity.User;
+import com.example.finance.service.SmartAnalyticsService;
 import com.example.finance.entity.Transaction;
 import com.example.finance.security.CustomUserDetails;
 import com.example.finance.repository.TransactionRepository;
+import com.example.finance.dto.SmartAnalyticsResponse;
 
 import java.util.*;
 
@@ -46,10 +46,76 @@ public class AIController {
     private SavingsKnowledgeBase savingsKnowledgeBase;
     
     @Autowired
+    private SmartAnalyticsService smartAnalyticsService;
+    
+    @Autowired
     private TransactionRepository transactionRepository;
 
     /**
-     * Categorize expense using AI
+     * Health check endpoint - verify SVM model is loaded (no auth required)
+     */
+    @GetMapping("/health")
+    public ResponseEntity<?> healthCheck() {
+        try {
+            // Quick categorization test
+            var result = aiCategorizationService.categorizeExpense("test pho", 50000.0);
+            
+            return ResponseEntity.ok(Map.of(
+                "status", "healthy",
+                "message", "SVM model loaded successfully",
+                "modelType", "LinearSVM + TF-IDF",
+                "testResult", Map.of(
+                    "input", "test pho",
+                    "predictedCategory", result.getCategoryName(),
+                    "categoryId", result.getCategory(),
+                    "confidence", String.format("%.2f%%", result.getConfidence() * 100)
+                )
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "unhealthy",
+                "error", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Test categorization endpoint - no auth required (for testing only)
+     */
+    @PostMapping("/test-categorize")
+    public ResponseEntity<?> testCategorize(@RequestBody Map<String, Object> request) {
+        try {
+            String description = (String) request.get("description");
+            Double amount = request.get("amount") != null ? 
+                Double.valueOf(request.get("amount").toString()) : 100000.0;
+            
+            if (description == null || description.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("error", "Description is required")
+                );
+            }
+            
+            var result = aiCategorizationService.categorizeExpense(description, amount);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "input", description,
+                "category", result.getCategory(),
+                "categoryName", result.getCategoryName(),
+                "confidence", String.format("%.2f%%", result.getConfidence() * 100),
+                "suggestions", result.getSuggestions(),
+                "reasoning", result.getReasoning()
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                Map.of("error", "Categorization failed: " + e.getMessage())
+            );
+        }
+    }
+
+    /**
+     * Categorize expense using AI with 3-layer architecture
      */
     @PostMapping("/categorize")
     public ResponseEntity<?> categorizeExpense(
@@ -67,7 +133,15 @@ public class AIController {
                 );
             }
             
-            var result = aiCategorizationService.categorizeExpense(description, amount);
+            // Extract userId for Layer 2 personalization
+            Long userId = null;
+            if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                userId = userDetails.getId();
+            }
+            
+            // Call categorization with userId for personalization learning
+            var result = aiCategorizationService.categorizeExpense(description, amount, userId);
             
             return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -465,20 +539,32 @@ public class AIController {
             
             var result = aiCategorizationService.categorizeExpense(description, amount);
             
-            // Format like MoMo UI
+            // Primary category suggestion
+            Map<String, Object> primarySuggestion = Map.of(
+                "categoryId", result.getCategory(),  // Database ID (Long)
+                "categoryName", result.getCategoryName(),
+                "confidence", result.getConfidence(),
+                "icon", getCategoryIcon(result.getCategoryKey())
+            );
+            
+            // Build suggestions array with primary as first item
+            List<Map<String, Object>> suggestions = new ArrayList<>();
+            suggestions.add(primarySuggestion);
+            
+            // Add alternatives if available
+            if (result.getSuggestions() != null && !result.getSuggestions().isEmpty()) {
+                suggestions.addAll(result.getSuggestions());
+            }
+            
+            // Format compatible with frontend
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "autoCategor categorized", true,
-                "primaryCategory", Map.of(
-                    "id", result.getCategory(),
-                    "name", result.getCategoryName(),
-                    "confidence", result.getConfidence(),
-                    "icon", getCategoryIcon(result.getCategory())
-                ),
-                "suggestions", result.getSuggestions(),
+                "autoCategorized", true,
+                "primaryCategory", primarySuggestion,
+                "suggestions", suggestions,  // Array format for frontend
                 "reasoning", result.getReasoning(),
                 "message", String.format("Tự động phân loại: %s (%.0f%% chắc chắn)", 
-                    result.getCategoryName(), result.getConfidence())
+                    result.getCategoryName(), result.getConfidence() * 100)
             ));
             
         } catch (Exception e) {
@@ -700,6 +786,51 @@ public class AIController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(
                 Map.of("error", "Search failed: " + e.getMessage())
+            );
+        }
+    }
+    
+    /**
+     * 💬 Smart Chat với AI Analytics (Momo Moni-style)
+     * Handles queries like:
+     * - "Khoản chi lớn nhất tháng này?"
+     * - "Tháng này tôi chi bao nhiêu?"
+     * - "Tôi nên tiết kiệm như thế nào?"
+     */
+    @PostMapping("/chat")
+    public ResponseEntity<?> chatWithMoni(
+            @RequestBody Map<String, String> request,
+            Authentication authentication) {
+        
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            String query = request.get("message");
+            if (query == null || query.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("error", "Message is required")
+                );
+            }
+            
+            System.out.println("[MONI CHAT] User " + userId + " asks: " + query);
+            
+            // Process query through SmartAnalyticsService
+            SmartAnalyticsResponse response = smartAnalyticsService.analyzeQuery(query, userId);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "query", query,
+                "response", response
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(
+                Map.of(
+                    "success", false,
+                    "error", "Moni không hiểu câu hỏi của bạn: " + e.getMessage()
+                )
             );
         }
     }

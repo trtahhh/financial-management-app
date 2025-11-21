@@ -255,7 +255,7 @@ async function shareAchievement(data) {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: '🏆 Tôi vừa đạt được thành tích mới!',
+        title: ' Tôi vừa đạt được thành tích mới!',
         text: `Tôi vừa đạt được: ${data.name} trong ứng dụng quản lý tài chính!`,
         url: self.location.origin
       });
@@ -265,7 +265,7 @@ async function shareAchievement(data) {
   } else {
     // Fallback to copying to clipboard
     await navigator.clipboard.writeText(
-      `🏆 Tôi vừa đạt được: ${data.name} trong ứng dụng quản lý tài chính! ${self.location.origin}`
+      ` Tôi vừa đạt được: ${data.name} trong ứng dụng quản lý tài chính! ${self.location.origin}`
     );
   }
 }
@@ -282,7 +282,7 @@ async function markReminderDone(data) {
     });
     
     // Show confirmation notification
-    await self.registration.showNotification('✅ Đã hoàn thành', {
+    await self.registration.showNotification(' Đã hoàn thành', {
       body: 'Nhắc nhở đã được đánh dấu hoàn thành',
       tag: 'reminder-done',
       requireInteraction: false
@@ -395,7 +395,7 @@ async function checkGoalReminders() {
       const reminders = await response.json();
       
       for (const reminder of reminders) {
-        await self.registration.showNotification('🎯 Nhắc nhở mục tiêu', {
+        await self.registration.showNotification(' Nhắc nhở mục tiêu', {
           body: reminder.message,
           icon: '/icons/goal-icon.png',
           tag: `goal-reminder-${reminder.goalId}`,
@@ -430,7 +430,7 @@ async function generateSpendingInsights() {
         .sort((a, b) => b.importance - a.importance)[0];
       
       if (topInsight && topInsight.showNotification) {
-        await self.registration.showNotification('💡 Thông tin chi tiêu', {
+        await self.registration.showNotification(' Thông tin chi tiêu', {
           body: topInsight.message,
           icon: '/icons/insight-icon.png',
           tag: 'spending-insight',
@@ -454,7 +454,7 @@ self.addEventListener('activate', (event) => {
 // Handle app update notifications
 self.addEventListener('message', (event) => {
   if (event.data.type === 'app_updated') {
-    self.registration.showNotification('🔄 Ứng dụng đã được cập nhật', {
+    self.registration.showNotification(' Ứng dụng đã được cập nhật', {
       body: 'Khởi động lại để sử dụng tính năng mới',
       icon: '/icons/update-icon.png',
       tag: 'app-update',

@@ -81,7 +81,7 @@ class CategoryCard {
     return `
       <div class="card-actions">
         <button class="btn-action" id="btn-add-transaction" title="Thêm giao dịch">+</button>
-        ${this.budget ? '<button class="btn-action" id="btn-edit-budget" title="Sửa ngân sách">⚙</button>' : '<button class="btn-action" id="btn-set-budget" title="Đặt ngân sách">$</button>'}
+        ${this.budget ? '<button class="btn-action" id="btn-edit-budget" title="Sửa ngân sách"></button>' : '<button class="btn-action" id="btn-set-budget" title="Đặt ngân sách">$</button>'}
       </div>
     `;
   }

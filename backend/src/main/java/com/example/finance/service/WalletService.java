@@ -146,11 +146,8 @@ public class WalletService {
  // 2. Xóa notifications liên quan đến wallet
  notificationRepository.deleteByWalletIdAndUserId(walletId, userId);
  
- // 3. TODO: Xóa budgets liên quan (cần thêm method) 
- // budgetRepository.deleteByWalletId(walletId);
- 
- // 4. TODO: Xóa goals liên quan (cần thêm method)
- // goalRepository.deleteByWalletId(walletId);
+ // Note: Budgets and Goals are not linked to Wallet, only to User
+ // They will remain after wallet deletion
  
  System.out.println("Cascade deleted all related records for wallet: " + walletId);
  }

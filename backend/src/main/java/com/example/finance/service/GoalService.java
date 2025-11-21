@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -22,8 +21,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import com.example.finance.entity.User;
-import com.example.finance.service.EmailService;
-import com.example.finance.service.UserService;
 import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,8 +131,9 @@ public class GoalService {
  }
 
  public void deleteById(Long id) {
- Goal goal = repo.findById(id)
- .orElseThrow(() -> new RuntimeException("Goal not found with id: " + id));
+ if (!repo.existsById(id)) {
+ throw new RuntimeException("Goal not found with id: " + id);
+ }
  
  try {
  // Xóa tất cả notifications liên quan đến goal này trước
@@ -358,7 +356,7 @@ public class GoalService {
  goal.setCurrentAmount(goal.getTargetAmount()); // Đặt currentAmount = targetAmount
  
  // Lưu mục tiêu đã cập nhật
- Goal savedGoal = repo.save(goal);
+ repo.save(goal);
  
  // Tạo thông báo hoàn thành mục tiêu
  notificationService.createGoalCompletedNotification(userId, goal.getId(), goal.getName());

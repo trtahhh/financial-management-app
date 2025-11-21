@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
  m.show();
  });
 
- // 🆕 AI Planning Wizard button
+ // � AI Planning Wizard button
  document.getElementById('ai-planning-btn').addEventListener('click', function () {
  const planningModal = new bootstrap.Modal(document.getElementById('ai-planning-modal'));
  planningModal.show();
@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
  document.getElementById('ai-planning-form').reset();
  });
 
- // 🆕 AI Planning Form Submit
+ // � AI Planning Form Submit
  document.getElementById('ai-planning-form').addEventListener('submit', async function(e) {
  e.preventDefault();
  
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
  load();
 });
 
-// 🆕 Global variables for AI planning
+// � Global variables for AI planning
 let currentAIPlan = null;
 
 /**
@@ -503,7 +503,7 @@ function displayAIPlan(plan, months, targetSavings) {
  
  // Plan summary
  html += '<div class="alert alert-success">';
- html += '<h6>✅ Kế hoạch ' + months + ' tháng</h6>';
+ html += '<h6> Kế hoạch ' + months + ' tháng</h6>';
  html += '<p><strong>Mục tiêu:</strong> ' + targetSavings.toLocaleString('vi-VN') + ' VNĐ</p>';
  
  if (plan.monthlySavingsRequired) {
@@ -515,8 +515,36 @@ function displayAIPlan(plan, months, targetSavings) {
  }
  
  if (plan.feasibility) {
- const color = plan.feasibility === 'EASY' ? 'success' : plan.feasibility === 'MODERATE' ? 'warning' : 'danger';
- const text = plan.feasibility === 'EASY' ? 'Dễ đạt được' : plan.feasibility === 'MODERATE' ? 'Vừa phải' : 'Khó đạt được';
+ // Map backend levels: impossible, very_difficult, difficult, achievable, easy
+ let color, text;
+ const level = plan.feasibility.level || plan.feasibility; // Support both object and string
+ 
+ switch(level.toLowerCase()) {
+ case 'impossible':
+ color = 'danger';
+ text = 'Không khả thi';
+ break;
+ case 'very_difficult':
+ color = 'danger';
+ text = 'Rất khó đạt';
+ break;
+ case 'difficult':
+ color = 'warning';
+ text = 'Khó đạt được';
+ break;
+ case 'achievable':
+ color = 'info';
+ text = 'Có thể đạt được';
+ break;
+ case 'easy':
+ color = 'success';
+ text = 'Dễ đạt được';
+ break;
+ default:
+ color = 'secondary';
+ text = level;
+ }
+ 
  html += '<p><strong>Độ khả thi:</strong> <span class="badge bg-' + color + '">' + text + '</span></p>';
  }
  
@@ -546,7 +574,7 @@ function displayAIPlan(plan, months, targetSavings) {
  
  // Recommendations
  if (plan.recommendations && plan.recommendations.length > 0) {
- html += '<h6 class="mt-3">💡 Đề xuất của AI:</h6>';
+ html += '<h6 class="mt-3"> Đề xuất của AI:</h6>';
  html += '<ul class="list-group">';
  plan.recommendations.forEach(rec => {
  html += '<li class="list-group-item">' + rec + '</li>';
@@ -556,7 +584,7 @@ function displayAIPlan(plan, months, targetSavings) {
  
  // Category optimization
  if (plan.categoryOptimizations && plan.categoryOptimizations.length > 0) {
- html += '<h6 class="mt-3">🎯 Tối ưu hóa theo danh mục:</h6>';
+ html += '<h6 class="mt-3"> Tối ưu hóa theo danh mục:</h6>';
  html += '<ul class="list-group">';
  plan.categoryOptimizations.forEach(opt => {
  html += '<li class="list-group-item">';
@@ -564,7 +592,7 @@ function displayAIPlan(plan, months, targetSavings) {
  html += 'Giảm ' + (opt.currentSpending - opt.suggestedSpending).toLocaleString('vi-VN') + ' VNĐ ';
  html += '(từ ' + opt.currentSpending.toLocaleString('vi-VN') + ' → ' + opt.suggestedSpending.toLocaleString('vi-VN') + ' VNĐ)';
  if (opt.suggestion) {
- html += '<br><small class="text-muted">💡 ' + opt.suggestion + '</small>';
+ html += '<br><small class="text-muted"> ' + opt.suggestion + '</small>';
  }
  html += '</li>';
  });
@@ -618,7 +646,7 @@ function applyPlanAsGoal() {
  .then(r => r.json())
  .then(response => {
  if (response.success !== false) {
- alert('✅ Đã tạo mục tiêu từ kế hoạch AI!');
+ alert(' Đã tạo mục tiêu từ kế hoạch AI!');
  // Close modal
  const modal = bootstrap.Modal.getInstance(document.getElementById('ai-planning-modal'));
  modal.hide();

@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎮 Gamification</h1>
+        <h1> Gamification</h1>
         
         <!-- User Stats Overview -->
         <section class="section">
@@ -20,13 +20,13 @@
         
         <!-- Achievements Section -->
         <section class="section">
-            <h2>🏆 Achievements</h2>
+            <h2> Achievements</h2>
             <div id="achievements-list"></div>
         </section>
         
         <!-- Leaderboard Section -->
         <section class="section">
-            <h2>📊 Leaderboard</h2>
+            <h2> Leaderboard</h2>
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchLeaderboard('points')">Top Points</button>
                 <button class="tab-btn" onclick="switchLeaderboard('streak')">Top Streaks</button>
@@ -36,7 +36,7 @@
         
         <!-- Challenges Section -->
         <section class="section">
-            <h2>🎯 Active Challenges</h2>
+            <h2> Active Challenges</h2>
             <div id="challenges-list"></div>
         </section>
     </div>
@@ -92,12 +92,12 @@
             `;
             
             leaderboard.forEach((entry, index) => {
-                const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                const rankIcon = index === 0 ? '�' : index === 1 ? '' : index === 2 ? '' : '';
                 html += `
                     <tr class="rank-${index + 1}">
                         <td>${rankIcon} #${index + 1}</td>
                         <td>${entry.username}</td>
-                        <td>🔥 ${entry.currentStreak} days</td>
+                        <td> ${entry.currentStreak} days</td>
                         <td>⭐ ${entry.longestStreak} days</td>
                     </tr>
                 `;

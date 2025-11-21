@@ -300,13 +300,13 @@ CREATE INDEX IX_AI_History_model ON AI_History(model);
 
 -- Insert default categories
 INSERT INTO Categories (name, type, color, icon) VALUES
--- Income categories
+-- Income categories (IDs 1-4)
 (N'Lương', 'income', '#28a745', 'money-bill'),
 (N'Thu nhập khác', 'income', '#20c997', 'gift'),
 (N'Đầu tư', 'income', '#17a2b8', 'chart-line'),
 (N'Kinh doanh', 'income', '#ffc107', 'store'),
 
--- Expense categories
+-- Expense categories (IDs 5-14)
 (N'Ăn uống', 'expense', '#dc3545', 'utensils'),
 (N'Giao thông', 'expense', '#fd7e14', 'car'),
 (N'Giải trí', 'expense', '#e83e8c', 'gamepad'),
@@ -314,8 +314,8 @@ INSERT INTO Categories (name, type, color, icon) VALUES
 (N'Giáo dục', 'expense', '#20c997', 'graduation-cap'),
 (N'Mua sắm', 'expense', '#fd7e14', 'shopping-cart'),
 (N'Tiện ích', 'expense', '#6c757d', 'bolt'),
-(N'Du lịch', 'expense', '#17a2b8', 'plane'),
-(N'Thể thao', 'expense', '#28a745', 'dumbbell'),
+(N'Vay nợ', 'expense', '#dc3545', 'credit-card'),
+(N'Quà tặng', 'expense', '#e83e8c', 'gift'),
 (N'Khác', 'expense', '#6c757d', 'ellipsis-h');
 
 -- Insert admin user

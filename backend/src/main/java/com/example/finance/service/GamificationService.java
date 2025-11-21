@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,9 +27,6 @@ public class GamificationService {
 
     @Autowired
     private BudgetRepository budgetRepository;
-
-    @Autowired
-    private GoalRepository goalRepository;
 
     @Autowired
     private AchievementService achievementService;

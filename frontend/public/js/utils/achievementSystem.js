@@ -48,7 +48,7 @@ class AchievementSystem {
         tier: 'bronze',
         xpReward: 50,
         condition: (stats) => stats.totalTransactions >= 1,
-        icon: '🎯'
+        icon: ''
       },
       {
         id: 'first-week',
@@ -58,7 +58,7 @@ class AchievementSystem {
         tier: 'bronze',
         xpReward: 100,
         condition: (stats) => stats.streakDays >= 7,
-        icon: '🗓️'
+        icon: ''
       },
       {
         id: 'first-budget',
@@ -68,7 +68,7 @@ class AchievementSystem {
         tier: 'bronze',
         xpReward: 75,
         condition: (stats) => stats.budgetsCreated >= 1,
-        icon: '📊'
+        icon: ''
       },
       {
         id: 'category-explorer',
@@ -78,7 +78,7 @@ class AchievementSystem {
         tier: 'bronze',
         xpReward: 100,
         condition: (stats) => stats.categoriesUsed.size >= 5,
-        icon: '🏷️'
+        icon: ''
       },
 
       // Intermediate Achievements (Silver)
@@ -90,7 +90,7 @@ class AchievementSystem {
         tier: 'silver',
         xpReward: 300,
         condition: (stats) => stats.streakDays >= 30,
-        icon: '🔥'
+        icon: ''
       },
       {
         id: 'saver-starter',
@@ -100,7 +100,7 @@ class AchievementSystem {
         tier: 'silver',
         xpReward: 200,
         condition: (stats) => stats.totalSaved >= 1000000,
-        icon: '💰'
+        icon: ''
       },
       {
         id: 'budget-master',
@@ -110,7 +110,7 @@ class AchievementSystem {
         tier: 'silver',
         xpReward: 250,
         condition: (stats) => stats.budgetsCreated >= 8,
-        icon: '📈'
+        icon: ''
       },
       {
         id: 'goal-achiever',
@@ -120,7 +120,7 @@ class AchievementSystem {
         tier: 'silver',
         xpReward: 300,
         condition: (stats) => stats.goalsCompleted >= 3,
-        icon: '🎯'
+        icon: ''
       },
       {
         id: 'monthly-tracker',
@@ -130,7 +130,7 @@ class AchievementSystem {
         tier: 'silver',
         xpReward: 400,
         condition: (stats) => stats.monthsTracked >= 3,
-        icon: '📅'
+        icon: ''
       },
 
       // Advanced Achievements (Gold)
@@ -142,7 +142,7 @@ class AchievementSystem {
         tier: 'gold',
         xpReward: 800,
         condition: (stats) => stats.streakDays >= 100,
-        icon: '🏆'
+        icon: ''
       },
       {
         id: 'millionaire-saver',
@@ -152,7 +152,7 @@ class AchievementSystem {
         tier: 'gold',
         xpReward: 600,
         condition: (stats) => stats.totalSaved >= 10000000,
-        icon: '💎'
+        icon: ''
       },
       {
         id: 'perfect-budgeter',
@@ -162,7 +162,7 @@ class AchievementSystem {
         tier: 'gold',
         xpReward: 700,
         condition: (stats) => stats.perfectBudgetMonths >= 6,
-        icon: '⚡'
+        icon: ''
       },
       {
         id: 'early-achiever',
@@ -172,7 +172,7 @@ class AchievementSystem {
         tier: 'gold',
         xpReward: 500,
         condition: (stats) => stats.earlyGoalsCompleted >= 5,
-        icon: '🚀'
+        icon: ''
       },
       {
         id: 'year-tracker',
@@ -182,7 +182,7 @@ class AchievementSystem {
         tier: 'gold',
         xpReward: 1000,
         condition: (stats) => stats.monthsTracked >= 12,
-        icon: '🌟'
+        icon: ''
       },
 
       // Master Achievements (Diamond)
@@ -194,7 +194,7 @@ class AchievementSystem {
         tier: 'diamond',
         xpReward: 2000,
         condition: (stats) => stats.streakDays >= 365,
-        icon: '👑'
+        icon: ''
       },
       {
         id: 'savings-legend',
@@ -204,7 +204,7 @@ class AchievementSystem {
         tier: 'diamond',
         xpReward: 1500,
         condition: (stats) => stats.totalSaved >= 100000000,
-        icon: '🏰'
+        icon: ''
       },
       {
         id: 'financial-guru',
@@ -217,7 +217,7 @@ class AchievementSystem {
           const totalAchievements = Array.from(achievements.values()).length - 1; // Exclude this achievement
           return achievements.size >= totalAchievements;
         },
-        icon: '🎖️'
+        icon: ''
       }
     ];
 

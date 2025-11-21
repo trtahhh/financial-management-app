@@ -5,9 +5,6 @@ import com.example.finance.entity.Transaction;
 import com.example.finance.entity.Wallet;
 import com.example.finance.repository.TransactionRepository;
 import com.example.finance.repository.WalletRepository;
-import com.example.finance.service.BudgetService;
-import com.example.finance.service.GoalService;
-import com.example.finance.service.CategoryColorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -428,8 +425,6 @@ public class DashboardService {
  try {
  List<Map<String, Object>> trend = new ArrayList<>();
  YearMonth yearMonth = YearMonth.of(year, month);
- LocalDate startDate = yearMonth.atDay(1);
- LocalDate endDate = yearMonth.atEndOfMonth();
  
  // Lấy tất cả giao dịch trong tháng
  List<Transaction> monthTransactions = transactionRepository.findByUserIdAndMonthAndYear(userId, month, year);

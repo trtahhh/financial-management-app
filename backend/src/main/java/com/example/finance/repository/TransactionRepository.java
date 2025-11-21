@@ -98,7 +98,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
  @Param("year") Integer year
  );
  
- @Query("SELECT t.category.id, SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId " +
+ // For SmartAnalyticsService - find by user, type and date range
+    @Query("SELECT t FROM Transaction t " +
+            "LEFT JOIN FETCH t.category " +
+            "LEFT JOIN FETCH t.wallet " +
+            "WHERE t.user.id = :userId AND t.type = :type AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false " +
+            "ORDER BY t.amount DESC")
+    List<Transaction> findByUserIdAndTypeBetweenDates(
+            @Param("userId") Long userId,
+            @Param("type") String type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    ); @Query("SELECT t.category.id, SUM(t.amount) FROM Transaction t WHERE t.user.id = :userId " +
  "AND (:month IS NULL OR FUNCTION('MONTH', t.date) = :month) " +
  "AND (:year IS NULL OR FUNCTION('YEAR', t.date) = :year) " +
  "AND t.isDeleted = false GROUP BY t.category.id")
@@ -256,9 +267,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
  Optional<Transaction> findByIdWithDetails(@Param("id") Long id);
  
  // AI Services methods
- @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.createdAt BETWEEN :startDate AND :endDate AND t.isDeleted = false ORDER BY t.createdAt DESC")
+ @Query("SELECT t FROM Transaction t " +
+ "LEFT JOIN FETCH t.category " +
+ "LEFT JOIN FETCH t.wallet " +
+ "WHERE t.user.id = :userId AND t.createdAt BETWEEN :startDate AND :endDate AND t.isDeleted = false ORDER BY t.createdAt DESC")
  List<Transaction> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
  
- @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.createdAt > :startDate AND t.isDeleted = false ORDER BY t.createdAt DESC")
+ @Query("SELECT t FROM Transaction t " +
+ "LEFT JOIN FETCH t.category " +
+ "LEFT JOIN FETCH t.wallet " +
+ "WHERE t.user.id = :userId AND t.createdAt > :startDate AND t.isDeleted = false ORDER BY t.createdAt DESC")
  List<Transaction> findByUserIdAndCreatedAtAfterOrderByCreatedAtDesc(@Param("userId") Long userId, @Param("startDate") java.time.LocalDateTime startDate);
 }

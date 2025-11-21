@@ -1,3 +1,4 @@
+// Budget Management with AI Features
 document.addEventListener('DOMContentLoaded', function () {
   const t = document.getElementById('budget-table');
   const m = new bootstrap.Modal(document.getElementById('budget-modal'));
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <td>${b.month}</td>
             <td>${b.year}</td>
             <td>${categoryMap[b.category_id] || 'Không xác định'}</td>
-                            <td>${b.amount?.toLocaleString('vi-VN')} VND</td>
+            <td>${b.amount?.toLocaleString('vi-VN')} VND</td>
             <td>
               <div class="d-flex flex-column">
                 <span class="fw-bold">${(b.spentAmount || 0).toLocaleString('vi-VN')} VND</span>
@@ -80,8 +81,8 @@ document.addEventListener('DOMContentLoaded', function () {
     editing = null;
     f.reset();
     title.textContent = 'Thêm ngân sách';
-    f.year.value = new Date().getFullYear(); // Set default year
-    f.month.value = new Date().getMonth() + 1; // Set default month
+    f.year.value = new Date().getFullYear();
+    f.month.value = new Date().getMonth() + 1;
     m.show();
   });
 
@@ -154,8 +155,6 @@ document.addEventListener('DOMContentLoaded', function () {
       amount: amount
     };
     
-    console.log('Sending budget data:', data);
-    
     const method = editing ? 'PUT' : 'POST';
     const url = '/api/budgets' + (editing ? '/' + editing : '');
     
@@ -188,5 +187,174 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Initialize
-  loadCategories().then(load);
+  loadCategories().then(() => {
+    load();
+    addSmartBudgetFeatures();
+  });
 });
+
+// ============= AI SMART BUDGET FEATURES =============
+
+function addSmartBudgetFeatures() {
+  const budgetContainer = document.querySelector('.budget-container') || document.querySelector('.container');
+  if (!budgetContainer || document.getElementById('smart-budget-section')) return;
+  
+  const smartSection = document.createElement('div');
+  smartSection.id = 'smart-budget-section';
+  smartSection.className = 'card mb-4';
+  smartSection.innerHTML = `
+    <div class="card-header">
+      <h5> Ngân sách thông minh</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <label class="form-label">Thu nhập hàng tháng</label>
+          <input type="number" id="monthly-income" class="form-control" placeholder="VD: 5000000">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Loại ngân sách</label>
+          <select id="budget-type" class="form-select">
+            <option value="balanced">Cân bằng</option>
+            <option value="conservative">Tiết kiệm</option>
+            <option value="flexible">Linh hoạt</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">&nbsp;</label>
+          <div>
+            <button class="btn btn-primary" onclick="generateSmartBudget()">
+               Tạo ngân sách AI
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="smart-budget-result" class="mt-3"></div>
+    </div>
+  `;
+  
+  budgetContainer.insertBefore(smartSection, budgetContainer.firstChild);
+}
+
+async function generateSmartBudget() {
+  const monthlyIncome = document.getElementById('monthly-income').value;
+  const budgetType = document.getElementById('budget-type').value;
+  
+  if (!monthlyIncome || parseFloat(monthlyIncome) <= 0) {
+    alert('Vui lòng nhập thu nhập hàng tháng hợp lệ');
+    return;
+  }
+
+  try {
+    const resultDiv = document.getElementById('smart-budget-result');
+    resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div> Đang xử lý...</div>';
+    
+    const response = await fetch('/api/ai/budget/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+      },
+      body: JSON.stringify({
+        monthlyIncome: parseFloat(monthlyIncome),
+        budgetType: budgetType
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      displaySmartBudgetResult(data);
+    } else {
+      alert('Lỗi tạo ngân sách: ' + data.error);
+    }
+  } catch (error) {
+    console.error('Smart budget error:', error);
+    alert('Lỗi kết nối AI service');
+  }
+}
+
+function displaySmartBudgetResult(data) {
+  const resultDiv = document.getElementById('smart-budget-result');
+  
+  let html = `
+    <div class="alert alert-success">
+      <h6> Ngân sách được đề xuất (Điểm sức khỏe tài chính: ${data.healthScore}/100)</h6>
+    </div>
+    <div class="row">
+  `;
+  
+  Object.entries(data.allocations || {}).forEach(([category, allocation]) => {
+    html += `
+      <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title">${allocation.category}</h6>
+            <p class="card-text">
+              <strong>${(allocation.amount || 0).toLocaleString('vi-VN')} VND</strong><br>
+              <small class="text-muted">${Math.round((allocation.ratio || 0) * 100)}% thu nhập</small><br>
+              <small class="text-info">Độ tin cậy: ${Math.round((allocation.confidence || 0) * 100)}%</small>
+            </p>
+            <button class="btn btn-sm btn-outline-success" 
+                    onclick="createBudgetFromAI('${allocation.category}', ${allocation.amount})">
+               Tạo ngân sách
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  
+  if (data.insights && data.insights.length > 0) {
+    html += '<div class="mt-3"><h6> Thông tin chi tiết:</h6>';
+    data.insights.forEach(insight => {
+      html += `<div class="alert alert-info">${insight.icon} <strong>${insight.title}:</strong> ${insight.message}</div>`;
+    });
+    html += '</div>';
+  }
+  
+  if (data.recommendations && data.recommendations.length > 0) {
+    html += '<div class="mt-3"><h6> Khuyến nghị:</h6>';
+    data.recommendations.forEach(rec => {
+      html += `<div class="alert alert-warning"><strong>${rec.title}:</strong> ${rec.message}</div>`;
+    });
+    html += '</div>';
+  }
+  
+  resultDiv.innerHTML = html;
+}
+
+function createBudgetFromAI(categoryName, amount) {
+  const form = document.getElementById('budget-form');
+  const categorySelect = form?.querySelector('select[name="category_id"]');
+  
+  if (categorySelect) {
+    const options = Array.from(categorySelect.options);
+    const matchingOption = options.find(option => 
+      option.text.toLowerCase().includes(categoryName.toLowerCase())
+    );
+    
+    if (matchingOption) {
+      categorySelect.value = matchingOption.value;
+    }
+  }
+  
+  const amountInput = form?.querySelector('input[name="amount"]');
+  if (amountInput) {
+    amountInput.value = Math.round(amount);
+  }
+  
+  const monthInput = form?.querySelector('input[name="month"]');
+  if (monthInput) {
+    monthInput.value = new Date().getMonth() + 1;
+  }
+  
+  const yearInput = form?.querySelector('input[name="year"]');
+  if (yearInput) {
+    yearInput.value = new Date().getFullYear();
+  }
+  
+  document.getElementById('budget-add-btn')?.click();
+}

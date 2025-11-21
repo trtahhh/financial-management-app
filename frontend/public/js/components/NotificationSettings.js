@@ -125,7 +125,7 @@ class NotificationSettings {
         <div class="setting-group">
           <div class="setting-item">
             <div class="setting-info">
-              <label class="setting-label">💰 Cảnh báo ngân sách</label>
+              <label class="setting-label"> Cảnh báo ngân sách</label>
               <span class="setting-description">Thông báo khi sắp hết hoặc vượt ngân sách</span>
             </div>
             <div class="setting-control">
@@ -138,7 +138,7 @@ class NotificationSettings {
 
           <div class="setting-item">
             <div class="setting-info">
-              <label class="setting-label">🏆 Thành tích</label>
+              <label class="setting-label"> Thành tích</label>
               <span class="setting-description">Thông báo khi đạt được thành tích mới</span>
             </div>
             <div class="setting-control">
@@ -151,7 +151,7 @@ class NotificationSettings {
 
           <div class="setting-item">
             <div class="setting-info">
-              <label class="setting-label">💡 Thông tin chi tiêu</label>
+              <label class="setting-label"> Thông tin chi tiêu</label>
               <span class="setting-description">Gợi ý và phân tích thói quen chi tiêu</span>
             </div>
             <div class="setting-control">
@@ -164,7 +164,7 @@ class NotificationSettings {
 
           <div class="setting-item">
             <div class="setting-info">
-              <label class="setting-label">📅 Nhắc nhở</label>
+              <label class="setting-label"> Nhắc nhở</label>
               <span class="setting-description">Nhắc nhở về mục tiêu và nhiệm vụ</span>
             </div>
             <div class="setting-control">
@@ -177,7 +177,7 @@ class NotificationSettings {
 
           <div class="setting-item">
             <div class="setting-info">
-              <label class="setting-label">📊 Báo cáo phân tích</label>
+              <label class="setting-label"> Báo cáo phân tích</label>
               <span class="setting-description">Báo cáo định kỳ về tình hình tài chính</span>
             </div>
             <div class="setting-control">
@@ -498,10 +498,10 @@ class NotificationSettings {
     if (notificationStatus) {
       const permission = Notification.permission;
       notificationStatus.textContent = {
-        'granted': 'Đã cấp quyền ✅',
-        'denied': 'Đã từ chối ❌',
-        'default': 'Chưa yêu cầu ❓'
-      }[permission] || 'Không hỗ trợ ❌';
+        'granted': 'Đã cấp quyền ',
+        'denied': 'Đã từ chối ',
+        'default': 'Chưa yêu cầu '
+      }[permission] || 'Không hỗ trợ ';
       
       notificationStatus.className = `status ${permission}`;
     }
@@ -510,14 +510,14 @@ class NotificationSettings {
       if ('serviceWorker' in navigator) {
         try {
           const registration = await navigator.serviceWorker.getRegistration();
-          swStatus.textContent = registration ? 'Hoạt động ✅' : 'Chưa cài đặt ❌';
+          swStatus.textContent = registration ? 'Hoạt động ' : 'Chưa cài đặt ';
           swStatus.className = `status ${registration ? 'active' : 'inactive'}`;
         } catch (error) {
-          swStatus.textContent = 'Lỗi ❌';
+          swStatus.textContent = 'Lỗi ';
           swStatus.className = 'status error';
         }
       } else {
-        swStatus.textContent = 'Không hỗ trợ ❌';
+        swStatus.textContent = 'Không hỗ trợ ';
         swStatus.className = 'status unsupported';
       }
     }
@@ -798,25 +798,25 @@ class NotificationSettings {
   async testNotification(type) {
     const testNotifications = {
       budget_warning: {
-        title: '⚠️ Test cảnh báo ngân sách',
+        title: ' Test cảnh báo ngân sách',
         message: 'Đây là thông báo test cho cảnh báo ngân sách',
         type: 'budget_warning',
         priority: 'medium'
       },
       achievement: {
-        title: '🏆 Test thành tích',
+        title: ' Test thành tích',
         message: 'Bạn đã test thành công tính năng thông báo!',
         type: 'achievement',
         priority: 'medium'
       },
       insight: {
-        title: '💡 Test thông tin',
+        title: ' Test thông tin',
         message: 'Đây là một gợi ý test về chi tiêu của bạn',
         type: 'insight',
         priority: 'low'
       },
       reminder: {
-        title: '📅 Test nhắc nhở',
+        title: ' Test nhắc nhở',
         message: 'Đây là thông báo nhắc nhở test',
         type: 'reminder',
         priority: 'medium'
