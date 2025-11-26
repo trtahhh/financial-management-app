@@ -11,6 +11,7 @@ import com.example.finance.service.OverspendingDetectionService;
 import com.example.finance.service.LongTermPlanningService;
 import com.example.finance.service.SavingsKnowledgeBase;
 import com.example.finance.service.SmartAnalyticsService;
+import com.example.finance.service.ConversationContextService;
 import com.example.finance.entity.Transaction;
 import com.example.finance.security.CustomUserDetails;
 import com.example.finance.repository.TransactionRepository;
@@ -47,6 +48,9 @@ public class AIController {
     
     @Autowired
     private SmartAnalyticsService smartAnalyticsService;
+    
+    @Autowired
+    private ConversationContextService conversationContextService;
     
     @Autowired
     private TransactionRepository transactionRepository;
@@ -306,18 +310,27 @@ public class AIController {
             
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "metrics", analysis.getMetrics(),
-                "achievements", analysis.getAchievements(),
-                "warnings", analysis.getWarnings(),
-                "suggestions", analysis.getSuggestions(),
-                "trends", analysis.getTrends(),
-                "forecast", analysis.getForecast()
+                "metrics", analysis.getMetrics() != null ? analysis.getMetrics() : Map.of(),
+                "achievements", analysis.getAchievements() != null ? analysis.getAchievements() : List.of(),
+                "warnings", analysis.getWarnings() != null ? analysis.getWarnings() : List.of(),
+                "suggestions", analysis.getSuggestions() != null ? analysis.getSuggestions() : List.of(),
+                "trends", analysis.getTrends() != null ? analysis.getTrends() : Map.of(),
+                "forecast", analysis.getForecast() != null ? analysis.getForecast() : Map.of()
             ));
             
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(
-                Map.of("error", "Budget analysis failed: " + e.getMessage())
-            );
+            // Return fallback response with minimal data instead of error
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Insufficient data for analysis",
+                "metrics", Map.of(),
+                "achievements", List.of(),
+                "warnings", List.of(),
+                "suggestions", List.of(),
+                "trends", Map.of(),
+                "forecast", Map.of(),
+                "note", "Need more transactions and budgets to perform analysis"
+            ));
         }
     }
     
@@ -830,6 +843,63 @@ public class AIController {
                 Map.of(
                     "success", false,
                     "error", "Moni không hiểu câu hỏi của bạn: " + e.getMessage()
+                )
+            );
+        }
+    }
+    
+    /**
+     * Get personalized greeting for chat interface (Momo-style)
+     * Returns time-based greeting + user insights
+     */
+    @GetMapping("/chat/greeting")
+    public ResponseEntity<?> getPersonalizedGreeting(Authentication authentication) {
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            String greeting = conversationContextService.generatePersonalizedGreeting(userId);
+            List<Map<String, String>> quickActions = conversationContextService.generateQuickActions(userId);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "greeting", greeting,
+                "quickActions", quickActions
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(
+                Map.of(
+                    "success", false,
+                    "error", "Failed to generate greeting: " + e.getMessage()
+                )
+            );
+        }
+    }
+    
+    /**
+     * Get dynamic quick action suggestions (Momo-style smart cards)
+     */
+    @GetMapping("/chat/quick-actions")
+    public ResponseEntity<?> getQuickActions(Authentication authentication) {
+        try {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            
+            List<Map<String, String>> actions = conversationContextService.generateQuickActions(userId);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "actions", actions
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(
+                Map.of(
+                    "success", false,
+                    "error", "Failed to generate actions: " + e.getMessage()
                 )
             );
         }

@@ -33,54 +33,71 @@ public class RecurringTransactionService {
  private final CategoryRepository categoryRepository;
 
  public List<RecurringTransactionDTO> findByUserId(Long userId) {
- return repository.findByUserIdAndIsActiveTrue(userId)
+ return repository.findByUser_IdAndIsActiveTrue(userId)
  .stream()
  .map(mapper::toDto)
  .toList();
  }
 
- @Transactional
- public RecurringTransactionDTO create(RecurringTransactionDTO dto) {
- RecurringTransaction entity = mapDtoToEntity(dto);
- entity.setNextExecution(calculateNextExecution(dto.getStartDate(), dto.getFrequency()));
- 
- RecurringTransaction saved = repository.save(entity);
- log.info(" Created recurring transaction for user {} - Amount: {}", 
- dto.getUserId(), dto.getAmount());
- 
- return mapper.toDto(saved);
- }
-
- @Transactional
- public RecurringTransactionDTO update(Long id, RecurringTransactionDTO dto) {
- RecurringTransaction existing = repository.findById(id)
- .orElseThrow(() -> new RuntimeException("Recurring transaction not found"));
- 
- // Update fields
- existing.setAmount(dto.getAmount());
- existing.setNote(dto.getNote());
- existing.setFrequency(dto.getFrequency());
- existing.setEndDate(dto.getEndDate());
- existing.setIsActive(dto.getIsActive());
- 
- // Update relationships if changed
- if (dto.getWalletId() != null && !dto.getWalletId().equals(existing.getWallet().getId())) {
- Wallet wallet = walletRepository.findById(dto.getWalletId())
- .orElseThrow(() -> new RuntimeException("Wallet not found"));
- existing.setWallet(wallet);
- }
- 
- if (dto.getCategoryId() != null && !dto.getCategoryId().equals(existing.getCategory().getId())) {
- Category category = categoryRepository.findById(dto.getCategoryId())
- .orElseThrow(() -> new RuntimeException("Category not found"));
- existing.setCategory(category);
- }
- 
- RecurringTransaction saved = repository.save(existing);
- return mapper.toDto(saved);
- }
-
- @Transactional
+    @Transactional
+    public RecurringTransactionDTO create(RecurringTransactionDTO dto) {
+        RecurringTransaction entity = mapDtoToEntity(dto);
+        
+        // Allow manual nextExecution for testing, otherwise auto-calculate
+        if (dto.getNextExecution() != null) {
+            entity.setNextExecution(dto.getNextExecution());
+        } else {
+            LocalDate today = LocalDate.now();
+            entity.setNextExecution(calculateNextExecution(today, dto.getFrequency()));
+        }
+        
+        RecurringTransaction saved = repository.save(entity);
+        log.info("✅ Created recurring transaction for user {} - Amount: {} - Next: {}", 
+                dto.getUserId(), dto.getAmount(), entity.getNextExecution());
+        
+        return mapper.toDto(saved);
+    }    @Transactional
+    public RecurringTransactionDTO update(Long id, RecurringTransactionDTO dto) {
+        RecurringTransaction existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recurring transaction not found"));
+        
+        // Update basic fields
+        if (dto.getAmount() != null) {
+            existing.setAmount(dto.getAmount());
+        }
+        if (dto.getNote() != null) {
+            existing.setNote(dto.getNote());
+        }
+        if (dto.getType() != null) {
+            existing.setType(dto.getType());
+        }
+        if (dto.getIsActive() != null) {
+            existing.setIsActive(dto.getIsActive());
+        }
+        
+        // If frequency changed, recalculate next execution
+        if (dto.getFrequency() != null && !dto.getFrequency().equals(existing.getFrequency())) {
+            existing.setFrequency(dto.getFrequency());
+            existing.setNextExecution(calculateNextExecution(LocalDate.now(), dto.getFrequency()));
+        }
+        
+        // Update relationships if changed
+        if (dto.getWalletId() != null && !dto.getWalletId().equals(existing.getWallet().getId())) {
+            Wallet wallet = walletRepository.findById(dto.getWalletId())
+                    .orElseThrow(() -> new RuntimeException("Wallet not found"));
+            existing.setWallet(wallet);
+        }
+        
+        if (dto.getCategoryId() != null && !dto.getCategoryId().equals(existing.getCategory().getId())) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            existing.setCategory(category);
+        }
+        
+        RecurringTransaction saved = repository.save(existing);
+        log.info("📝 Updated recurring transaction {} - Next: {}", id, saved.getNextExecution());
+        return mapper.toDto(saved);
+    } @Transactional
  public void delete(Long id) {
  RecurringTransaction existing = repository.findById(id)
  .orElseThrow(() -> new RuntimeException("Recurring transaction not found"));
@@ -110,52 +127,88 @@ public class RecurringTransactionService {
  }
 
  /**
- * Scheduled job để tự động tạo transactions từ recurring transactions
- * Chạy mỗi ngày lúc 00:30
+ * MANUAL execution - User triggers this to create transactions from recurring
+ * NOT automatic - user must click "Execute Now" button
  */
- @Scheduled(cron = "0 30 0 * * ?")
+    @Transactional
+    public int executeRecurringTransaction(Long recurringId) {
+        log.info("🔄 Manual execution of recurring transaction ID: {}", recurringId);
+        
+        RecurringTransaction recurring = repository.findById(recurringId)
+                .orElseThrow(() -> new RuntimeException("Recurring transaction not found"));
+        
+        if (!recurring.getIsActive()) {
+            throw new RuntimeException("Recurring transaction is not active");
+        }
+        
+        // Manual execution - allow anytime, no date restriction
+        // User clicks "Execute Now" button to create transaction manually
+        
+        // Create transaction from recurring template
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setUserId(recurring.getUser().getId());
+        transactionDTO.setWalletId(recurring.getWallet().getId());
+        transactionDTO.setCategoryId(recurring.getCategory().getId());
+        transactionDTO.setAmount(recurring.getAmount());
+        transactionDTO.setType(recurring.getType().toLowerCase()); // Ensure lowercase for validation
+        transactionDTO.setNote("🔄 " + (recurring.getNote() != null ? recurring.getNote() : "Recurring transaction"));
+        transactionDTO.setDate(LocalDate.now());
+        transactionDTO.setStatus("cleared");
+        
+        transactionService.save(transactionDTO, null);
+        
+        // Update next execution date based on frequency
+        recurring.setNextExecution(calculateNextExecution(recurring.getNextExecution(), recurring.getFrequency()));
+        repository.save(recurring);
+        
+        log.info("✅ Created transaction from recurring ID: {} - Next execution: {}", 
+                recurringId, recurring.getNextExecution());
+        return 1;
+    } /**
+ * Execute ALL due recurring transactions for a specific user
+ * User clicks "Execute All My Recurring Transactions" button
+ */
  @Transactional
- public void processRecurringTransactions() {
- log.info(" Processing recurring transactions...");
+ public int executeAllDueRecurringTransactions(Long userId) {
+ log.info("🔄 Executing all due recurring transactions for user: {}", userId);
  
  List<RecurringTransaction> dueTransactions = repository.findDueTransactions(LocalDate.now());
+ int created = 0;
  
  for (RecurringTransaction recurring : dueTransactions) {
- try {
- // Tạo TransactionDTO để sử dụng với method save có sẵn
- TransactionDTO transactionDTO = new TransactionDTO();
- transactionDTO.setUserId(recurring.getUser().getId());
- transactionDTO.setWalletId(recurring.getWallet().getId());
- transactionDTO.setCategoryId(recurring.getCategory().getId());
- transactionDTO.setAmount(recurring.getAmount());
- transactionDTO.setType(recurring.getType());
- transactionDTO.setNote("[Auto] " + recurring.getNote());
- transactionDTO.setDate(LocalDate.now());
- transactionDTO.setStatus("cleared");
- 
- // Sử dụng method save có sẵn với file = null
- transactionService.save(transactionDTO, null);
- 
- // Cập nhật next execution
- recurring.setNextExecution(calculateNextExecution(recurring.getNextExecution(), recurring.getFrequency()));
- 
- // Kiểm tra end date
- if (recurring.getEndDate() != null && recurring.getNextExecution().isAfter(recurring.getEndDate())) {
- recurring.setIsActive(false);
- log.info("🏁 Recurring transaction {} reached end date, deactivated", recurring.getId());
+ // Only process transactions for this user
+ if (!recurring.getUser().getId().equals(userId)) {
+ continue;
  }
  
- repository.save(recurring);
+ if (!recurring.getIsActive()) {
+ continue;
+ }
  
- log.info(" Created recurring transaction for user {} - Amount: {}", 
- recurring.getUser().getId(), recurring.getAmount());
+ try {
+ // Create transaction
+                TransactionDTO transactionDTO = new TransactionDTO();
+                transactionDTO.setUserId(recurring.getUser().getId());
+                transactionDTO.setWalletId(recurring.getWallet().getId());
+                transactionDTO.setCategoryId(recurring.getCategory().getId());
+                transactionDTO.setAmount(recurring.getAmount());
+                transactionDTO.setType(recurring.getType().toLowerCase()); // Ensure lowercase for validation
+                transactionDTO.setNote("🔄 [Auto] " + recurring.getNote());
+                transactionDTO.setDate(LocalDate.now());
+                transactionDTO.setStatus("cleared");                transactionService.save(transactionDTO, null);
+                
+                // Update next execution date
+                recurring.setNextExecution(calculateNextExecution(recurring.getNextExecution(), recurring.getFrequency()));
+                repository.save(recurring);
+                created++; log.info("✅ Created transaction from recurring ID: {}", recurring.getId());
  
  } catch (Exception e) {
- log.error(" Failed to process recurring transaction {}: {}", recurring.getId(), e.getMessage());
+ log.error("❌ Failed to process recurring transaction {}: {}", recurring.getId(), e.getMessage());
  }
  }
  
- log.info("🏁 Processed {} recurring transactions", dueTransactions.size());
+ log.info("🏁 Executed {} recurring transactions for user {}", created, userId);
+ return created;
  }
 
  /**

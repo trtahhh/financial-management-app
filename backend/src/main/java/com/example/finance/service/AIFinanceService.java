@@ -966,7 +966,6 @@ public class AIFinanceService {
  
  try {
  // Get current month data
- LocalDate now = LocalDate.now();
  
  // Use aiFinancialAnalysisService to get real analysis
  String personalAnalysis = aiFinancialAnalysisService.analyzePersonalFinance(userId);

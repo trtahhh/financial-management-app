@@ -2,31 +2,151 @@
   {
     "name": "openrouter.api.key",
     "type": "java.lang.String",
-    "description": "A description for 'openrouter.api.key'"
+    "description": "OpenRouter API key for AI services"
+  },
+  {
+    "name": "openrouter.api-key",
+    "type": "java.lang.String",
+    "description": "OpenRouter API key (legacy property name)"
   },
   {
     "name": "openrouter.api.url",
     "type": "java.lang.String",
-    "description": "A description for 'openrouter.api.url'"
+    "description": "OpenRouter API URL"
+  },
+  {
+    "name": "openrouter.base-url",
+    "type": "java.lang.String",
+    "description": "OpenRouter base URL (legacy property name)"
   },
   {
     "name": "openrouter.model",
     "type": "java.lang.String",
-    "description": "A description for 'openrouter.model'"
+    "description": "OpenRouter model name"
+  },
+  {
+    "name": "openrouter.default-model",
+    "type": "java.lang.String",
+    "description": "OpenRouter default model (legacy property name)"
+  },
+  {
+    "name": "ai.provider",
+    "type": "java.lang.String",
+    "description": "AI provider selection (openrouter, openai, etc.)"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "JWT secret key for token signing"
+  },
+  {
+    "name": "jwt.expiration",
+    "type": "java.lang.Long",
+    "description": "JWT token expiration time in milliseconds"
+  },
+  {
+    "name": "email.verification.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Enable/disable email verification"
+  },
+  {
+    "name": "email.verification.token.expiration",
+    "type": "java.lang.String",
+    "description": "Email verification token expiration duration"
+  },
+  {
+    "name": "email.from",
+    "type": "java.lang.String",
+    "description": "Email sender address"
+  },
+  {
+    "name": "email.from.name",
+    "type": "java.lang.String",
+    "description": "Email sender name"
+  },
+  {
+    "name": "notification.email.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Enable/disable email notifications"
+  },
+  {
+    "name": "notification.email.goal-completion",
+    "type": "java.lang.Boolean",
+    "description": "Send email on goal completion"
+  },
+  {
+    "name": "notification.email.goal-milestones",
+    "type": "java.lang.Boolean",
+    "description": "Send email on goal milestones"
+  },
+  {
+    "name": "notification.email.milestone-percentages",
+    "type": "java.lang.String",
+    "description": "Milestone percentages for notifications"
+  },
+  {
+    "name": "notification.email.check-interval",
+    "type": "java.lang.Long",
+    "description": "Interval for checking notifications in milliseconds"
+  },
+  {
+    "name": "notification.email.budget-alerts",
+    "type": "java.lang.Boolean",
+    "description": "Enable/disable budget alert emails"
+  },
+  {
+    "name": "notification.email.budget-warning-threshold",
+    "type": "java.lang.Integer",
+    "description": "Budget warning threshold percentage"
+  },
+  {
+    "name": "notification.email.budget-exceeded-threshold",
+    "type": "java.lang.Integer",
+    "description": "Budget exceeded threshold percentage"
+  },
+  {
+    "name": "ocr.provider",
+    "type": "java.lang.String",
+    "description": "OCR provider selection"
+  },
+  {
+    "name": "ocr.ocrspace.api-key",
+    "type": "java.lang.String",
+    "description": "OCR.space API key"
+  },
+  {
+    "name": "ocr.ocrspace.endpoint",
+    "type": "java.lang.String",
+    "description": "OCR.space API endpoint URL"
+  },
+  {
+    "name": "app.ai.service.url",
+    "type": "java.lang.String",
+    "description": "AI service URL for machine learning operations"
+  },
+  {
+    "name": "app.ai.service.timeout",
+    "type": "java.lang.Long",
+    "description": "AI service timeout in milliseconds"
+  },
+  {
+    "name": "app.ai.service.enabled",
+    "type": "java.lang.Boolean",
+    "description": "Enable/disable AI service integration"
   },
   {
     "name": "api.key",
     "type": "java.lang.String",
-    "description": "A description for 'api.key'"
+    "description": "Generic API key"
   },
   {
     "name": "openai.api.url",
     "type": "java.lang.String",
-    "description": "A description for 'openai.api.url'"
+    "description": "OpenAI API URL"
   },
   {
     "name": "spring.ai.openai.chat.model",
     "type": "java.lang.String",
-    "description": "A description for 'spring.ai.openai.chat.model'"
+    "description": "Spring AI OpenAI chat model"
   }
 ]}

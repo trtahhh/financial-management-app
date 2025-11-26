@@ -1,0 +1,484 @@
+<main class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-robot me-2 fs-4"></i>
+            <div>
+              <h5 class="mb-0"> AI Tư vấn tài chính</h5>
+              <small>Trợ lý AI thông minh cho quản lý tài chính cá nhân</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <!-- Chat Messages Area -->
+          <div class="chat-messages" id="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background-color: #f8f9fa;">
+            <div class="alert alert-info border-0">
+              <div class="d-flex align-items-start">
+                <span class="badge bg-success me-2 mt-1"> AI</span>
+                <div>
+                  <strong>Xin chào!</strong> Tôi là trợ lý AI tài chính của bạn. Tôi có thể giúp bạn:
+                  <ul class="mb-0 mt-2">
+                    <li> Tư vấn lập ngân sách cá nhân</li>
+                    <li> Phân tích thói quen chi tiêu</li>
+                    <li> Đặt mục tiêu tài chính thông minh</li>
+                    <li> Hướng dẫn đầu tư cơ bản cho sinh viên</li>
+                    <li>� Mẹo tiết kiệm hiệu quả hàng ngày</li>
+                  </ul>
+                  <div class="mt-2">
+                    <strong>Hãy bắt đầu bằng cách hỏi tôi điều gì đó!</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Action Buttons -->
+          <div class="border-top p-3 bg-white">
+            <div class="row g-2">
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-primary btn-sm w-100" onclick="quickQuestion('budget')">
+                   Ngân sách
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-success btn-sm w-100" onclick="quickQuestion('saving')">
+                  � Tiết kiệm
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-info btn-sm w-100" onclick="quickQuestion('spending')">
+                   Chi tiêu
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn btn-outline-warning btn-sm w-100" onclick="quickQuestion('investment')">
+                   Đầu tư
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="card-footer bg-white border-top">
+          <div class="input-group">
+            <input type="text" class="form-control" id="chat-input" 
+                   placeholder="Nhập câu hỏi của bạn..." 
+                   onkeypress="handleKeyPress(event)"
+                   style="border-radius: 25px 0 0 25px;">
+            <button class="btn btn-primary px-4" onclick="sendMessage()" style="border-radius: 0 25px 25px 0;">
+              <i class="bi bi-send"></i>
+            </button>
+          </div>
+          <div class="mt-2 text-center">
+            <small class="text-muted">
+               Thử hỏi: "Làm sao để tiết kiệm tiền hiệu quả?" • "Cách lập ngân sách cho sinh viên?"
+            </small>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI Features Overview -->
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card border-0 bg-light">
+            <div class="card-body text-center">
+              <i class="bi bi-lightbulb text-warning fs-2"></i>
+              <h6 class="mt-2">Tư vấn thông minh</h6>
+              <small class="text-muted">AI phân tích tài chính cá nhân và đưa ra lời khuyên phù hợp</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 bg-light">
+            <div class="card-body text-center">
+              <i class="bi bi-graph-up text-success fs-2"></i>
+              <h6 class="mt-2">Phân tích dữ liệu</h6>
+              <small class="text-muted">Hiểu sâu về thói quen tài chính và xu hướng chi tiêu của bạn</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+let chatHistory = [];
+let isProcessing = false;
+
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+function quickQuestion(type) {
+  const questions = {
+    budget: "Làm thế nào để lập ngân sách hiệu quả cho sinh viên với thu nhập không ổn định?",
+    saving: "Có những cách nào để tiết kiệm tiền hàng ngày mà vẫn đảm bảo chất lượng cuộc sống?",
+    spending: "Hãy phân tích và đưa ra lời khuyên về thói quen chi tiêu của tôi",
+    investment: "Sinh viên như tôi nên bắt đầu đầu tư như thế nào với số tiền ít?"
+  };
+  
+  const input = document.getElementById('chat-input');
+  input.value = questions[type];
+  input.focus();
+  sendMessage();
+}
+
+async function sendMessage() {
+  if (isProcessing) return;
+  
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  isProcessing = true;
+  
+  // Add user message
+  addMessage('user', message);
+  input.value = '';
+  
+  // Show typing indicator
+  const typingId = addMessage('ai', 'Đang suy nghĩ...', true);
+  
+  try {
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    
+    // Remove typing indicator
+    removeMessage(typingId);
+    
+    // Generate and add AI response
+    const response = generateAIResponse(message);
+    addMessage('ai', response);
+    
+  } catch (error) {
+    console.error('Chat error:', error);
+    removeMessage(typingId);
+    addMessage('ai', 'Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi. Vui lòng thử lại sau. �');
+  } finally {
+    isProcessing = false;
+  }
+}
+
+function generateAIResponse(message) {
+  const lowerMessage = message.toLowerCase();
+  
+  // Advanced keyword matching with context
+  if (lowerMessage.includes('ngân sách') || lowerMessage.includes('budget') || lowerMessage.includes('lập kế hoạch')) {
+    return ` **Hướng dẫn lập ngân sách thông minh:**
+
+**Bước 1: Tính thu nhập thực tế**
+- Thu nhập từ học bổng, làm thêm, hỗ trợ gia đình
+- Trừ đi thuế và các khoản bắt buộc
+
+**Bước 2: Áp dụng quy tắc 50/30/20**
+- **50% nhu cầu thiết yếu:** Ăn, ở, học phí, đi lại
+- **30% mong muốn:** Giải trí, mua sắm, hẹn hò
+- **20% tương lai:** Tiết kiệm, trả nợ, đầu tư
+
+**Bước 3: Theo dõi và điều chỉnh**
+- Dùng app này để ghi chép chi tiêu hàng ngày
+- Xem xét lại ngân sách mỗi tháng
+- Điều chỉnh tỷ lệ phù hợp với tình hình
+
+ **Mẹo hay:** Đặt mục tiêu tiết kiệm cụ thể (VD: mua laptop, đi du lịch) để có động lực!`;
+  }
+  
+  if (lowerMessage.includes('tiết kiệm') || lowerMessage.includes('saving') || lowerMessage.includes('save money')) {
+    return ` **Chiến lược tiết kiệm hiệu quả:**
+
+**� Ăn uống:**
+- Nấu ăn tại nhà: tiết kiệm 60-70% so với ăn ngoài
+- Mang cơm trưa đi học/làm
+- Mua thực phẩm theo mùa, đi chợ cuối ngày
+
+**� Di chuyển:**
+- Sử dụng phương tiện công cộng
+- Đi bộ/xe đạp cho quãng đường ngắn
+- Chia sẻ xe với bạn bè
+
+** Mua sắm thông minh:**
+- Lập danh sách trước khi mua
+- So sánh giá trước khi quyết định
+- Mua đồ cũ chất lượng tốt
+- Chờ sale/khuyến mãi cho đồ không gấp
+
+** Rule 24h:** Chờ 24h trước khi mua đồ > 500k để tránh mua impulsive!
+
+ **Mục tiêu:** Bắt đầu với tiết kiệm 100k/tháng, tăng dần theo thu nhập!`;
+  }
+  
+  if (lowerMessage.includes('đầu tư') || lowerMessage.includes('investment') || lowerMessage.includes('invest')) {
+    return ` **Đầu tư cơ bản cho người mới:**
+
+** Nguyên tắc vàng:**
+1. **Có quỹ khẩn cấp trước:** 3-6 tháng chi tiêu
+2. **Bắt đầu sớm, dù ít:** 100k/tháng cũng tốt
+3. **Đầu tư định kỳ:** Dollar Cost Averaging
+4. **Đa dạng hóa:** Không bỏ hết trứng vào 1 giỏ
+
+** Kênh phù hợp sinh viên:**
+- **Quỹ mở (Mutual Fund):** Ít rủi ro, chuyên gia quản lý
+- **Vàng SJC mini:** Bảo toàn giá trị, dễ mua bán
+- **Tiết kiệm có kỳ hạn:** 6-12 tháng, lãi suất ổn định
+- **ETF:** Đầu tư chỉ số, phí thấp
+
+** Tránh:**
+- Đầu tư bằng tiền vay
+- Bỏ hết vào 1 cổ phiếu
+- Tin theo "tips" trên mạng
+- FOMO (Fear of Missing Out)
+
+ **Bắt đầu:** 200-500k/tháng vào quỹ mở, tăng dần theo thu nhập!`;
+  }
+  
+  if (lowerMessage.includes('phân tích') || lowerMessage.includes('chi tiêu') || lowerMessage.includes('spending')) {
+    return ` **Phân tích chi tiêu thông minh:**
+
+** Các chỉ số cần theo dõi:**
+- **Chi tiêu theo danh mục:** Xem đâu tốn nhiều nhất
+- **Tỷ lệ chi/thu:** Không nên > 80% thu nhập
+- **Xu hướng theo tháng:** Tăng/giảm ra sao?
+- **Chi tiêu bất thường:** Những khoản lớn ngoài dự kiến
+
+** Cách sử dụng app hiệu quả:**
+1. Ghi chép ngay sau khi chi tiêu
+2. Dùng AI phân loại tự động
+3. Xem báo cáo Dashboard hàng tuần
+4. Đặt alert khi sắp vượt ngân sách
+
+** Phương pháp 80/20:**
+- 20% nguyên nhân tạo ra 80% chi tiêu
+- Tập trung kiểm soát những khoản chi lớn nhất
+
+** Mẹo hay:**
+- Chụp ảnh hóa đơn → AI sẽ tự động nhập liệu
+- Đặt budget alert ở 80% để kịp thời điều chỉnh
+- Review chi tiêu mỗi chủ nhật
+
+ **Mục tiêu:** Giảm 10-15% chi tiêu không cần thiết mỗi tháng!`;
+  }
+  
+  if (lowerMessage.includes('mục tiêu') || lowerMessage.includes('goal') || lowerMessage.includes('kế hoạch')) {
+    return ` **Đặt mục tiêu tài chính SMART:**
+
+**S - Specific (Cụ thể):**
+- "Mua laptop 20 triệu" thay vì "mua laptop"
+- "Tiết kiệm 500k/tháng" thay vì "tiết kiệm nhiều"
+
+**M - Measurable (Đo được):**
+- Số tiền cụ thể: 5 triệu, 10 triệu
+- Thời gian rõ ràng: 6 tháng, 1 năm
+
+**A - Achievable (Khả thi):**
+- Phù hợp với thu nhập hiện tại
+- Không ảnh hưởng đến nhu cầu cơ bản
+
+**R - Relevant (Phù hợp):**
+- Phù hợp với hoàn cảnh sinh viên
+- Ưu tiên theo tầm quan trọng
+
+**T - Time-bound (Có thời hạn):**
+- Deadline cụ thể để tạo pressure tích cực
+
+** Ví dụ mục tiêu sinh viên:**
+- **Ngắn hạn (3-6 tháng):** Mua điện thoại mới 8 triệu
+- **Trung hạn (6-12 tháng):** Du lịch Đà Lạt 3 triệu
+- **Dài hạn (1-2 năm):** Quỹ khẩn cấp 15 triệu
+
+ **Trick:** Chia mục tiêu lớn thành milestone nhỏ để dễ đạt được!`;
+  }
+  
+  if (lowerMessage.includes('sinh viên') || lowerMessage.includes('student') || lowerMessage.includes('học sinh')) {
+    return `� **Tài chính thông minh cho sinh viên:**
+
+** Tối ưu thu nhập:**
+- **Part-time:** Gia sư, phục vụ, content creator
+- **Online:** Freelance thiết kế, viết content, dịch thuật
+- **Passive:** Bán đồ cũ, cho thuê sách, affiliate marketing
+
+**� Tiết kiệm chi phí:**
+- **Ở:** Ở ghép, ở ký túc xá thay vì thuê riêng
+- **Ăn:** Nấu cơm tập thể với bạn, mang cơm trưa
+- **Học:** Sách photocopy, tài liệu online, thư viện
+
+**� Đầu tư vào bản thân:**
+- Khóa học kỹ năng (marketing, IT, ngoại ngữ)
+- Chứng chỉ nghề nghiệp
+- Networking, tham gia CLB
+
+** Lộ trình tài chính 4 năm đại học:**
+- **Năm 1:** Học quản lý tiền, tạo thói quen ghi chép
+- **Năm 2:** Xây dựng quỹ khẩn cấp 3-5 triệu
+- **Năm 3:** Bắt đầu đầu tư nhỏ, làm thêm ổn định
+- **Năm 4:** Chuẩn bị tài chính cho sau tốt nghiệp
+
+ **Golden rule:** Sống dưới khả năng tài chính, đầu tư vào kỹ năng!`;
+  }
+  
+  // Default comprehensive response
+  return ` Cảm ơn câu hỏi thú vị của bạn về "${message}"!
+
+Tôi là chuyên gia AI về tài chính cá nhân, đặc biệt hiểu rõ về tình hình của sinh viên và người trẻ ở Việt Nam.
+
+** Tôi có thể giúp bạn:**
+-  **Lập ngân sách cá nhân** phù hợp với thu nhập không ổn định
+- � **Chiến lược tiết kiệm** hiệu quả cho người trẻ
+-  **Phân tích chi tiêu** và tìm ra các "lỗ hổng" tài chính
+-  **Hướng dẫn đầu tư** cơ bản với vốn ít
+-  **Đặt mục tiêu tài chính** SMART và khả thi
+-  **Mẹo hay** quản lý tiền bạc hàng ngày
+
+**Hãy hỏi cụ thể hơn** hoặc chọn một chủ đề ở phía trên nhé! Tôi sẽ đưa ra lời khuyên chi tiết và thực tế nhất cho bạn. �
+
+*Ví dụ: "Làm sao để tiết kiệm 2 triệu trong 6 tháng với lương part-time 3 triệu?"*`;
+}
+
+function addMessage(sender, content, isTyping = false) {
+  const messagesContainer = document.getElementById('chat-messages');
+  const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'mb-3';
+  messageDiv.id = messageId;
+  
+  if (sender === 'user') {
+    messageDiv.innerHTML = `
+      <div class="d-flex justify-content-end">
+        <div class="bg-primary text-white p-3 rounded-start rounded-bottom shadow-sm" style="max-width: 85%;">
+          <div class="d-flex align-items-center mb-1">
+            <span class="badge bg-light text-primary me-2">�</span>
+            <small style="opacity: 0.9;">Bạn</small>
+          </div>
+          <div>${escapeHtml(content)}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    let displayContent = content;
+    if (isTyping) {
+      displayContent = `
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+          <span class="text-muted">${content}</span>
+        </div>
+      `;
+    } else {
+      // Format content with markdown-like styling
+      displayContent = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>')
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    }
+    
+    messageDiv.innerHTML = `
+      <div class="d-flex justify-content-start">
+        <div class="bg-white border p-3 rounded-end rounded-bottom shadow-sm" style="max-width: 90%;">
+          <div class="d-flex align-items-center mb-2">
+            <span class="badge bg-success me-2"></span>
+            <small class="text-success fw-bold">AI Assistant</small>
+          </div>
+          <div class="text-dark">${displayContent}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // Add to history (except typing messages)
+  if (!isTyping) {
+    chatHistory.push({ sender, content, timestamp: new Date() });
+  }
+  
+  return messageId;
+}
+
+function removeMessage(messageId) {
+  const messageElement = document.getElementById(messageId);
+  if (messageElement) {
+    messageElement.remove();
+  }
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function clearChat() {
+  if (confirm('Bạn có chắc muốn xóa toàn bộ cuộc trò chuyện?')) {
+    document.getElementById('chat-messages').innerHTML = `
+      <div class="alert alert-info border-0">
+        <div class="d-flex align-items-start">
+          <span class="badge bg-success me-2 mt-1"> AI</span>
+          <div>
+            <strong>Chat đã được xóa!</strong> Tôi sẵn sàng giúp bạn với những câu hỏi mới. �
+          </div>
+        </div>
+      </div>
+    `;
+    chatHistory = [];
+  }
+}
+
+// Auto-resize textarea and focus on load
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('chat-input');
+  input.focus();
+  
+  // Add clear chat button
+  const footer = document.querySelector('.card-footer');
+  if (footer) {
+    const clearBtn = document.createElement('div');
+    clearBtn.className = 'mt-2 text-center';
+    clearBtn.innerHTML = '<button class="btn btn-link btn-sm text-muted" onclick="clearChat()"><i class="bi bi-trash me-1"></i>Xóa cuộc trò chuyện</button>';
+    footer.appendChild(clearBtn);
+  }
+});
+</script>
+
+<style>
+.chat-messages {
+  scroll-behavior: smooth;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#chat-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+</style>

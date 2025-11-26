@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   container.insertBefore(banner, t);
 
   function getAuthHeaders() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('accessToken');
     const headers = {
       'Content-Type': 'application/json'
     };

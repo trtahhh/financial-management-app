@@ -122,6 +122,7 @@ public class GamificationService {
     /**
      * Get leaderboard
      */
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getLeaderboard(int limit) {
         List<UserGamification> topUsers = userGamificationRepository.findTopByOrderByTotalPointsDesc();
         
@@ -333,6 +334,7 @@ public class GamificationService {
     /**
      * Get streak leaderboard
      */
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getStreakLeaderboard(int limit) {
         List<UserGamification> topStreaks = userGamificationRepository.findTopByOrderByCurrentStreakDesc();
         

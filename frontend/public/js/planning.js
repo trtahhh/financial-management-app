@@ -538,7 +538,7 @@ class FinancialPlanningManager {
     }
 
     getAuthToken() {
-        return localStorage.getItem('authToken') || 
+        return localStorage.getItem('accessToken') || 
                sessionStorage.getItem('authToken') || 
                '';
     }
@@ -801,7 +801,7 @@ function initializeSavingsTipsLibrary() {
      * Get auth headers
      */
     function getAuthHeaders() {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('accessToken');
         return {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'

@@ -1,251 +1,201 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Generate complete training dataset for all 14 categories
-Extends existing training data with missing categories
+"""Improved training data generator for 14 categories.
+
+Goals of refactor:
+1. Reduce duplication & overfitting (remove brute-force upper/title variants)
+2. Increase linguistic coverage via rule‑based template expansion
+3. Provide diacritic + case normalized variants (Vietnamese no-accent forms)
+4. Ensure uniqueness & balanced sampling
+5. Allow configurable sample counts & train/test split
+
+Usage:
+  python generate_complete_training_data.py --samples 180 --split 0.85 --seed 42
+
+Output:
+  vietnamese_transactions_14categories.json  (full shuffled dataset)
+  vietnamese_transactions_14categories_train.json
+  vietnamese_transactions_14categories_test.json
 """
 
 import json
 import random
-from datetime import datetime
+import argparse
+from typing import Dict, List, Set, Tuple
 
-# Training data for all 14 categories
-TRAINING_DATA = {
-    # INCOME CATEGORIES (1-4)
-    "Lương": [
-        "lương tháng 11", "salary november", "luong thang nay", "tien luong",
-        "nhan luong", "luong chinh thuc", "monthly salary", "thu nhap chinh",
-        "luong co ban", "luong net", "luong gross", "payroll",
-        "luong thang 10", "luong thang 12", "luong part time", "luong full time",
-        "luong 13", "luong thuong", "luong cung", "tien cong",
-        "salary payment", "wage", "thu nhap on dinh", "luong hang thang"
-    ],
-    
-    "Thu nhập khác": [
-        "thuong cuoi nam", "bonus performance", "thuong tet", "hoa hong ban hang",
-        "thuong kpi", "thuong du an", "commission", "tip khach hang",
-        "thu nhap tu freelance", "thu nhap phu", "extra income", "side income",
-        "thuong dac biet", "tien thuong", "bonus thang", "incentive",
-        "referral bonus", "thuong gioi thieu", "tien lai phat sinh", "thu nhap ngoai",
-        "thuong nang suat", "tien them gio", "overtime pay", "tien tang ca"
-    ],
-    
-    "Đầu tư": [
-        "mua co phieu vnindex", "dau tu vang", "bitcoin", "ethereum crypto",
-        "quy dau tu", "trai phieu chinh phu", "bat dong san", "fpt stock",
-        "gui tiet kiem ngan hang", "trading forex", "dau tu chung khoan",
-        "mua vang sjc", "dau tu bds", "crypto trading", "stock market",
-        "quy mo", "co phieu", "chung khoan", "bond", "fund",
-        "dau tu tai chinh", "investment", "portfolio", "lai suat tiet kiem"
-    ],
-    
-    "Kinh doanh": [
-        "doanh thu ban hang", "thu nhap tu kinh doanh", "loi nhuan shop",
-        "ban hang online", "doanh thu thang", "thu nhap tu shop", "business income",
-        "revenue", "sales income", "profit", "thu tien khach",
-        "doanh thu cua hang", "kinh doanh online", "ban do handmade",
-        "thu nhap tu cho thue", "rental income", "passive income",
-        "thu tu kinh doanh", "loi nhuan rong", "gross profit", "net income",
-        "doanh thu thuan", "thu nhap doanh nghiep", "business revenue"
-    ],
-    
-    # EXPENSE CATEGORIES (5-14)
-    "Ăn uống": [
-        "com tam", "pho bo", "bun cha", "mua pho", "an sang",
-        "an trua", "an toi", "mua com", "buffet", "nha hang",
-        "quan an", "mua do an", "breakfast", "lunch", "dinner",
-        "food delivery", "grab food", "shopeefood", "goi do an",
-        "cafe", "tra sua", "thuc an nhanh", "fast food", "kfc",
-        "lotteria", "com ga", "bun bo", "banh mi", "che"
-    ],
-    
-    "Giao thông": [
-        "grab bike", "go taxi", "be car", "xang xe", "petrol",
-        "ve xe bus", "ve tau", "ve may bay", "flight ticket",
-        "sua xe", "thay nhot", "rua xe", "bao duong xe",
-        "dau nhot", "lop xe", "parking", "tien gui xe",
-        "toll fee", "phi duong bo", "ve xe lua", "train ticket",
-        "ve tau cao toc", "taxi", "uber", "vehicle maintenance",
-        "car service", "bike repair", "repair shop", "phu tung xe"
-    ],
-    
-    "Giải trí": [
-        "ve phim cgv", "karaoke", "game pubg", "netflix thang nay",
-        "spotify premium", "ve xem show ca nhac", "bi da", "bowling",
-        "concert", "rap", "cinema", "movie ticket", "youtube premium",
-        "steam game", "playstation", "nintendo switch", "xbox",
-        "khu vui choi", "dam sen park", "theme park", "zoo",
-        "tham quan", "museum", "exhibition", "su kien am nhac",
-        "nhac song", "festival", "party", "club", "bar"
-    ],
-    
-    "Sức khỏe": [
-        "kham benh vien bach mai", "mua thuoc cam cum", "nha khoa lam rang",
-        "gym monthly fee", "yoga class", "xet nghiem mau", "mat xa bam huyet",
-        "mua vitamin", "kham mat", "kham tai mui hong", "kham da khoa",
-        "x quang", "sieu am", "test covid", "vaccine", "tiem phong",
-        "mua thuoc", "pharmacy", "drug store", "medical check",
-        "health insurance", "dental care", "eye check", "wellness",
-        "massage", "spa health", "physiotherapy", "phuc hoi chuc nang"
-    ],
-    
-    "Giáo dục": [
-        "hoc phi tieng anh", "mua sach giao khoa", "khoa hoc online udemy",
-        "coursera subscription", "hoc lap trinh", "ielts lop 7.0",
-        "mua vo bai tap", "hoc vien ke toan", "sach tham khao",
-        "hoc phi dai hoc", "tuition fee", "toeic course", "toefl",
-        "hoc piano", "hoc guitar", "lop hoc them", "gia su",
-        "bootcamp", "training course", "certification", "skill course",
-        "edx course", "khan academy", "sach giao trinh", "textbook",
-        "stationery", "van phong pham hoc tap", "do dung hoc tap"
-    ],
-    
-    "Mua sắm": [
-        "ao thun", "quan jeans", "giay sneaker", "tui xach",
-        "mua giay dep", "mua quan ao", "shopping mall", "clothes",
-        "thoi trang", "fashion", "do dien tu", "electronics",
-        "dien thoai", "laptop", "tai nghe", "headphone",
-        "do noi that", "furniture", "ban ghe", "tu lanh",
-        "may giat", "appliance", "home decor", "trang tri nha",
-        "mua sam online", "shopee", "lazada", "tiki", "sendo"
-    ],
-    
-    "Tiện ích": [
-        "tien dien thang 11", "tien nuoc", "internet fpt", "dien thoai viettel",
-        "tien rac", "phi quan ly", "cap truyen hinh", "tien nha thang nay",
-        "electricity bill", "water bill", "wifi bill", "phone bill",
-        "rent", "tien thue nha", "gas bill", "tien gas",
-        "management fee", "phi dich vu", "utilities", "cleaning service",
-        "tien giup viec", "maid service", "bao tri may lanh",
-        "sua chua nha", "maintenance", "home service", "plumber"
-    ],
-    
-    "Vay nợ": [
-        "tra no the tin dung", "vay ngan hang", "tra gop dien thoai",
-        "credit card payment", "vay mua nha", "tra no ban be",
-        "lai suat vay", "home credit", "fe credit", "vay tieu dung",
-        "consumer loan", "personal loan", "installment", "tra gop",
-        "paying debt", "loan repayment", "mortgage payment", "car loan",
-        "vay mua xe", "student loan", "vay hoc sinh", "tien lai",
-        "interest payment", "bank loan", "credit debt", "outstanding balance",
-        "no the", "tra no", "debt payment", "repayment"
-    ],
-    
-    "Quà tặng": [
-        "qua tang sinh nhat", "tu thien mien trung", "tien mung cuoi",
-        "donation charity", "ung ho thien tai", "qua tet", "tien li xi",
-        "tro giup nguoi ngheo", "mua qua tang khach hang", "donation nha tho",
-        "qua tang dip le", "mua hoa tang", "birthday gift", "wedding gift",
-        "christmas present", "valentine gift", "anniversary gift",
-        "tu thien", "charity", "donation", "giving", "helping",
-        "ung ho", "ho tro", "support", "contribute", "quen",
-        "tang qua", "present", "souvenir", "gift card", "voucher"
-    ],
-    
-    "Khác": [
-        "thanh toan", "chi phi", "payment", "expense", "misc",
-        "miscellaneous", "khac", "other", "various", "different",
-        "phi dich vu", "service fee", "transaction fee", "phi giao dich",
-        "phi chuyen khoan", "transfer fee", "withdrawal fee", "rut tien",
-        "phi duy tri", "annual fee", "phi thuong nien", "membership",
-        "hoi vien", "subscription", "goi cuoc", "package fee",
-        "admin fee", "phi hanh chinh", "processing fee", "handling fee"
-    ]
+# --- Core lexical resources -------------------------------------------------
+
+# Base synonyms per category (concise; semantic coverage > raw count)
+CATEGORY_SYNONYMS: Dict[str, List[str]] = {
+    "Lương": ["lương", "mức lương", "salary", "thu nhập", "tiền công", "payroll", "wage"],
+    "Thu nhập khác": ["thu nhập thêm", "extra income", "bonus", "hoa hồng", "incentive", "tip", "freelance", "thưởng"],
+    "Đầu tư": ["đầu tư", "chứng khoán", "cổ phiếu", "crypto", "bitcoin", "quỹ", "lãi tiết kiệm", "vàng", "bond", "tín phiếu"],
+    "Kinh doanh": ["kinh doanh", "doanh thu", "bán hàng", "revenue", "profit", "thu cho thuê", "passive income", "lợi nhuận"],
+    "Ăn uống": ["phở", "bún", "cơm", "bánh mì", "ăn sáng", "ăn trưa", "ăn tối", "đồ ăn", "nhà hàng", "quán ăn", "cafe", "trà sữa", "fast food", "buffet", "delivery", "gọi đồ ăn"],
+    "Giao thông": ["xăng xe", "grab", "taxi", "be", "gojek", "vé máy bay", "vé xe bus", "bảo dưỡng xe", "parking", "sửa xe", "rửa xe", "thay nhớt"],
+    "Giải trí": ["xem phim", "cgv", "karaoke", "game", "netflix", "spotify", "concert", "party", "giải trí", "bi-a", "bowling"],
+    "Sức khỏe": ["khám bệnh", "mua thuốc", "bảo hiểm", "gym", "yoga", "xét nghiệm", "dental", "massage", "spa", "nha khoa", "bệnh viện"],
+    "Giáo dục": ["học phí", "mua sách", "khóa học", "training", "chứng chỉ", "gia sư", "stationery", "học tập", "tiếng anh", "ielts"],
+    "Mua sắm": ["mua áo", "mua quần", "giày", "shopping", "điện thoại", "laptop", "đồ điện tử", "thời trang", "online", "shopee", "lazada"],
+    "Tiện ích": ["tiền điện", "tiền nước", "internet", "wifi", "thuê nhà", "rent", "gas", "phí dịch vụ", "phí quản lý"],
+    "Vay nợ": ["trả nợ", "vay ngân hàng", "credit", "loan", "trả góp", "interest", "mortgage", "debt", "thẻ tín dụng"],
+    "Quà tặng": ["quà sinh nhật", "từ thiện", "donation", "lì xì", "gift", "charity", "ủng hộ", "tặng quà", "mừng cưới"],
+    "Khác": ["chi phí khác", "service fee", "phí giao dịch", "withdrawal fee", "subscription", "membership", "admin fee", "misc"]
 }
 
-def generate_training_dataset(samples_per_category=300):
-    """Generate training dataset with specified number of samples per category"""
-    
-    dataset = []
-    category_id_map = {
-        "Lương": 1, "Thu nhập khác": 2, "Đầu tư": 3, "Kinh doanh": 4,
-        "Ăn uống": 5, "Giao thông": 6, "Giải trí": 7, "Sức khỏe": 8,
-        "Giáo dục": 9, "Mua sắm": 10, "Tiện ích": 11, "Vay nợ": 12,
-        "Quà tặng": 13, "Khác": 14
-    }
-    
-    type_map = {
-        "Lương": "income", "Thu nhập khác": "income", "Đầu tư": "income", "Kinh doanh": "income",
-        "Ăn uống": "expense", "Giao thông": "expense", "Giải trí": "expense", "Sức khỏe": "expense",
-        "Giáo dục": "expense", "Mua sắm": "expense", "Tiện ích": "expense", "Vay nợ": "expense",
-        "Quà tặng": "expense", "Khác": "expense"
-    }
-    
-    for category_name, templates in TRAINING_DATA.items():
-        category_id = category_id_map[category_name]
-        trans_type = type_map[category_name]
-        
-        # Generate samples by repeating and varying templates
-        for i in range(samples_per_category):
-            # Pick random template
-            template = random.choice(templates)
-            
-            # Add variations
-            variations = [
-                template,
-                template.upper(),
-                template.lower(),
-                template.title(),
-                f"chi {template}",
-                f"thanh toan {template}",
-                f"mua {template}",
-                f"{template} thang nay",
-                f"{template} hom nay"
-            ]
-            
-            description = random.choice(variations)
-            
+# Action / context verbs to enrich descriptions
+VERBS = ["nhận", "trả", "mua", "đóng", "thanh toán", "chi", "đầu tư", "nộp", "sử dụng", "gia hạn"]
+TIME_MODIFIERS = ["tháng này", "tháng trước", "hôm nay", "tuần này", "quý này"]
+MONTHS = [str(m) for m in range(1, 13)]
+
+# Mapping category metadata
+CATEGORY_ID = {
+    "Lương": 1, "Thu nhập khác": 2, "Đầu tư": 3, "Kinh doanh": 4,
+    "Ăn uống": 5, "Giao thông": 6, "Giải trí": 7, "Sức khỏe": 8,
+    "Giáo dục": 9, "Mua sắm": 10, "Tiện ích": 11, "Vay nợ": 12,
+    "Quà tặng": 13, "Khác": 14
+}
+
+TYPE_MAP = {k: ("income" if v <= 4 else "expense") for k, v in CATEGORY_ID.items()}
+
+# --- Normalization utilities -------------------------------------------------
+_VIETNAMESE_DIACRITIC_MAP = {
+    # Simple mapping; not exhaustive but covers common characters in synonyms
+    "à":"a","á":"a","ả":"a","ã":"a","ạ":"a","ă":"a","ằ":"a","ắ":"a","ẳ":"a","ẵ":"a","ặ":"a","â":"a","ầ":"a","ấ":"a","ẩ":"a","ẫ":"a","ậ":"a",
+    "è":"e","é":"e","ẻ":"e","ẽ":"e","ẹ":"e","ê":"e","ề":"e","ế":"e","ể":"e","ễ":"e","ệ":"e",
+    "ì":"i","í":"i","ỉ":"i","ĩ":"i","ị":"i",
+    "ò":"o","ó":"o","ỏ":"o","õ":"o","ọ":"o","ô":"o","ồ":"o","ố":"o","ổ":"o","ỗ":"o","ộ":"o","ơ":"o","ờ":"o","ớ":"o","ở":"o","ỡ":"o","ợ":"o",
+    "ù":"u","ú":"u","ủ":"u","ũ":"u","ụ":"u","ư":"u","ừ":"u","ứ":"u","ử":"u","ữ":"u","ự":"u",
+    "ỳ":"y","ý":"y","ỷ":"y","ỹ":"y","ỵ":"y",
+    "đ":"d"
+}
+
+def strip_diacritics(text: str) -> str:
+    return "".join(_VIETNAMESE_DIACRITIC_MAP.get(ch, ch) for ch in text.lower())
+
+def unique(seq: List[str]) -> List[str]:
+    seen: Set[str] = set()
+    out = []
+    for item in seq:
+        key = item.strip()
+        if key not in seen:
+            seen.add(key)
+            out.append(item)
+    return out
+
+# --- Variation generation ----------------------------------------------------
+
+def generate_variations(base: str) -> List[str]:
+    """Generate linguistic variations without naive upper/title duplication."""
+    variants = {base.strip()}
+    # Add diacritic-free version (for models trained on accent-insensitive corpora)
+    variants.add(strip_diacritics(base))
+    # Simple punctuation removal variant
+    variants.add(base.replace("-", " ").replace(",", " "))
+    return list(variants)
+
+def build_descriptions(category: str, synonyms: List[str], samples_target: int, rng: random.Random) -> List[str]:
+    pool: List[str] = []
+    # Template expansions
+    for syn in synonyms:
+        syn_variants = generate_variations(syn)
+        for var in syn_variants:
+            # Base forms
+            pool.append(var)
+            # Verb + object
+            for verb in rng.sample(VERBS, k=min(3, len(VERBS))):
+                pool.append(f"{verb} {var}")
+            # Time modifiers
+            for tm in rng.sample(TIME_MODIFIERS, k=2):
+                pool.append(f"{var} {tm}")
+            # Month-specific (only for some financial contexts)
+            if category in ("Lương", "Thu nhập khác", "Đầu tư", "Kinh doanh", "Tiện ích"):
+                month = rng.choice(MONTHS)
+                pool.append(f"{var} tháng {month}")
+    # Deduplicate
+    pool = unique(pool)
+    # If pool smaller than requested, allow slight recombination
+    if len(pool) < samples_target:
+        extra_needed = samples_target - len(pool)
+        for _ in range(extra_needed):
+            base_choice = rng.choice(synonyms)
+            verb = rng.choice(VERBS)
+            tm = rng.choice(TIME_MODIFIERS)
+            pool.append(f"{verb} {base_choice} {tm}")
+        pool = unique(pool)
+    # Sample down to target
+    rng.shuffle(pool)
+    return pool[:samples_target]
+
+# --- Dataset assembly --------------------------------------------------------
+
+def generate_training_dataset(samples_per_category: int = 180, seed: int = 42) -> List[Dict]:
+    rng = random.Random(seed)
+    dataset: List[Dict] = []
+    for category, syns in CATEGORY_SYNONYMS.items():
+        descriptions = build_descriptions(category, syns, samples_per_category, rng)
+        for desc in descriptions:
             dataset.append({
-                "description": description,
-                "category": category_name,
-                "category_id": category_id,
-                "type": trans_type
+                "description": desc,
+                "category": category,
+                "category_id": CATEGORY_ID[category],
+                "type": TYPE_MAP[category]
             })
-    
-    # Shuffle dataset
-    random.shuffle(dataset)
-    
+    rng.shuffle(dataset)
     return dataset
 
+def train_test_split(dataset: List[Dict], split_ratio: float, seed: int) -> Tuple[List[Dict], List[Dict]]:
+    rng = random.Random(seed)
+    data = list(dataset)
+    rng.shuffle(data)
+    split_index = int(len(data) * split_ratio)
+    return data[:split_index], data[split_index:]
+
 def main():
-    print("=" * 70)
-    print("GENERATE COMPLETE TRAINING DATA FOR 14 CATEGORIES")
-    print("=" * 70)
-    
-    # Generate dataset
-    print("\n📊 Generating training dataset...")
-    dataset = generate_training_dataset(samples_per_category=300)
-    
-    print(f"\n✅ Generated {len(dataset):,} samples")
-    print(f"   - Samples per category: ~300")
-    print(f"   - Total categories: 14")
-    
-    # Statistics
-    print("\n📈 Dataset Statistics:")
-    category_counts = {}
-    for item in dataset:
-        cat = item['category']
-        category_counts[cat] = category_counts.get(cat, 0) + 1
-    
-    for cat, count in sorted(category_counts.items(), key=lambda x: x[1], reverse=True):
-        print(f"   {cat}: {count:,} samples")
-    
-    # Save dataset
-    output_file = "vietnamese_transactions_14categories.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    parser = argparse.ArgumentParser(description="Generate balanced, normalized training data")
+    parser.add_argument("--samples", type=int, default=180, help="Samples per category (default 180)")
+    parser.add_argument("--split", type=float, default=0.8, help="Train split ratio (default 0.8)")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    args = parser.parse_args()
+
+    print("=" * 78)
+    print("GENERATING TRAINING DATA (Deduplicated / Template-Based)")
+    print("=" * 78)
+    print(f"-> Samples/category: {args.samples}\n-> Train split: {args.split}\n-> Seed: {args.seed}")
+
+    dataset = generate_training_dataset(samples_per_category=args.samples, seed=args.seed)
+    train, test = train_test_split(dataset, args.split, args.seed)
+
+    print(f"\n✅ Total samples: {len(dataset):,}")
+    print(f"   • Train: {len(train):,} | Test: {len(test):,}")
+
+    # Category distribution
+    print("\n📈 Distribution:")
+    dist = {}
+    for row in dataset:
+        dist[row['category']] = dist.get(row['category'], 0) + 1
+    for cat in sorted(dist.keys(), key=lambda c: CATEGORY_ID[c]):
+        print(f"   {cat:<15}: {dist[cat]:4d}")
+
+    # Persist
+    with open("vietnamese_transactions_14categories.json", "w", encoding="utf-8") as f:
         json.dump(dataset, f, ensure_ascii=False, indent=2)
-    
-    print(f"\n💾 Dataset saved to: {output_file}")
-    print(f"   File size: {len(json.dumps(dataset, ensure_ascii=False)) / 1024:.1f} KB")
-    
-    # Sample data
-    print("\n📋 Sample data (first 5):")
-    for i, sample in enumerate(dataset[:5], 1):
-        print(f"   {i}. '{sample['description']}' -> {sample['category']} (ID: {sample['category_id']})")
-    
-    print("\n" + "=" * 70)
-    print("✨ Training dataset generation complete!")
-    print("=" * 70)
+    with open("vietnamese_transactions_14categories_train.json", "w", encoding="utf-8") as f:
+        json.dump(train, f, ensure_ascii=False, indent=2)
+    with open("vietnamese_transactions_14categories_test.json", "w", encoding="utf-8") as f:
+        json.dump(test, f, ensure_ascii=False, indent=2)
+
+    print("\n💾 Saved:")
+    print("   - vietnamese_transactions_14categories.json")
+    print("   - vietnamese_transactions_14categories_train.json")
+    print("   - vietnamese_transactions_14categories_test.json")
+
+    print("\n📋 Sample (first 8):")
+    for i, sample in enumerate(dataset[:8], 1):
+        print(f"   {i}. {sample['description']} -> {sample['category']} ({sample['type']})")
+
+    print("\n✨ Done. Consider further augmentation with contextual numeric amounts or POS tagging.")
+    print("=" * 78)
 
 if __name__ == "__main__":
     main()

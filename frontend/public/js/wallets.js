@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Check authentication first
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('accessToken');
   if (!token) {
     alert('Vui lòng đăng nhập lại');
     window.location.href = '/login';
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let editing = null;
 
   function getAuthHeaders() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('accessToken');
     // Token validation
     const headers = {
       'Content-Type': 'application/json'

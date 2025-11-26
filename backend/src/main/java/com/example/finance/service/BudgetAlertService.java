@@ -202,6 +202,7 @@ public class BudgetAlertService {
  * Tính tổng chi tiêu cho category trong tháng cụ thể
  * KHÔNG sử dụng spent_amount từ budget để tránh bug cộng dồn
  */
+ @SuppressWarnings("unused")
  private BigDecimal calculateTotalSpentForCategory(Long userId, Long categoryId, int month, int year) {
  YearMonth ym = YearMonth.of(year, month);
  var list = transactionRepository.findAllByDateBetween(ym.atDay(1), ym.atEndOfMonth());

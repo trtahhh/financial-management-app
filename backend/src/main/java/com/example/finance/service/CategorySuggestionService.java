@@ -26,8 +26,10 @@ public class CategorySuggestionService {
     @Autowired
     private FuzzyMatchingService fuzzyMatchingService;
     
+    @SuppressWarnings("unused")
     private static final BigDecimal MIN_CONFIDENCE_FOR_SUGGESTION = new BigDecimal("0.60");
-    private static final int MIN_TRANSACTION_COUNT_FOR_AUTO_SUGGEST = 3;
+    @SuppressWarnings("unused")
+    private static final int MIN_TRANSACTION_COUNT_FOR_AUTO_SUGGEST = 5;
     
     /**
      * Analyze if a transaction pattern warrants a new category suggestion

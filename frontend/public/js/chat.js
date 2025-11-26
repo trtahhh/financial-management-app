@@ -121,7 +121,7 @@ async function loadAIStatus() {
  const response = await fetch('/api/ai/status', {
  method: 'GET',
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
  'Content-Type': 'application/json'
  }
  });
@@ -167,25 +167,12 @@ async function sendMessage() {
  isProcessing = true;
  
  try {
- const response = await fetch('/api/ai/chat', {
- method: 'POST',
- headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
- 'Content-Type': 'application/json'
- },
- body: JSON.stringify({ message: message })
- });
- 
- if (response.ok) {
- const data = await response.json();
- addMessageToChat('ai', data.answer);
- } else {
- const errorText = await response.text();
- addMessageToChat('ai', ` **Lỗi**: ${errorText}`);
- }
+ // Use Ultra AI response instead of basic chat
+ const aiResponse = await getUltraAIChatResponse(message);
+ addMessageToChat('ai', aiResponse);
  } catch (error) {
  console.error('Error sending message:', error);
- addMessageToChat('ai', ' **Đã có lỗi xảy ra**. Vui lòng thử lại sau hoặc kiểm tra kết nối mạng.');
+ addMessageToChat('ai', '⚠️ **Đã có lỗi xảy ra**. Vui lòng thử lại sau hoặc kiểm tra kết nối mạng.');
  } finally {
  hideTypingIndicator();
  isProcessing = false;
@@ -442,7 +429,7 @@ async function performExport(format, startDate, endDate) {
  const response = await fetch(endpoint, {
  method: 'POST',
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
  'Content-Type': 'application/json'
  },
  body: JSON.stringify({ startDate, endDate })
@@ -482,7 +469,7 @@ async function performAnalysis(analysisType) {
  const response = await fetch('/api/ai/analyze', {
  method: 'POST',
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
  'Content-Type': 'application/json'
  },
  body: JSON.stringify({ type: analysisType })
@@ -654,6 +641,313 @@ function loadChatHistory() {
  } catch (error) {
  console.error('Error loading chat history:', error);
  localStorage.removeItem('chatHistory');
+ }
+}
+
+// ============================================================
+// ULTRA AI INTEGRATION FOR MOMO-STYLE CHAT
+// ============================================================
+
+/**
+ * Get Ultra AI response with Vietnamese NLP
+ */
+async function getUltraAIChatResponse(userMessage) {
+ try {
+ const intent = detectVietnameseIntent(userMessage);
+ 
+ if (intent.type === 'ultra-insights') {
+ return await getUltraInsightsResponse(intent.params);
+ } else if (intent.type === 'category-forecast') {
+ return await getCategoryForecastResponse(intent.params);
+ } else if (intent.type === 'sentiment-analysis') {
+ return await getSentimentAnalysisResponse(intent.params);
+ } else if (intent.type === 'general-financial') {
+ return await getGeneralFinancialResponse(userMessage);
+ } else {
+ // Fallback to existing AI chat endpoint
+ const response = await fetch('/api/ai/chat', {
+ method: 'POST',
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ },
+ body: JSON.stringify({ message: userMessage })
+ });
+ 
+ if (response.ok) {
+ const data = await response.json();
+ 
+ // Backend returns SmartAnalyticsResponse object
+ if (data.success && data.response) {
+ const resp = data.response;
+ let answer = `**${resp.mainMessage}**\n\n`;
+ 
+ if (resp.detailedMessage) {
+ answer += `${resp.detailedMessage}\n\n`;
+ }
+ 
+ // Add transactions if available
+ if (resp.transactions && resp.transactions.length > 0) {
+ answer += '**📊 Giao dịch liên quan:**\n\n';
+ resp.transactions.forEach(tx => {
+ answer += `• **${tx.description}** - ${Number(tx.amount).toLocaleString('vi-VN')}đ (${tx.date})\n`;
+ });
+ answer += '\n';
+ }
+ 
+ // Add insights if available
+ if (resp.insights && resp.insights.length > 0) {
+ answer += '**💡 Gợi ý của Moni:**\n\n';
+ resp.insights.forEach(insight => {
+ answer += `${insight.icon} ${insight.text}\n`;
+ });
+ }
+ 
+ return answer;
+ } else if (data.answer) {
+ // Fallback for simple answer format
+ return data.answer;
+ } else {
+ throw new Error('Invalid response format');
+ }
+ } else {
+ const errorData = await response.json();
+ throw new Error(errorData.error || 'AI response failed');
+ }
+ }
+ } catch (error) {
+ console.error('Ultra AI response error:', error);
+ return `⚠️ **Xin lỗi, đã có lỗi xảy ra**\n\nVui lòng thử lại hoặc liên hệ hỗ trợ.`;
+ }
+}
+
+/**
+ * Detect Vietnamese query intent
+ */
+function detectVietnameseIntent(message) {
+ const msg = message.toLowerCase();
+ 
+ // Ultra Insights keywords
+ if (msg.includes('ultra') || msg.includes('tổng hợp') || msg.includes('phân tích toàn diện') || 
+ msg.includes('ensemble') || msg.includes('prophet') || msg.includes('shap')) {
+ const monthMatch = msg.match(/tháng\s+(\d+)/);
+ const yearMatch = msg.match(/năm\s+(\d+)/);
+ 
+ return {
+ type: 'ultra-insights',
+ params: {
+ month: monthMatch ? parseInt(monthMatch[1]) : new Date().getMonth() + 1,
+ year: yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear()
+ }
+ };
+ }
+ 
+ // Category Forecast keywords
+ if (msg.includes('dự đoán') || msg.includes('dự báo') || msg.includes('forecast') || 
+ msg.includes('xu hướng') || msg.includes('tương lai')) {
+ // Extract category name from message
+ const categories = ['Ăn uống', 'Di chuyển', 'Giải trí', 'Mua sắm', 'Y tế', 'Giáo dục', 'Nhà ở', 'Khác'];
+ let category = null;
+ 
+ for (const cat of categories) {
+ if (msg.includes(cat.toLowerCase())) {
+ category = cat;
+ break;
+ }
+ }
+ 
+ return {
+ type: 'category-forecast',
+ params: { category: category || 'Ăn uống' }
+ };
+ }
+ 
+ // Sentiment Analysis keywords
+ if (msg.includes('tâm trạng') || msg.includes('cảm xúc') || msg.includes('sentiment') || 
+ msg.includes('mood') || msg.includes('tích cực') || msg.includes('tiêu cực')) {
+ const monthMatch = msg.match(/tháng\s+(\d+)/);
+ const yearMatch = msg.match(/năm\s+(\d+)/);
+ 
+ return {
+ type: 'sentiment-analysis',
+ params: {
+ month: monthMatch ? parseInt(monthMatch[1]) : new Date().getMonth() + 1,
+ year: yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear()
+ }
+ };
+ }
+ 
+ // General financial queries
+ if (msg.includes('chi tiêu') || msg.includes('ngân sách') || msg.includes('thu nhập') || 
+ msg.includes('tiết kiệm') || msg.includes('budget') || msg.includes('expense')) {
+ return {
+ type: 'general-financial',
+ params: {}
+ };
+ }
+ 
+ // Default: pass to AI chat
+ return {
+ type: 'ai-chat',
+ params: {}
+ };
+}
+
+/**
+ * Get Ultra Insights response (9 ML libraries)
+ */
+async function getUltraInsightsResponse(params) {
+ try {
+ const response = await fetch(`/api/budgets/ultra-insights?month=${params.month}&year=${params.year}`, {
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ }
+ });
+ 
+ if (!response.ok) throw new Error('Failed to fetch Ultra Insights');
+ 
+ const data = await response.json();
+ 
+ // Format response in MoMo-style
+ let message = `🌟 **ULTRA AI INSIGHTS - Tháng ${params.month}/${params.year}**\n\n`;
+ 
+ // Ensemble Prediction
+ if (data.ensemblePrediction) {
+ const pred = data.ensemblePrediction;
+ message += `📊 **Dự đoán Ensemble (XGBoost + LightGBM + Optuna)**\n`;
+ message += `• Chi tiêu dự kiến: **${pred.predictedExpense.toLocaleString()} VND**\n`;
+ message += `• Độ tin cậy: ${pred.confidence}%\n`;
+ message += `• Phương pháp: ${pred.method}\n\n`;
+ }
+ 
+ // Prophet Forecast
+ if (data.prophetForecast) {
+ const prophet = data.prophetForecast;
+ message += `🔮 **Dự báo Prophet (Time Series)**\n`;
+ message += `• Chi tiêu dự báo: **${prophet.forecast.toLocaleString()} VND**\n`;
+ message += `• Khoảng tin cậy: ${prophet.lowerBound.toLocaleString()} - ${prophet.upperBound.toLocaleString()} VND\n\n`;
+ }
+ 
+ // Sentiment Analysis
+ if (data.sentimentAnalysis) {
+ const sent = data.sentimentAnalysis;
+ const emoji = sent.overallMood === 'positive' ? '😊' : sent.overallMood === 'negative' ? '😢' : '😐';
+ message += `${emoji} **Phân tích Tâm trạng (VADER + TextBlob)**\n`;
+ message += `• Trạng thái: **${sent.overallMood.toUpperCase()}**\n`;
+ message += `• Điểm tích cực: ${sent.positiveScore}%\n`;
+ message += `• Điểm tiêu cực: ${sent.negativeScore}%\n`;
+ message += `• Điểm trung lập: ${sent.neutralScore}%\n\n`;
+ }
+ 
+ // SHAP Explanations
+ if (data.shapExplanations && data.shapExplanations.length > 0) {
+ message += `🧠 **SHAP - Giải thích mô hình AI**\n`;
+ data.shapExplanations.slice(0, 3).forEach(exp => {
+ message += `• ${exp.feature}: ${exp.importance > 0 ? '📈' : '📉'} ${Math.abs(exp.importance).toFixed(2)}\n`;
+ });
+ message += `\n`;
+ }
+ 
+ // Recommendations
+ if (data.recommendations && data.recommendations.length > 0) {
+ message += `💡 **Khuyến nghị từ AI**\n`;
+ data.recommendations.forEach(rec => {
+ message += `• ${rec}\n`;
+ });
+ }
+ 
+ return message;
+ } catch (error) {
+ console.error('Ultra Insights error:', error);
+ return `⚠️ **Không thể lấy Ultra Insights**\n\nVui lòng thử lại sau.`;
+ }
+}
+
+/**
+ * Get Category Forecast response (Prophet)
+ */
+async function getCategoryForecastResponse(params) {
+ try {
+ const response = await fetch(`/api/budgets/forecast/${params.category}`, {
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ }
+ });
+ 
+ if (!response.ok) throw new Error('Failed to fetch forecast');
+ 
+ const data = await response.json();
+ 
+ let message = `🔮 **DỰ BÁO CHI TIÊU - ${params.category}**\n\n`;
+ message += `📊 **Chi tiêu dự kiến**: ${data.predictedAmount.toLocaleString()} VND\n`;
+ message += `📈 **Xu hướng**: ${data.trend === 'increasing' ? '📈 Tăng' : data.trend === 'decreasing' ? '📉 Giảm' : '➡️ Ổn định'}\n`;
+ message += `🎯 **Khuyến nghị**: ${data.recommendation || 'Tiếp tục theo dõi'}\n`;
+ 
+ return message;
+ } catch (error) {
+ console.error('Forecast error:', error);
+ return `⚠️ **Không thể dự báo danh mục ${params.category}**\n\nVui lòng thử lại sau.`;
+ }
+}
+
+/**
+ * Get Sentiment Analysis response
+ */
+async function getSentimentAnalysisResponse(params) {
+ try {
+ const response = await fetch(`/api/budgets/sentiment-analysis?month=${params.month}&year=${params.year}`, {
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ }
+ });
+ 
+ if (!response.ok) throw new Error('Failed to fetch sentiment');
+ 
+ const data = await response.json();
+ 
+ const emoji = data.overallMood === 'positive' ? '😊' : data.overallMood === 'negative' ? '😢' : '😐';
+ 
+ let message = `${emoji} **PHÂN TÍCH TÂM TRẠNG CHI TIÊU - Tháng ${params.month}/${params.year}**\n\n`;
+ message += `🎭 **Trạng thái tổng thể**: **${data.overallMood.toUpperCase()}**\n\n`;
+ message += `📊 **Phân tích chi tiết**:\n`;
+ message += `• 😊 Tích cực: ${data.positiveScore}%\n`;
+ message += `• 😐 Trung lập: ${data.neutralScore}%\n`;
+ message += `• 😢 Tiêu cực: ${data.negativeScore}%\n\n`;
+ message += `💬 **Giải thích**: ${data.explanation || 'Chi tiêu của bạn ở mức ổn định'}\n`;
+ 
+ return message;
+ } catch (error) {
+ console.error('Sentiment error:', error);
+ return `⚠️ **Không thể phân tích tâm trạng**\n\nVui lòng thử lại sau.`;
+ }
+}
+
+/**
+ * Get general financial response (calls existing AI endpoint)
+ */
+async function getGeneralFinancialResponse(message) {
+ try {
+ const response = await fetch('/api/ai/chat', {
+ method: 'POST',
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ },
+ body: JSON.stringify({ message: message })
+ });
+ 
+ if (response.ok) {
+ const data = await response.json();
+ return data.answer;
+ } else {
+ throw new Error('AI chat failed');
+ }
+ } catch (error) {
+ console.error('General financial response error:', error);
+ return `⚠️ **Không thể trả lời câu hỏi**\n\nVui lòng thử lại sau.`;
  }
 }
 

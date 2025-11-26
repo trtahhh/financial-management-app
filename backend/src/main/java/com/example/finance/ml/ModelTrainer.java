@@ -74,7 +74,7 @@ public class ModelTrainer {
             
             List<String> normalizedTrainTexts = new ArrayList<>();
             for (String text : split.trainTexts) {
-                normalizedTrainTexts.add(normalizer.normalize(text));
+                normalizedTrainTexts.add(VietnameseTextNormalizer.normalize(text));
             }
             
             double[][] trainVectors = vectorizer.fitTransform(normalizedTrainTexts);
@@ -94,7 +94,7 @@ public class ModelTrainer {
             System.out.println("\n5. Evaluating on test set...");
             List<String> normalizedTestTexts = new ArrayList<>();
             for (String text : split.testTexts) {
-                normalizedTestTexts.add(normalizer.normalize(text));
+                normalizedTestTexts.add(VietnameseTextNormalizer.normalize(text));
             }
             double[][] testVectors = new double[normalizedTestTexts.size()][];
             for (int i = 0; i < normalizedTestTexts.size(); i++) {
@@ -206,7 +206,7 @@ public class ModelTrainer {
         
         System.out.println("   Sample Predictions:");
         for (String testCase : testCases) {
-            String normalized = normalizer.normalize(testCase);
+            String normalized = VietnameseTextNormalizer.normalize(testCase);
             double[] vector = vectorizer.transform(normalized);
             LinearSVMClassifier.PredictionResult result = svm.predictWithConfidence(vector);
             System.out.printf("   '%s' -> Category %d (%.1f%% confidence)\n", 

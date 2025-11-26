@@ -277,6 +277,7 @@ public class FuzzyMatchingService {
         
         String bestMatch = null;
         double bestSimilarity = 0.0;
+        @SuppressWarnings("unused")
         String bestMatchType = "fuzzy";
         
         for (String keyword : keywords) {

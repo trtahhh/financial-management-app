@@ -129,4 +129,122 @@ public class BudgetController {
  ));
  }
  }
+ 
+ // ========================================
+ // ULTRA AI ENDPOINTS FOR BUDGETS
+ // ========================================
+ 
+ /**
+  * 🚀 Ultra AI: Get smart budget insights
+  * Uses 9 ML libraries: XGBoost, LightGBM, Prophet, SHAP, Optuna, SMOTE, VADER, TextBlob, Word2Vec
+  */
+ @GetMapping("/ultra-insights")
+ public ResponseEntity<?> getUltraAIInsights(
+  @RequestParam(required = false) Integer month,
+  @RequestParam(required = false) Integer year) {
+  
+  try {
+   Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+   CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+   Long userId = userDetails.getId();
+   
+   // Default to current month/year
+   if (month == null) month = java.time.LocalDate.now().getMonthValue();
+   if (year == null) year = java.time.LocalDate.now().getYear();
+   
+   log.info("🚀 Getting Ultra AI budget insights for user {} (month: {}, year: {})", userId, month, year);
+   
+   Map<String, Object> insights = service.getUltraBudgetInsights(userId, month, year);
+   
+   return ResponseEntity.ok(Map.of(
+    "success", true,
+    "message", "Ultra AI insights generated",
+    "data", insights,
+    "aiLibraries", Map.of(
+     "xgboost", true,
+     "lightgbm", true,
+     "prophet", true,
+     "shap", true,
+     "vader", true,
+     "textblob", true,
+     "word2vec", true
+    )
+   ));
+   
+  } catch (Exception e) {
+   log.error("❌ Error getting Ultra AI insights", e);
+   return ResponseEntity.status(500).body(Map.of(
+    "success", false,
+    "message", "Lỗi lấy thông tin AI: " + e.getMessage(),
+    "fallback", "AI service unavailable"
+   ));
+  }
+ }
+ 
+ /**
+  * 📈 Prophet Forecasting: Predict budget needs for next month
+  */
+ @GetMapping("/forecast/{categoryName}")
+ public ResponseEntity<?> forecastBudgetNeeds(
+  @PathVariable String categoryName) {
+  
+  try {
+   Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+   CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+   Long userId = userDetails.getId();
+   
+   log.info("📈 Forecasting budget for category: {}", categoryName);
+   
+   Map<String, Object> forecast = service.forecastBudgetNeeds(userId, categoryName);
+   
+   return ResponseEntity.ok(Map.of(
+    "success", true,
+    "message", "Forecast generated using Prophet ML",
+    "data", forecast
+   ));
+   
+  } catch (Exception e) {
+   log.error("❌ Error forecasting budget", e);
+   return ResponseEntity.status(500).body(Map.of(
+    "success", false,
+    "message", "Lỗi dự đoán ngân sách: " + e.getMessage()
+   ));
+  }
+ }
+ 
+ /**
+  * 😊 Sentiment Analysis: Analyze spending sentiment
+  */
+ @GetMapping("/sentiment-analysis")
+ public ResponseEntity<?> analyzeSpendingSentiment(
+  @RequestParam(required = false) Integer month,
+  @RequestParam(required = false) Integer year) {
+  
+  try {
+   Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+   CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+   Long userId = userDetails.getId();
+   
+   // Default to current month/year
+   if (month == null) month = java.time.LocalDate.now().getMonthValue();
+   if (year == null) year = java.time.LocalDate.now().getYear();
+   
+   log.info("😊 Analyzing spending sentiment for user {}", userId);
+   
+   Map<String, Object> sentiment = service.analyzeSpendingSentiment(userId, month, year);
+   
+   return ResponseEntity.ok(Map.of(
+    "success", true,
+    "message", "Sentiment analysis completed (TextBlob + VADER)",
+    "data", sentiment
+   ));
+   
+  } catch (Exception e) {
+   log.error("❌ Error analyzing sentiment", e);
+   return ResponseEntity.status(500).body(Map.of(
+    "success", false,
+    "message", "Lỗi phân tích cảm xúc: " + e.getMessage()
+   ));
+  }
+ }
 }

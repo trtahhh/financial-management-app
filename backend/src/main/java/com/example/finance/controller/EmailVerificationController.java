@@ -101,8 +101,9 @@ public class EmailVerificationController {
  return ResponseEntity.badRequest().body(new ApiResponse(false, "Token xác thực không hợp lệ", null));
  }
 
- // Kiểm tra token có hết hạn không
- if (user.getEmailVerificationExpires().isBefore(LocalDateTime.now())) {
+ // Kiểm tra token có hết hạn không (nếu có thời gian hết hạn)
+ if (user.getEmailVerificationExpires() != null && 
+     user.getEmailVerificationExpires().isBefore(LocalDateTime.now())) {
  return ResponseEntity.badRequest().body(new ApiResponse(false, "Token xác thực đã hết hạn", null));
  }
 
@@ -115,6 +116,7 @@ public class EmailVerificationController {
  return ResponseEntity.ok(new ApiResponse(true, "Email đã được xác thực thành công", null));
 
  } catch (Exception e) {
+ log.error("Error verifying email with token {}: {}", request.getToken(), e.getMessage(), e);
  return ResponseEntity.internalServerError().body(
  new ApiResponse(false, "Lỗi khi xác thực email: " + e.getMessage(), null)
  );

@@ -81,4 +81,18 @@ public class JwtTokenProvider {
  return null;
  }
  }
+
+ public Long getUserIdFromJWT(String token) {
+ try {
+ Claims claims = Jwts.parser()
+ .verifyWith(getSigningKey())
+ .build()
+ .parseSignedClaims(token)
+ .getPayload();
+ return claims.get("userId", Long.class);
+ } catch (Exception e) {
+ System.err.println("Error extracting userId from JWT: " + e.getMessage());
+ return null;
+ }
+ }
 }

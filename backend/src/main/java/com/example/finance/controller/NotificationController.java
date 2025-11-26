@@ -22,13 +22,15 @@ public class NotificationController {
  }
 
  @PutMapping("/read/{id}")
- public void markAsRead(@PathVariable Long id) {
+ public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
  notificationService.markAsRead(id);
+ return ResponseEntity.ok().build();
  }
 
  @DeleteMapping("/{id}")
- public void deleteNotification(@PathVariable Long id) {
+ public ResponseEntity<String> deleteNotification(@PathVariable Long id) {
  notificationService.deleteNotification(id);
+ return ResponseEntity.ok("Notification deleted successfully");
  }
 
  /**

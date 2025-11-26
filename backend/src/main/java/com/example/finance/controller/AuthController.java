@@ -139,11 +139,16 @@ public class AuthController {
  }
 
  // Gửi email verification nếu có email và email verification được bật
+ log.info("Email verification check - enabled: {}, email: '{}'", emailVerificationEnabled, savedUser.getEmail());
  if (emailVerificationEnabled && savedUser.getEmail() != null && !savedUser.getEmail().isEmpty()) {
  try {
+ log.info("Starting email verification process for user: {}", savedUser.getId());
  // Tạo verification token
  String verificationToken = java.util.UUID.randomUUID().toString();
  LocalDateTime expirationTime = LocalDateTime.now().plusHours(24);
+ 
+ log.info("Generated verification token: {}", verificationToken);
+ log.info("Token expiration time: {}", expirationTime);
  
  // Cập nhật user với token
  savedUser.setEmailVerificationToken(verificationToken);
@@ -152,6 +157,7 @@ public class AuthController {
  
  // Tạo verification URL
  String verificationUrl = frontendUrl + "/verify-email?token=" + verificationToken;
+ log.info("Verification URL: {}", verificationUrl);
  
  // Gửi email
  emailService.sendVerificationEmail(
@@ -165,6 +171,10 @@ public class AuthController {
  log.error("Error sending verification email to: {}", savedUser.getEmail(), e);
  // Không throw exception, chỉ log lỗi để user vẫn được tạo
  }
+ } else {
+ log.warn("Skipping email verification - enabled: {}, email present: {}", 
+ emailVerificationEnabled, 
+ savedUser.getEmail() != null && !savedUser.getEmail().isEmpty());
  }
 
  return ResponseEntity.ok(Map.of("success", true, "message", "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."));

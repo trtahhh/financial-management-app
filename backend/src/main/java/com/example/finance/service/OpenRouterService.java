@@ -219,6 +219,7 @@ public class OpenRouterService {
  }
  
  // Kiểm tra xem có phải câu hỏi về tài chính không
+ @SuppressWarnings("unused")
  private boolean isFinancialQuestion(String prompt) {
  if (prompt == null) return false;
  

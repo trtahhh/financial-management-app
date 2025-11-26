@@ -5,7 +5,7 @@ let pieChart, barChart;
 // JWT Utils
 function getUserIdFromToken() {
  try {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  if (!token) return null;
  
  // Decode JWT token (payload part only)
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
  }
  console.log(" Fetching dashboard data from:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
  const url = `http://localhost:8080/api/transactions`;
  console.log(" Fetching transactions from:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
  const url = `http://localhost:8080/api/categories`;
  console.log(" Fetching categories from:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function () {
  function loadDashboard() {
  console.log(" Đang load dữ liệu dashboard...");
  console.log(" User ID from token:", getUserIdFromToken());
- console.log(" Auth token exists:", !!localStorage.getItem('authToken'));
+ console.log(" Auth token exists:", !!localStorage.getItem('accessToken'));
  
  fetchDashboardData()
  .then(dashboardData => {
@@ -1165,7 +1165,7 @@ function fetchBudgets(month) {
  const userId = getUserIdFromToken();
  const url = `http://localhost:8080/api/budgets?userId=${userId}&month=${monthNum}&year=${year}`;
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -1192,7 +1192,7 @@ function fetchGoals() {
  const userId = getUserIdFromToken();
  const url = `http://localhost:8080/api/goals?userId=${userId}`;
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -1339,7 +1339,7 @@ function updateBudgetAlerts(budgets) {
  */
 async function fetchAndDisplayOverspendingAlerts() {
  try {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  if (!token) return;
  
  const response = await fetch('http://localhost:8080/api/ai/overspending-alerts', {
@@ -1620,4 +1620,152 @@ function updateRecentTransactions(transactions) {
  }).join('');
  
  container.innerHTML = recentTransactionsHtml;
+}
+
+// ============================================================
+// PERSONALIZED TIPS
+// ============================================================
+
+async function loadPersonalizedTips() {
+ const resultDiv = document.getElementById('tips-result');
+ if (!resultDiv) return;
+ 
+ resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary spinner-border-sm"></div> Loading...</div>';
+ 
+ try {
+ const response = await fetch('http://localhost:8080/api/ai/tips', {
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ }
+ });
+ 
+ if (!response.ok) throw new Error('Failed to load tips');
+ 
+ const data = await response.json();
+ displayPersonalizedTips(data.tips || []);
+ } catch (error) {
+ console.error('Tips error:', error);
+ resultDiv.innerHTML = '<div class="alert alert-warning">⚠️ Không thể tải tips</div>';
+ }
+}
+
+function displayPersonalizedTips(tips) {
+ const resultDiv = document.getElementById('tips-result');
+ if (!resultDiv) return;
+ 
+ if (!tips || tips.length === 0) {
+ resultDiv.innerHTML = '<p class="text-muted">Chưa có tips nào</p>';
+ return;
+ }
+ 
+ let html = '<div class="tips-list" style="max-height: 400px; overflow-y: auto;">';
+ 
+ tips.forEach(tip => {
+ const iconMap = {
+ 'food': '🍔',
+ 'transport': '🚗',
+ 'shopping': '🛒',
+ 'education': '📚',
+ 'entertainment': '🎮',
+ 'health': '🏥',
+ 'general': '💡'
+ };
+ 
+ const icon = iconMap[tip.category?.toLowerCase()] || '💡';
+ const priorityClass = tip.priority === 'high' ? 'border-danger' : tip.priority === 'medium' ? 'border-warning' : 'border-info';
+ 
+ html += `
+ <div class="card mb-2 ${priorityClass}" style="border-left: 3px solid;">
+ <div class="card-body p-2">
+ <div class="d-flex align-items-start">
+ <div class="me-2 fs-4">${icon}</div>
+ <div class="flex-grow-1">
+ <strong>${tip.title}</strong>
+ <p class="mb-0 small text-muted">${tip.description}</p>
+ ${tip.potentialSavings ? `<small class="text-success">💰 Tiết kiệm: ${tip.potentialSavings.toLocaleString()} VND/tháng</small>` : ''}
+ </div>
+ </div>
+ </div>
+ </div>
+ `;
+ });
+ 
+ html += '</div>';
+ resultDiv.innerHTML = html;
+}
+
+// ============================================================
+// SMART ANALYTICS
+// ============================================================
+
+async function loadSmartAnalytics() {
+ const resultDiv = document.getElementById('analytics-result');
+ if (!resultDiv) return;
+ 
+ resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-info spinner-border-sm"></div> Analyzing...</div>';
+ 
+ try {
+ const response = await fetch('http://localhost:8080/api/ai/smart-analytics', {
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ }
+ });
+ 
+ if (!response.ok) throw new Error('Failed to load analytics');
+ 
+ const data = await response.json();
+ displaySmartAnalytics(data);
+ } catch (error) {
+ console.error('Analytics error:', error);
+ resultDiv.innerHTML = '<div class="alert alert-warning">⚠️ Không thể tải analytics</div>';
+ }
+}
+
+function displaySmartAnalytics(data) {
+ const resultDiv = document.getElementById('analytics-result');
+ if (!resultDiv) return;
+ 
+ let html = '<div class="analytics-results">';
+ 
+ // Financial Health Score
+ if (data.healthScore !== undefined) {
+ const score = data.healthScore;
+ const scoreColor = score >= 80 ? 'success' : score >= 60 ? 'warning' : 'danger';
+ const scoreEmoji = score >= 80 ? '😊' : score >= 60 ? '😐' : '😢';
+ 
+ html += `
+ <div class="card mb-2 border-${scoreColor}">
+ <div class="card-body p-2 text-center">
+ <div class="fs-3">${scoreEmoji}</div>
+ <h5 class="text-${scoreColor} mb-0">${score}/100</h5>
+ <small class="text-muted">Financial Health Score</small>
+ </div>
+ </div>
+ `;
+ }
+ 
+ // Key Insights
+ if (data.insights && data.insights.length > 0) {
+ html += '<div class="mt-2">';
+ data.insights.slice(0, 5).forEach(insight => {
+ html += `<div class="d-flex align-items-start mb-2">
+ <span class="me-2">📊</span>
+ <small>${insight}</small>
+ </div>`;
+ });
+ html += '</div>';
+ }
+ 
+ // Recommendations
+ if (data.recommendations && data.recommendations.length > 0) {
+ html += '<hr><strong class="small">💡 Recommendations:</strong>';
+ data.recommendations.slice(0, 3).forEach(rec => {
+ html += `<div class="small text-muted ms-3">• ${rec}</div>`;
+ });
+ }
+ 
+ html += '</div>';
+ resultDiv.innerHTML = html;
 }

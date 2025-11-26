@@ -38,22 +38,16 @@ public class RecurringTransaction {
  @Column(nullable = false)
  private String type; // expense, income
 
- private String note;
+    private String note;
 
- @Column(nullable = false)
- private String frequency; // daily, weekly, monthly, yearly
+    @Column(nullable = false)
+    private String frequency; // daily, weekly, monthly, yearly
 
- @Column(name = "start_date", nullable = false)
- private LocalDate startDate;
-
- @Column(name = "end_date")
- private LocalDate endDate;
-
- @Column(name = "next_execution", nullable = false)
- private LocalDate nextExecution;
-
- @Column(name = "is_active")
- private Boolean isActive = true;
+    @Column(name = "next_execution", nullable = false)
+    private LocalDate nextExecution;
+    
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
  @Column(name = "created_at")
  private LocalDateTime createdAt = LocalDateTime.now();

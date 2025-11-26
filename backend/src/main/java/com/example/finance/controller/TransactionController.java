@@ -110,11 +110,17 @@ public class TransactionController {
  
  // Remove hard cap; rely on DB DECIMAL(18,2) constraints instead
  
- // Validate type
- if (dto.getType() == null || (!dto.getType().equals("income") && !dto.getType().equals("expense"))) {
+ // Validate type (case-insensitive)
+ if (dto.getType() == null) {
+ return ResponseEntity.badRequest()
+ .body(Map.of("success", false, "message", "Type is required"));
+ }
+ String type = dto.getType().toLowerCase();
+ if (!type.equals("income") && !type.equals("expense")) {
  return ResponseEntity.badRequest()
  .body(Map.of("success", false, "message", "Type must be 'income' or 'expense'"));
  }
+ dto.setType(type);
  
  // Validate date
  if (dto.getDate() == null) {

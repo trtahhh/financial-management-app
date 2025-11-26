@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
  let editing = null;
 
  function getAuthHeaders() {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -661,4 +661,191 @@ function applyPlanAsGoal() {
  alert('Lỗi: ' + e.message);
  });
 }
+
+// ============================================================
+// SAVINGS PATH (LỘ TRÌNH TIẾT KIỆM)
+// ============================================================
+
+function showSavingsPathModal() {
+ const modal = new bootstrap.Modal(document.getElementById('savings-path-modal'));
+ modal.show();
+}
+
+async function submitSavingsPath() {
+ const amount = parseFloat(document.getElementById('savings-path-amount').value);
+ const purpose = document.getElementById('savings-path-purpose').value;
+ const resultDiv = document.getElementById('savings-path-result');
+ 
+ if (!amount || amount <= 0) {
+ alert('Vui lòng nhập số tiền hợp lệ');
+ return;
+ }
+ 
+ if (!purpose) {
+ alert('Vui lòng chọn mục đích');
+ return;
+ }
+ 
+ resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary spinner-border-sm"></div> Đang tạo lộ trình...</div>';
+ 
+ try {
+ const response = await fetch('http://localhost:8080/api/ai/suggest-savings-path', {
+ method: 'POST',
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ },
+ body: JSON.stringify({
+ targetAmount: amount,
+ purpose: purpose
+ })
+ });
+ 
+ if (!response.ok) throw new Error('Failed to generate savings path');
+ 
+ const data = await response.json();
+ displaySavingsPath(data);
+ } catch (error) {
+ console.error('Savings path error:', error);
+ resultDiv.innerHTML = '<div class="alert alert-warning">⚠️ Không thể tạo lộ trình tiết kiệm</div>';
+ }
+}
+
+function displaySavingsPath(data) {
+ const resultDiv = document.getElementById('savings-path-result');
+ if (!resultDiv) return;
+ 
+ let html = '<div class="savings-path-results mt-3">';
+ 
+ // Timeline
+ if (data.timeline) {
+ html += `
+ <div class="alert alert-info">
+ <strong>⏱️ Thời gian:</strong> ${data.timeline}
+ </div>
+ `;
+ }
+ 
+ // Monthly savings needed
+ if (data.monthlySavings) {
+ html += `
+ <div class="alert alert-success">
+ <strong>💰 Tiết kiệm mỗi tháng:</strong> ${data.monthlySavings.toLocaleString()} VND
+ </div>
+ `;
+ }
+ 
+ // Steps/Milestones
+ if (data.steps && data.steps.length > 0) {
+ html += '<div class="mt-3"><strong>📋 Các bước thực hiện:</strong><ol>';
+ data.steps.forEach(step => {
+ html += `<li class="mb-2">${step}</li>`;
+ });
+ html += '</ol></div>';
+ }
+ 
+ // Recommendations
+ if (data.recommendations && data.recommendations.length > 0) {
+ html += '<div class="mt-3"><strong>💡 Khuyến nghị:</strong><ul>';
+ data.recommendations.forEach(rec => {
+ html += `<li class="text-muted">${rec}</li>`;
+ });
+ html += '</ul></div>';
+ }
+ 
+ html += '</div>';
+ resultDiv.innerHTML = html;
+}
+
+// ============================================================
+// SAVINGS TIPS (KNOWLEDGE BASE)
+// ============================================================
+
+function showSavingsTipsModal() {
+ const modal = new bootstrap.Modal(document.getElementById('savings-tips-modal'));
+ modal.show();
+}
+
+async function loadSavingsTips() {
+ const category = document.getElementById('savings-tips-category').value;
+ const purpose = document.getElementById('savings-tips-purpose').value;
+ const resultDiv = document.getElementById('savings-tips-result');
+ 
+ resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-info spinner-border-sm"></div> Đang tìm tips...</div>';
+ 
+ try {
+ let url = 'http://localhost:8080/api/ai/savings-tips';
+ const params = [];
+ 
+ if (category) params.push(`category=${encodeURIComponent(category)}`);
+ if (purpose) params.push(`purpose=${encodeURIComponent(purpose)}`);
+ 
+ if (params.length > 0) {
+ url += '?' + params.join('&');
+ }
+ 
+ const response = await fetch(url, {
+ headers: {
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+ 'Content-Type': 'application/json'
+ }
+ });
+ 
+ if (!response.ok) throw new Error('Failed to load savings tips');
+ 
+ const data = await response.json();
+ displaySavingsTips(data.tips || []);
+ } catch (error) {
+ console.error('Savings tips error:', error);
+ resultDiv.innerHTML = '<div class="alert alert-warning">⚠️ Không thể tải tips</div>';
+ }
+}
+
+function displaySavingsTips(tips) {
+ const resultDiv = document.getElementById('savings-tips-result');
+ if (!resultDiv) return;
+ 
+ if (!tips || tips.length === 0) {
+ resultDiv.innerHTML = '<p class="text-muted">Không tìm thấy tips phù hợp</p>';
+ return;
+ }
+ 
+ let html = '<div class="tips-list mt-3" style="max-height: 400px; overflow-y: auto;">';
+ 
+ tips.forEach(tip => {
+ const iconMap = {
+ 'food': '🍔',
+ 'transport': '🚗',
+ 'shopping': '🛒',
+ 'education': '📚',
+ 'emergency': '🚨',
+ 'vacation': '✈️',
+ 'investment': '📈',
+ 'general': '💡'
+ };
+ 
+ const icon = iconMap[tip.category?.toLowerCase()] || '📚';
+ 
+ html += `
+ <div class="card mb-2">
+ <div class="card-body p-3">
+ <div class="d-flex align-items-start">
+ <div class="me-3 fs-3">${icon}</div>
+ <div class="flex-grow-1">
+ <h6 class="mb-1">${tip.title}</h6>
+ <p class="mb-2 text-muted small">${tip.description}</p>
+ ${tip.category ? `<span class="badge bg-secondary">${tip.category}</span>` : ''}
+ ${tip.difficulty ? `<span class="badge bg-info ms-1">${tip.difficulty}</span>` : ''}
+ ${tip.potentialSavings ? `<div class="text-success small mt-2">💰 Tiết kiệm: ~${tip.potentialSavings}</div>` : ''}
+ </div>
+ </div>
+ </div>
+ </div>
+ `;
+ });
+ 
+ html += '</div>';
+ resultDiv.innerHTML = html;
+}
+
 

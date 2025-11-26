@@ -4,11 +4,11 @@ import com.example.finance.entity.*;
 import com.example.finance.repository.UserRepository;
 import com.example.finance.service.AchievementService;
 import com.example.finance.service.GamificationService;
-import com.example.finance.security.JwtUtil;
+import com.example.finance.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @RestController
@@ -20,9 +20,6 @@ public class GamificationController {
 
     @Autowired
     private AchievementService achievementService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
     
     @Autowired
     private UserRepository userRepository;
@@ -31,9 +28,12 @@ public class GamificationController {
      * Get user's gamification stats
      */
     @GetMapping("/stats")
-    public ResponseEntity<?> getUserStats(HttpServletRequest request) {
+    public ResponseEntity<?> getUserStats(Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
             Map<String, Object> stats = gamificationService.getUserStatistics(user);
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
@@ -45,9 +45,12 @@ public class GamificationController {
      * Get user's achievements
      */
     @GetMapping("/achievements")
-    public ResponseEntity<?> getUserAchievements(HttpServletRequest request) {
+    public ResponseEntity<?> getUserAchievements(Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
             List<Map<String, Object>> achievements = achievementService.getAllAchievementsWithProgress(user);
             return ResponseEntity.ok(achievements);
         } catch (Exception e) {
@@ -59,10 +62,11 @@ public class GamificationController {
      * Get unnotified achievements
      */
     @GetMapping("/achievements/unnotified")
-    public ResponseEntity<?> getUnnotifiedAchievements(HttpServletRequest request) {
+    public ResponseEntity<?> getUnnotifiedAchievements(Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
-            List<UserAchievement> unnotified = achievementService.getUnnotifiedAchievements(user.getId());
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            List<UserAchievement> unnotified = achievementService.getUnnotifiedAchievements(userId);
             return ResponseEntity.ok(unnotified);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -125,10 +129,11 @@ public class GamificationController {
      * Get user's active challenges
      */
     @GetMapping("/challenges/user")
-    public ResponseEntity<?> getUserChallenges(HttpServletRequest request) {
+    public ResponseEntity<?> getUserChallenges(Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
-            List<Map<String, Object>> challenges = gamificationService.getUserActiveChallenges(user.getId());
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            List<Map<String, Object>> challenges = gamificationService.getUserActiveChallenges(userId);
             return ResponseEntity.ok(challenges);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -139,9 +144,12 @@ public class GamificationController {
      * Join a challenge
      */
     @PostMapping("/challenges/{challengeId}/join")
-    public ResponseEntity<?> joinChallenge(@PathVariable Long challengeId, HttpServletRequest request) {
+    public ResponseEntity<?> joinChallenge(@PathVariable Long challengeId, Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
             UserChallenge userChallenge = gamificationService.joinChallenge(user, challengeId);
             return ResponseEntity.ok(userChallenge);
         } catch (Exception e) {
@@ -156,9 +164,12 @@ public class GamificationController {
     public ResponseEntity<?> awardPoints(
             @RequestParam int points,
             @RequestParam String reason,
-            HttpServletRequest request) {
+            Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
             UserGamification gamification = gamificationService.awardPoints(user, points, reason);
             return ResponseEntity.ok(gamification);
         } catch (Exception e) {
@@ -170,9 +181,12 @@ public class GamificationController {
      * Check and unlock achievements manually
      */
     @PostMapping("/achievements/check")
-    public ResponseEntity<?> checkAchievements(HttpServletRequest request) {
+    public ResponseEntity<?> checkAchievements(Authentication authentication) {
         try {
-            User user = getCurrentUser(request);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
             List<UserAchievement> newAchievements = achievementService.checkAndUnlockAchievements(user);
             return ResponseEntity.ok(Map.of(
                 "message", "Achievements checked",
@@ -181,18 +195,5 @@ public class GamificationController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
-    }
-
-    /**
-     * Get current user from JWT token
-     */
-    private User getCurrentUser(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        Long userId = jwtUtil.getUserId(token);
-        return userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

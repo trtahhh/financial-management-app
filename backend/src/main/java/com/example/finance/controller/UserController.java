@@ -168,8 +168,8 @@ public class UserController {
  errorResponse.put("message", "Số điện thoại không được quá 20 ký tự");
  return ResponseEntity.badRequest().body(errorResponse);
  }
- // Validate phone format (Vietnamese phone number)
- if (!phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
+ // Validate phone format - Allow 0XXXXXXXXX or +84XXXXXXXXX
+ if (!phone.matches("^(0[0-9]{9}|\\+84[0-9]{9,10})$")) {
  Map<String, Object> errorResponse = new HashMap<>();
  errorResponse.put("success", false);
  errorResponse.put("message", "Định dạng số điện thoại không hợp lệ. Ví dụ: 0123456789 hoặc +84123456789");

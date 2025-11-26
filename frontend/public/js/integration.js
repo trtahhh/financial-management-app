@@ -17,7 +17,7 @@ const INTEGRATION_CONFIG = {
 class JwtUtils {
  static getUserIdFromToken() {
  try {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  if (!token) return null;
  
  // Decode JWT token (payload part only)
@@ -122,7 +122,7 @@ class BudgetIntegration {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
- 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
  },
  body: JSON.stringify({
  categoryId: transaction.categoryId,
@@ -156,7 +156,7 @@ class BudgetIntegration {
  
  const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets/check/${categoryId}?userId=${userId}&amount=${amount}`, {
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
  }
  });
  
@@ -183,7 +183,7 @@ class BudgetIntegration {
  
  const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/budgets/usage/${categoryId}?userId=${userId}&month=${month}&year=${year}`, {
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
  }
  });
  
@@ -210,7 +210,7 @@ class GoalsIntegration {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
- 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
  },
  body: JSON.stringify({
  userId: JwtUtils.getCurrentUserId(),
@@ -247,7 +247,7 @@ class GoalsIntegration {
  
  const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/goals?userId=${userId}&status=active`, {
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
  }
  });
  
@@ -280,7 +280,7 @@ class WalletIntegration {
  try {
  const response = await fetch(url, {
  headers: {
- 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+ 'Authorization': `Bearer ${localStorage.getItem('accessToken') || ''}`
  }
  });
  
@@ -306,7 +306,7 @@ class GoalNotificationManager {
 
  const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/goals/progress`, {
  headers: {
- 'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+ 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
  }
  });
 
@@ -590,7 +590,7 @@ class IntegrationSystem {
 
  const response = await fetch(`${INTEGRATION_CONFIG.API_BASE}/notifications/${userId}/unread-count`, {
  headers: {
- 'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+ 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
  }
  });
 

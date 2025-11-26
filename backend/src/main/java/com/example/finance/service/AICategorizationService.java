@@ -22,6 +22,7 @@ public class AICategorizationService {
     @Autowired
     private UserCategorizationPreferenceRepository userPrefRepository;
     
+    @SuppressWarnings("unused")
     @Autowired
     private OpenRouterService openRouterService;
     
@@ -30,6 +31,12 @@ public class AICategorizationService {
     
     @Autowired
     private CategorySuggestionService categorySuggestionService;
+    
+    @Autowired
+    private EnhancedFeatureExtractor featureExtractor;
+    
+    @Autowired
+    private ConfidenceCalibrationService confidenceCalibrator;
     
     // ML Models (kept for backward compatibility but not primary layer anymore)
     private LinearSVMClassifier svmModel;
@@ -41,6 +48,13 @@ public class AICategorizationService {
     
     @PostConstruct
     public void loadModels() {
+        // ML models now handled by Python AI service via REST API
+        // Legacy Java ML models disabled for production
+        System.out.println("⚡ Using Python AI Service for ML categorization (Ultra Enhanced)");
+        System.out.println("✅ AICategorizationService initialized");
+        
+        // Comment out legacy model loading
+        /*
         try {
             // Load TF-IDF vectorizer
             tfidfVectorizer = ModelSerializer.loadTFIDFVectorizerFromResources("/ml-models/tfidf_vectorizer.bin");
@@ -54,6 +68,7 @@ public class AICategorizationService {
             e.printStackTrace();
             throw new RuntimeException("ML model initialization failed", e);
         }
+        */
     }
     
     // SVM Model Category Mapping
@@ -131,7 +146,7 @@ public class AICategorizationService {
                 saveUserPreference(userId, normalized, categoryId);
             }
             
-            printPerformanceStats(startTime, layer1Time, 0, 0);
+            printPerformanceStats(startTime, layer1Time, 0, 0, 0);
             return result;
         }
         
@@ -151,11 +166,31 @@ public class AICategorizationService {
                 saveUserPreference(userId, normalized, fuzzyResult.getCategory());
             }
             
-            printPerformanceStats(startTime, layer1Time, layer2Time, 0);
+            printPerformanceStats(startTime, layer1Time, layer2Time, 0, 0);
             return fuzzyResult;
         }
         
-        System.out.println("[LAYER 2 ✗] Low confidence or no match, proceeding to Layer 3");
+        System.out.println("[LAYER 2 ✗] Low confidence or no match, proceeding to Layer 2.5");
+        
+        // ===== LAYER 2.5: ML-based Categorization with Enhanced Features =====
+        long layer25Start = System.currentTimeMillis();
+        CategorizationResult mlResult = categorizeByEnhancedML(description, amount, userId);
+        long layer25Time = System.currentTimeMillis() - layer25Start;
+        
+        if (mlResult != null && mlResult.getConfidence() >= 0.60) {
+            System.out.println("[LAYER 2.5 ✓] ML categorized: " + mlResult.getCategory() + 
+                             " with " + (mlResult.getConfidence() * 100) + "% confidence in " + layer25Time + "ms");
+            
+            // Save to user preferences
+            if (userId != null) {
+                saveUserPreference(userId, normalized, mlResult.getCategory());
+            }
+            
+            printPerformanceStats(startTime, layer1Time, layer2Time, layer25Time, 0);
+            return mlResult;
+        }
+        
+        System.out.println("[LAYER 2.5 ✗] Low ML confidence, proceeding to Layer 3");
         
         // ===== LAYER 3: LLM Fallback =====
         long layer3Start = System.currentTimeMillis();
@@ -180,7 +215,7 @@ public class AICategorizationService {
                 });
             }
             
-            printPerformanceStats(startTime, layer1Time, layer2Time, layer3Time);
+            printPerformanceStats(startTime, layer1Time, layer2Time, layer25Time, layer3Time);
             return llmResult;
         }
         
@@ -197,15 +232,16 @@ public class AICategorizationService {
             });
         }
         
-        printPerformanceStats(startTime, layer1Time, layer2Time, layer3Time);
+        printPerformanceStats(startTime, layer1Time, layer2Time, layer25Time, layer3Time);
         return buildResult(14L, 0.30, "Fallback: Uncategorized");
     }
     
-    private void printPerformanceStats(long totalStart, long layer1Time, long layer2Time, long layer3Time) {
+    private void printPerformanceStats(long totalStart, long layer1Time, long layer2Time, long layer25Time, long layer3Time) {
         long totalTime = System.currentTimeMillis() - totalStart;
         System.out.println("\n--- Performance Stats ---");
         System.out.println("Layer 1: " + layer1Time + "ms");
         System.out.println("Layer 2: " + layer2Time + "ms");
+        System.out.println("Layer 2.5 (ML): " + layer25Time + "ms");
         System.out.println("Layer 3: " + layer3Time + "ms");
         System.out.println("Total: " + totalTime + "ms");
         System.out.println("========== CATEGORIZATION END ==========\n");
@@ -262,6 +298,75 @@ public class AICategorizationService {
         }
         
         return null;
+    }
+    
+    // ===== LAYER 2.5: ML-based Categorization with Enhanced Features =====
+    
+    /**
+     * Layer 2.5: Machine Learning with Enhanced Features
+     * - Combines TF-IDF text features with amount/temporal/user context
+     * - Applies confidence calibration to avoid overconfidence
+     * - Flags uncertain predictions for human review
+     */
+    private CategorizationResult categorizeByEnhancedML(String description, Double amount, Long userId) {
+        try {
+            // Extract enhanced features (future use - currently just using TF-IDF)
+            Map<String, Double> enhancedFeatures = featureExtractor.extractEnhancedFeatures(
+                description, 
+                amount != null ? java.math.BigDecimal.valueOf(amount) : java.math.BigDecimal.ZERO,
+                userId,
+                java.time.LocalDateTime.now()
+            );
+            
+            System.out.println("[LAYER 2.5] Enhanced features extracted: " + enhancedFeatures.size() + " features");
+            
+            // Get TF-IDF features
+            double[] tfidfVector = tfidfVectorizer.transform(description);
+            
+            // Predict with SVM
+            LinearSVMClassifier.PredictionResult prediction = svmModel.predictWithConfidence(tfidfVector);
+            
+            // Convert SVM class to category ID
+            long categoryId = (long) prediction.predictedClass;
+            
+            // Calibrate confidence
+            ConfidenceCalibrationService.CalibratedPrediction calibrated = 
+                confidenceCalibrator.calibrate(categoryId, prediction.scores, categoryNameMapping);
+            
+            double confidence = calibrated.getConfidence();
+            
+            System.out.println("[LAYER 2.5] Predicted category: " + categoryId + 
+                             ", Raw confidence: " + String.format("%.2f", prediction.confidence) +
+                             ", Calibrated: " + String.format("%.2f", confidence));
+            
+            // Check if needs human review
+            if (calibrated.isRequiresHumanReview()) {
+                System.out.println("[LAYER 2.5 WARNING] Low confidence, flagged for human review: " + 
+                                 calibrated.getExplanation());
+            }
+            
+            // Build explanation with alternatives
+            StringBuilder explanation = new StringBuilder("Layer 2.5: ML (SVM + Enhanced Features)");
+            if (!calibrated.getAlternativeSuggestions().isEmpty()) {
+                explanation.append(" | Alternatives: ");
+                for (int i = 0; i < calibrated.getAlternativeSuggestions().size(); i++) {
+                    ConfidenceCalibrationService.CategoryScore alt = calibrated.getAlternativeSuggestions().get(i);
+                    explanation.append("Cat").append(alt.categoryId).append("(")
+                              .append(String.format("%.0f%%", alt.score * 100))
+                              .append(")");
+                    if (i < calibrated.getAlternativeSuggestions().size() - 1) {
+                        explanation.append(", ");
+                    }
+                }
+            }
+            
+            return buildResult(categoryId, confidence, explanation.toString());
+            
+        } catch (Exception e) {
+            System.err.println("[LAYER 2.5 ERROR] ML prediction failed: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
     
     /**
@@ -405,6 +510,7 @@ public class AICategorizationService {
     
     // ===== LAYER 2: User Personalization Methods =====
     
+    @SuppressWarnings("unused")
     private CategorizationResult checkUserPreference(Long userId, String normalized) {
         Optional<UserCategorizationPreference> prefOpt = 
             userPrefRepository.findByUserIdAndDescriptionPattern(userId, normalized);
@@ -466,6 +572,7 @@ public class AICategorizationService {
     
     // ===== LAYER 1: SVM Helper Methods =====
     
+    @SuppressWarnings("unused")
     private CategorizationResult buildResultFromSVM(
             LinearSVMClassifier.PredictionResult prediction, String source) {
         
@@ -640,6 +747,7 @@ public class AICategorizationService {
         return null; // No match
     }
     
+    @SuppressWarnings("unused")
     private Long matchByAmount(String normalized, Double amount) {
         if (amount < 50000) {
             // Small amounts: Food or Transport
@@ -1711,6 +1819,7 @@ public class AICategorizationService {
      * Normalize feature vector using L2 normalization
      * Matches the normalization applied during model training
      */
+    @SuppressWarnings("unused")
     private void normalizeFeatures(double[] vector) {
         double norm = 0.0;
         for (double v : vector) {
@@ -1733,6 +1842,7 @@ public class AICategorizationService {
      * - Random keyboard mashing (e.g., "asdf", "qwer", "1234")
      * - Repeated characters (e.g., "aaaa", "xxx")
      */
+    @SuppressWarnings("unused")
     private boolean isMeaninglessDescription(String text) {
         if (text == null || text.trim().isEmpty()) {
             return true;

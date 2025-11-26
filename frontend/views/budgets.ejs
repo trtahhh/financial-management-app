@@ -2,9 +2,84 @@
   
   <!-- Smart Budget Section will be added by JavaScript -->
   
+  <!-- Ultra AI Insights Section -->
+  <div id="ultra-ai-section" class="card mb-4" style="display: none;">
+    <div class="card-header bg-gradient-primary text-white">
+      <h5>🚀 Ultra AI Budget Insights <span class="badge bg-success">9 ML Libraries</span></h5>
+      <small>Powered by XGBoost, LightGBM, Prophet, SHAP, VADER, TextBlob & more</small>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <select id="ultra-month" class="form-select">
+            <!-- Will be populated by JS -->
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select id="ultra-year" class="form-select">
+            <!-- Will be populated by JS -->
+          </select>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" onclick="getUltraInsights()">
+            🔮 Get Ultra AI Insights
+          </button>
+        </div>
+      </div>
+      
+      <div id="ultra-insights-result"></div>
+      
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <h6>📈 Category Forecast</h6>
+          <select id="forecast-category" class="form-select mb-2">
+            <option value="">Select category to forecast</option>
+          </select>
+          <button class="btn btn-info w-100" onclick="getCategoryForecast()">
+            📊 Forecast with Prophet
+          </button>
+          <div id="forecast-result" class="mt-3"></div>
+        </div>
+        
+        <div class="col-md-6">
+          <h6>😊 Spending Sentiment Analysis</h6>
+          <button class="btn btn-warning w-100 mt-4" onclick="analyzeSentiment()">
+            💭 Analyze Spending Mood
+          </button>
+          <div id="sentiment-result" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Smart Budget Recommendations Section -->
+  <div id="smart-budget-section" class="card mb-4">
+    <div class="card-header bg-gradient-success text-white">
+      <h5>💰 Smart Budget Recommendations <span class="badge bg-light text-success">AI Powered</span></h5>
+      <small>Gợi ý ngân sách thông minh dựa trên lịch sử chi tiêu của bạn</small>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <select id="smart-budget-months" class="form-select">
+            <option value="1">Phân tích 1 tháng gần nhất</option>
+            <option value="3" selected>Phân tích 3 tháng gần nhất</option>
+            <option value="6">Phân tích 6 tháng gần nhất</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <button class="btn btn-success w-100" onclick="getSmartBudget()">
+            🧠 Get Smart Budget Recommendations
+          </button>
+        </div>
+      </div>
+      <div id="smart-budget-result"></div>
+    </div>
+  </div>
+  
   <div class="card">
     <div class="card-header">
-      <h5> Ngân sách hiện tại</h5>
+      <h5>💰 Ngân sách hiện tại</h5>
     </div>
     <div class="card-body">
       <div class="table-responsive">

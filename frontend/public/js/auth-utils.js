@@ -1,10 +1,10 @@
 // Utility functions for authenticated API calls
 function getAuthToken() {
-  return localStorage.getItem('authToken');
+  return localStorage.getItem('accessToken');
 }
 
 function getAuthHeaders() {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('accessToken');
   return {
     'Authorization': 'Bearer ' + token,
     'Content-Type': 'application/json'
@@ -12,7 +12,7 @@ function getAuthHeaders() {
 }
 
 function checkAuth() {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('accessToken');
   if (!token) {
     window.location.href = '/login';
     return false;
@@ -21,7 +21,7 @@ function checkAuth() {
 }
 
 function logout() {
-  localStorage.removeItem('authToken');
+  localStorage.removeItem('accessToken');
   window.location.href = '/login';
 }
 
@@ -47,7 +47,7 @@ async function authenticatedFetch(url, options = {}) {
     
     if (response.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('accessToken');
       window.location.href = '/login';
       return;
     }

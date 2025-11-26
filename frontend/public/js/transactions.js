@@ -5,7 +5,7 @@ let editingTransaction = null;
 // JWT Utils
 function getUserIdFromToken() {
  try {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  if (!token) return null;
  
  // Decode JWT token (payload part only)
@@ -112,7 +112,7 @@ async function triggerAutoCategorize(description, amount) {
  categoryNameInput.style.backgroundColor = '#fff3cd';
  
  try {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const response = await fetch('http://localhost:8080/api/ai/auto-categorize', {
  method: 'POST',
  headers: {
@@ -193,7 +193,7 @@ function loadTransactions() {
  const url = `http://localhost:8080/api/transactions`;
  console.log(" Loading transactions from:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -241,7 +241,7 @@ function loadCategories() {
  const url = `http://localhost:8080/api/categories`;
  console.log(" Loading categories from:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -279,7 +279,7 @@ function loadWallets() {
  const url = `http://localhost:8080/api/wallets`;
  console.log(" Loading wallets from:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -466,7 +466,7 @@ async function handleOcrFile(file) {
  const formData = new FormData();
  formData.append('file', file);
 
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {};
  if (token) headers['Authorization'] = 'Bearer ' + token;
 
@@ -754,7 +754,7 @@ function saveTransaction() {
  
  console.log(` ${method} transaction to:`, url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -827,7 +827,7 @@ function deleteTransaction(id) {
  const url = `http://localhost:8080/api/transactions/${id}`;
  console.log(" Deleting transaction:", url);
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -905,7 +905,7 @@ function updateBudgetUsage(categoryId, transactionType, amount) {
  const year = currentDate.getFullYear();
  
  // Gọi API để cập nhật budget usage
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -940,7 +940,7 @@ function updateBudgetUsage(categoryId, transactionType, amount) {
 function updateGoalProgress(transactionType, amount) {
  if (transactionType !== 'THU') return;
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -972,7 +972,7 @@ function updateGoalProgress(transactionType, amount) {
 function updateWalletBalance(transactionType, amount) {
  const balanceChange = transactionType === 'THU' ? amount : -amount;
  
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -1003,7 +1003,7 @@ function getTransactionImpactMessage(transaction) {
  * Kiểm tra và cảnh báo vượt ngân sách
  */
 function checkBudgetAlert(categoryId, amount) {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const headers = {
  'Content-Type': 'application/json'
  };
@@ -1074,7 +1074,7 @@ async function triggerAutoCategorize(description, amount) {
  categoryNameField.style.backgroundColor = '#fff3cd';
  
  try {
- const token = localStorage.getItem('authToken');
+ const token = localStorage.getItem('accessToken');
  const response = await fetch('http://localhost:8080/api/ai/auto-categorize', {
  method: 'POST',
  headers: {

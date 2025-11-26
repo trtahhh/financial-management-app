@@ -3,7 +3,6 @@ package com.example.finance.service;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.finance.entity.Transaction;
-import com.example.finance.entity.User;
 import com.example.finance.repository.TransactionRepository;
 import com.example.finance.repository.UserRepository;
 

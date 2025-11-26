@@ -59,7 +59,9 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Mục tiêu đang thực hiện</h5>
       <div>
-        <button id="ai-planning-btn" class="btn btn-info btn-sm me-2"> Lập kế hoạch dài hạn</button>
+        <button id="ai-planning-btn" class="btn btn-info btn-sm me-2">🧙 Lập kế hoạch dài hạn</button>
+        <button id="savings-path-btn" class="btn btn-warning btn-sm me-2" onclick="showSavingsPathModal()">💰 Lộ trình tiết kiệm</button>
+        <button id="savings-tips-btn" class="btn btn-primary btn-sm me-2" onclick="showSavingsTipsModal()">📚 Savings Tips</button>
         <button id="goal-add-btn" class="btn btn-success btn-sm">+ Thêm mục tiêu</button>
       </div>
     </div>
@@ -170,6 +172,80 @@
           </div>
           <p class="mt-2">AI đang phân tích dữ liệu của bạn...</p>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 💰 Savings Path Wizard Modal -->
+<div id="savings-path-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title">💰 Lộ trình Tiết kiệm Thông minh</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="savings-path-form">
+          <div class="mb-3">
+            <label class="form-label">Số tiền muốn tiết kiệm (VNĐ)</label>
+            <input type="number" class="form-control" id="savings-target-amount" required min="0" step="100000" placeholder="Ví dụ: 50000000">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mục đích tiết kiệm</label>
+            <select class="form-control" id="savings-purpose" required>
+              <option value="emergency">Quỹ khẩn cấp</option>
+              <option value="education">Học tập</option>
+              <option value="house">Mua nhà</option>
+              <option value="car">Mua xe</option>
+              <option value="travel">Du lịch</option>
+              <option value="business">Kinh doanh</option>
+              <option value="retirement">Hưu trí</option>
+              <option value="other">Khác</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-warning w-100">🚀 Tạo lộ trình với AI</button>
+        </form>
+        <div id="savings-path-result" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 📚 Savings Knowledge Base Modal -->
+<div id="savings-tips-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">📚 Savings Knowledge Base</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Danh mục</label>
+            <select class="form-control" id="tips-category">
+              <option value="">Tất cả</option>
+              <option value="food">Ăn uống</option>
+              <option value="transport">Di chuyển</option>
+              <option value="shopping">Mua sắm</option>
+              <option value="entertainment">Giải trí</option>
+              <option value="education">Giáo dục</option>
+              <option value="health">Y tế</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Mục đích</label>
+            <select class="form-control" id="tips-purpose">
+              <option value="">Chung</option>
+              <option value="student">Sinh viên</option>
+              <option value="family">Gia đình</option>
+              <option value="investment">Đầu tư</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100" onclick="loadSavingsTips()">📖 Xem Knowledge Base</button>
+        <div id="savings-tips-result" class="mt-3"></div>
       </div>
     </div>
   </div>

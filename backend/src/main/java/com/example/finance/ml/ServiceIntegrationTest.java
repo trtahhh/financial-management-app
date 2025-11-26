@@ -8,7 +8,6 @@ public class ServiceIntegrationTest {
         try {
             // Load models directly
             System.out.println("Loading models...");
-            VietnameseTextNormalizer normalizer = new VietnameseTextNormalizer();
             TFIDFVectorizer vectorizer = ModelSerializer.loadTFIDFVectorizerFromResources("/ml-models/tfidf_vectorizer.bin");
             LinearSVMClassifier svm = ModelSerializer.loadSVMClassifierFromResources("/ml-models/svm_model.bin");
             System.out.println("✓ Models loaded successfully!\n");
@@ -43,7 +42,7 @@ public class ServiceIntegrationTest {
                 String expectedName = testCase[2];
                 
                 // Predict
-                String normalized = normalizer.normalize(description);
+                String normalized = VietnameseTextNormalizer.normalize(description);
                 double[] features = vectorizer.transform(normalized);
                 LinearSVMClassifier.PredictionResult result = svm.predictWithConfidence(features);
                 
