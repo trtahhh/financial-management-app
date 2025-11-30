@@ -70,9 +70,6 @@ public class WalletService {
  Wallet wallet = repo.findById(id)
  .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + id));
  
- // Get current balance from database
- BigDecimal currentBalance = wallet.getBalance() != null ? wallet.getBalance() : BigDecimal.ZERO;
- 
  // Calculate transaction delta (for history display)
  BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(wallet.getId(), "income");
  BigDecimal totalExpense = transactionRepository.sumByWalletIdAndType(wallet.getId(), "expense");
