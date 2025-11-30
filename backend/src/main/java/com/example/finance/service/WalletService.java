@@ -9,6 +9,9 @@ import com.example.finance.repository.NotificationRepository;
 import com.example.finance.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "wallets")
 public class WalletService {
 
  private final WalletRepository repo;
@@ -29,6 +33,7 @@ public class WalletService {
  private final NotificationRepository notificationRepository;
  private final WalletMapper mapper;
 
+ @Cacheable(value = "wallets", key = "#userId")
  public List<WalletDTO> findAll(Long userId) {
  try {
  List<Wallet> wallets = repo.findByUserId(userId);
@@ -48,6 +53,7 @@ public class WalletService {
  }
 
  @Transactional
+ @CacheEvict(value = "wallets", allEntries = true)
  public WalletDTO save(WalletDTO dto) {
  try {
  if (dto.getUserId() == null) {
@@ -59,38 +65,27 @@ public class WalletService {
  }
  }
 
+ @Cacheable(value = "wallets", key = "#id")
  public WalletDTO findById(Long id) {
  Wallet wallet = repo.findById(id)
  .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + id));
  
- System.out.println("=== WALLET BALANCE CALCULATION ===");
- System.out.println("Wallet ID: " + wallet.getId());
- System.out.println("Wallet Name: " + wallet.getName());
- 
- // Lấy balance hiện tại từ database (số tiền người dùng đã set)
+ // Get current balance from database
  BigDecimal currentBalance = wallet.getBalance() != null ? wallet.getBalance() : BigDecimal.ZERO;
- System.out.println("Current wallet balance from DB: " + currentBalance);
  
- // Tính toán tổng thay đổi từ transactions (optional - để hiển thị history)
+ // Calculate transaction delta (for history display)
  BigDecimal totalIncome = transactionRepository.sumByWalletIdAndType(wallet.getId(), "income");
  BigDecimal totalExpense = transactionRepository.sumByWalletIdAndType(wallet.getId(), "expense");
  
  totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
  totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
- BigDecimal transactionDelta = totalIncome.subtract(totalExpense);
  
- System.out.println("Transaction income: " + totalIncome);
- System.out.println("Transaction expense: " + totalExpense);
- System.out.println("Transaction delta: " + transactionDelta);
- 
- // Sử dụng balance hiện tại (không override bằng transaction calculation)
- // Người dùng có thể set balance trực tiếp khi tạo/sửa ví
- System.out.println("Final balance: " + currentBalance);
- 
+ // Use current balance (user can set balance directly)
  return mapper.toDto(wallet);
  }
 
  @Transactional
+ @CacheEvict(value = "wallets", allEntries = true)
  public void deleteById(Long id) {
  if (!repo.existsById(id)) {
  throw new RuntimeException("Wallet not found with id: " + id);

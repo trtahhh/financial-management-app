@@ -50,8 +50,6 @@ public class AICategorizationService {
     public void loadModels() {
         // ML models now handled by Python AI service via REST API
         // Legacy Java ML models disabled for production
-        System.out.println("⚡ Using Python AI Service for ML categorization (Ultra Enhanced)");
-        System.out.println("✅ AICategorizationService initialized");
         
         // Comment out legacy model loading
         /*

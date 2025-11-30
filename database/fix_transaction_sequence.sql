@@ -19,7 +19,7 @@ SELECT 'Checking for ID = 52:' as Info;
 SELECT * FROM Transactions WHERE id = 52;
 GO
 
--- 4. Nếu có ID = 52, xóa nó (cẩn thận!)
+-- 4. Nếu có ID = 52, xóa nó đi để tránh xung đột
 -- UNCOMMENT DÒNG DƯỚI NẾU BẠN CHẮC CHẮN MUỐN XÓA
 -- DELETE FROM Transactions WHERE id = 52;
 -- GO

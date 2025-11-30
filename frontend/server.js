@@ -175,6 +175,14 @@ app.get('/chat', (req, res) => {
   res.render('chat', { title: 'Chat AI' });
 });
 
+app.get('/gamification', (req, res) => {
+  res.render('gamification', { title: 'Gamification' });
+});
+
+app.get('/recurring', (req, res) => {
+  res.render('recurring', { title: 'Recurring Transactions' });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(` Frontend server running: http://localhost:${PORT}`);

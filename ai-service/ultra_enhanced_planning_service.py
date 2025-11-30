@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-🚀 ULTRA ENHANCED AI FINANCIAL PLANNING SERVICE
-Tích hợp TẤT CẢ thư viện ML/AI tiên tiến nhất!
-"""
 
 import json
 import os

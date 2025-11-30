@@ -47,7 +47,6 @@ public class JwtTokenProvider {
  .signWith(getSigningKey())
  .compact();
  
- System.out.println("Generated JWT token for user: " + userPrincipal.getUsername());
  return token;
  }
 

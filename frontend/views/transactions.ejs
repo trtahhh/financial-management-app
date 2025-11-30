@@ -104,21 +104,65 @@
             </select>
           </div>
 
-          <!-- AI Auto-suggested Category (Read-only) -->
+          <!-- AI Auto-suggested Category (3-Layer System) -->
           <input type="hidden" name="category" id="suggestedCategoryId">
           <div class="mb-3">
             <label class="form-label">
-              <i class="fas fa-robot text-success me-1"></i>Danh mục (AI gợi ý tự động)
+              <i class="fas fa-robot text-success me-1"></i>
+              <strong>Danh mục (AI 3 lớp tự động)</strong>
+              <span class="badge bg-info ms-2" id="aiLayerBadge" style="display: none;">Layer 1</span>
             </label>
-            <div class="input-group">
-              <input type="text" id="suggestedCategoryName" class="form-control" readonly 
-                     placeholder="Nhập ghi chú để AI gợi ý danh mục..." 
-                     style="background-color: #f8f9fa;">
-              <span class="input-group-text" id="categoryConfidence" style="display: none;">
+            
+            <!-- Primary AI Suggestion -->
+            <div class="input-group mb-2">
+              <span class="input-group-text bg-success text-white">
+                <i class="fas fa-star"></i>
+              </span>
+              <input type="text" id="suggestedCategoryName" class="form-control fw-bold" readonly 
+                     placeholder="AI đang chờ bạn nhập ghi chú..." 
+                     style="background-color: #f8f9fa; font-size: 1.05rem;">
+              <span class="input-group-text" id="categoryConfidence" style="display: none; background-color: #d1e7dd;">
                 <i class="fas fa-check-circle text-success"></i>
               </span>
             </div>
-            <small class="text-muted" id="categoryHint">AI sẽ tự động phân loại sau khi bạn nhập ghi chú</small>
+            
+            <!-- AI Reasoning & Layer Info -->
+            <div id="aiReasoningBox" class="alert alert-light border-start border-4 border-info mb-2 shadow-sm" style="display: none; font-size: 0.9rem;">
+              <div class="d-flex align-items-start">
+                <i class="fas fa-brain text-info me-2 mt-1" style="font-size: 1.2rem;"></i>
+                <div class="flex-grow-1">
+                  <strong class="text-primary">
+                    <i class="fas fa-lightbulb"></i> Lý do AI chọn:
+                  </strong>
+                  <p class="mb-2 mt-1" id="aiReasoning" style="line-height: 1.6;">...</p>
+                  <div class="d-flex gap-2 flex-wrap mt-2">
+                    <span class="badge bg-primary shadow-sm" id="layer1Badge" style="display: none; padding: 0.4rem 0.6rem;">
+                      <i class="fas fa-layer-group"></i> Layer 1: SVM + TF-IDF
+                    </span>
+                    <span class="badge bg-warning text-dark shadow-sm" id="layer2Badge" style="display: none; padding: 0.4rem 0.6rem;">
+                      <i class="fas fa-user-check"></i> Layer 2: User History
+                    </span>
+                    <span class="badge bg-danger shadow-sm" id="layer3Badge" style="display: none; padding: 0.4rem 0.6rem;">
+                      <i class="fas fa-chart-line"></i> Layer 3: RandomForest + XGBoost
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Alternative Suggestions -->
+            <div id="alternativeSuggestions" style="display: none;">
+              <label class="form-label small text-muted mb-1">
+                <i class="fas fa-lightbulb text-warning"></i> Hoặc chọn gợi ý khác:
+              </label>
+              <div id="suggestionsList" class="d-flex gap-2 flex-wrap"></div>
+            </div>
+            
+            <small class="text-muted d-block mt-2 p-2 bg-light rounded" id="categoryHint" style="line-height: 1.6;">
+              <i class="fas fa-info-circle text-info"></i> 
+              <strong>AI 3-Layer System:</strong> SVM + TF-IDF → User History → RandomForest + XGBoost
+              <br>Nhập ghi chú và số tiền để AI tự động phân loại
+            </small>
           </div>
 
           <div class="mb-3">
