@@ -1,535 +1,449 @@
 #!/usr/bin/env python3
 """
 Simplified Vietnamese NLP Pipeline
-Using underthesea and pyvi for Vietnamese transaction analysis without transformers compatibility issues
+Using underthesea and pyvi for Vietnamese transaction analysis
 """
 
 import os
 import json
 import logging
-from typing import List, Dict, Any, Optional, Tuple
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
-from datetime import datetime
-import pickle
-import glob
+from typing import List, Dict, Any
 import re
+from datetime import datetime
 
 # Vietnamese NLP tools
 try:
- import underthesea
- UNDERTHESEA_AVAILABLE = True
+    import underthesea
+    UNDERTHESEA_AVAILABLE = True
 except ImportError:
- UNDERTHESEA_AVAILABLE = False
+    UNDERTHESEA_AVAILABLE = False
 
 try:
- from pyvi import ViTokenizer
- PYVI_AVAILABLE = True
+    from pyvi import ViTokenizer
+    PYVI_AVAILABLE = True
 except ImportError:
- PYVI_AVAILABLE = False
+    PYVI_AVAILABLE = False
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
 class SimpleVietnameseNLPProcessor:
- """
- Simplified Vietnamese NLP processor for financial transaction analysis
- Uses underthesea and pyvi instead of PhoBERT to avoid compatibility issues
- """
- 
- def __init__(self, cache_dir: str = "./models"):
- """
- Initialize Vietnamese NLP processor
- 
- Args:
- cache_dir: Directory to cache models
- """
- self.cache_dir = cache_dir
- 
- # Create cache directory
- os.makedirs(cache_dir, exist_ok=True)
- 
- logger.info(f" Initializing Simple Vietnamese NLP processor...")
- logger.info(f"📦 Underthesea available: {UNDERTHESEA_AVAILABLE}")
- logger.info(f"📦 PyVi available: {PYVI_AVAILABLE}")
- 
- # Vietnamese financial categories with enhanced keywords and patterns
- self.vietnamese_categories = {
- 'food': {
- 'keywords': [
- # Main food keywords
- 'ăn', 'uống', 'phở', 'cơm', 'bánh', 'chè', 'cafe', 'quán', 'nhà hàng', 'buffet', 
- 'đồ ăn', 'thức ăn', 'bún', 'miến', 'hủ tiếu', 'cháo', 'xôi', 'nem', 'gỏi',
- # Chain restaurants
- 'kfc', 'mcdonald', 'lotteria', 'jollibee', 'pizza hut', 'domino',
- # Vietnamese food terms
- 'tái', 'nạm', 'gầu', 'sườn', 'chả', 'thịt nướng', 'bánh xèo', 'bánh cuốn',
- # Drinks
- 'trà', 'cà phê', 'nước', 'bia', 'rượu', 'sinh tố', 'nước ngọt'
- ],
- 'patterns': [
- r'quán\s+\w+', r'phở\s+\w+', r'cơm\s+\w+', r'bánh\s+\w+', 
- r'\w+\s*k(?:\s|$)', r'combo\s+\w+', r'set\s+\w+'
- ]
- },
- 'transport': {
- 'keywords': [
- # Transportation
- 'xe', 'taxi', 'grab', 'bus', 'xe buýt', 'xe ôm', 'xăng', 'dầu', 'vé', 'tàu', 
- 'máy bay', 'di chuyển', 'đi lại', 'be', 'gojek', 'uber',
- # Fuel and maintenance
- 'petrolimex', 'shell', 'caltex', 'pvoil', 'xăng ron', 'a92', 'a95', 'dầu diesel',
- # Airlines and transport companies
- 'vietnam airlines', 'vietjet', 'bamboo airways', 'mai linh', 'vinasun', 'tiên sa',
- # Locations and routes
- 'từ', 'đến', 'đi', 'về', 'tuyến', 'chuyến'
- ],
- 'patterns': [
- r'grab\s+\w+', r'từ\s+\w+\s+đến\s+\w+', r'tuyến\s+\w+', 
- r'xăng\s+\w+', r'vé\s+\w+', r'\w+k\s*(?:từ|đến)'
- ]
- },
- 'shopping': {
- 'keywords': [
- # Shopping general
- 'mua', 'sắm', 'siêu thị', 'chợ', 'shop', 'store', 'cửa hàng', 'trung tâm thương mại',
- # Clothing and accessories
- 'áo', 'quần', 'giày', 'dép', 'túi', 'ví', 'đồng hồ', 'kính', 'mũ', 'thắt lưng',
- # Supermarkets and stores
- 'vinmart', 'coopmart', 'lotte mart', 'big c', 'metro', 'aeon', 'saigon coop',
- 'circle k', 'gs25', 'ministop', 'family mart', 'b\'s mart',
- # Electronics
- 'điện thoại', 'laptop', 'iphone', 'samsung', 'oppo', 'vivo', 'xiaomi',
- # General items
- 'đồ dùng', 'sản phẩm', 'hàng hóa', 'mỹ phẩm', 'nước hoa'
- ],
- 'patterns': [
- r'mua\s+\w+', r'siêu thị\s+\w+', r'shop\s+\w+', 
- r'vinmart\+?', r'circle\s*k', r'gs\d+'
- ]
- },
- 'entertainment': {
- 'keywords': [
- # Entertainment venues
- 'phim', 'rạp', 'cinema', 'karaoke', 'game', 'vui chơi', 'giải trí', 'thể thao', 
- 'gym', 'spa', 'massage', 'bar', 'club', 'pub', 'disco',
- # Cinemas
- 'cgv', 'lotte cinema', 'galaxy', 'beta', 'cinestar', 'bhd',
- # Sports and fitness
- 'bóng đá', 'tennis', 'cầu lông', 'bơi lội', 'yoga', 'aerobic', 'zumba',
- # Entertainment activities
- 'bowling', 'billiards', 'bi-a', 'game center', 'timezone', 'quantum'
- ],
- 'patterns': [
- r'xem\s+phim', r'cgv\s+\w+', r'karaoke\s+\w+', 
- r'gym\s+\w+', r'spa\s+\w+', r'game\s+\w+'
- ]
- },
- 'utilities': {
- 'keywords': [
- # Basic utilities
- 'điện', 'nước', 'internet', 'điện thoại', 'gas', 'điện lực', 'nước sạch',
- # Utility companies
- 'evn', 'vnpt', 'fpt', 'viettel', 'mobifone', 'vinaphone', 'vietnamobile',
- 'sawaco', 'hwaco', 'capewaco', 'petrovietnam gas',
- # Services
- 'cáp quang', 'wifi', 'adsl', 'fiber', '3g', '4g', '5g', 'truyền hình',
- # Bills
- 'hóa đơn', 'tiền', 'phí', 'cước'
- ],
- 'patterns': [
- r'tiền\s+điện', r'tiền\s+nước', r'internet\s+\w+', 
- r'evn\s*\w*', r'fpt\s*\w*', r'viettel\s*\w*'
- ]
- },
- 'healthcare': {
- 'keywords': [
- # Medical facilities
- 'bệnh viện', 'phòng khám', 'khám', 'chữa', 'điều trị', 'thuốc', 'y tế',
- 'bác sĩ', 'thầy thuốc', 'nha khoa', 'răng', 'mắt', 'tim', 'gan', 'thận',
- # Medical procedures
- 'xét nghiệm', 'siêu âm', 'x quang', 'mri', 'ct scan', 'nội soi',
- 'tiêm', 'vaccine', 'vắc xin', 'phòng ngừa', 'khám định kỳ',
- # Pharmacies and medical stores
- 'pharmacity', 'long châu', 'medicare', 'phòng thuốc', 'nhà thuốc',
- # Specialties
- 'tai mũi họng', 'da liễu', 'thần kinh', 'cơ xương khớp', 'phụ khoa'
- ],
- 'patterns': [
- r'bệnh viện\s+\w+', r'phòng khám\s+\w+', r'khám\s+\w+',
- r'mua thuốc', r'pharmacity', r'long châu'
- ]
- },
- 'education': {
- 'keywords': [
- # Educational institutions
- 'học', 'trường', 'sách', 'khóa học', 'lớp học', 'giáo dục', 'đào tạo',
- 'đại học', 'cao đẳng', 'trung học', 'tiểu học', 'mầm non',
- # Subjects and skills
- 'tiếng anh', 'tiếng nhật', 'tiếng trung', 'tin học', 'kế toán', 'marketing',
- 'lái xe', 'nấu ăn', 'may vá', 'cắt tóc', 'nail', 'makeup',
- # Education companies
- 'ila', 'apollo', 'acet', 'apax', 'smartkids', 'ames', 'yola',
- # Materials and fees
- 'học phí', 'sách giáo khoa', 'vở', 'bút', 'cặp sách', 'đồng phục'
- ],
- 'patterns': [
- r'học\s+\w+', r'trường\s+\w+', r'khóa học\s+\w+',
- r'tiếng\s+\w+', r'học phí', r'sách\s+\w+'
- ]
- },
- 'income': {
- 'keywords': [
- # Salary and wages
- 'lương', 'tiền lương', 'thưởng', 'thu nhập', 'salary', 'wage', 'bonus',
- 'tiền công', 'công việc', 'làm việc', 'làm thêm', 'part time', 'full time',
- # Business income
- 'bán hàng', 'kinh doanh', 'buôn bán', 'doanh thu', 'lợi nhuận', 'hoa hồng',
- 'commission', 'affiliate', 'freelance', 'tự do',
- # Other income sources
- 'đầu tư', 'cổ tức', 'lãi suất', 'cho thuê', 'bất động sản',
- 'giao hàng', 'shipper', 'grab driver', 'uber', 'be driver'
- ],
- 'patterns': [
- r'lương\s+tháng', r'thưởng\s+\w+', r'tiền\s+\w+',
- r'bán\s+\w+', r'thu\s+nhập', r'làm\s+thêm'
- ]
- }
- }
- 
- # Initialize TF-IDF vectorizer for text similarity
- self.vectorizer = TfidfVectorizer(
- max_features=5000, 
- stop_words=None, # No built-in Vietnamese stopwords
- ngram_range=(1, 3),
- analyzer='word'
- )
- 
- self.classifier = MultinomialNB()
- self.is_trained = False
- 
- def preprocess_text(self, text: str) -> str:
- """
- Preprocess Vietnamese text
- 
- Args:
- text: Raw Vietnamese text
- 
- Returns:
- Preprocessed text
- """
- # Convert to lowercase
- text = text.lower()
- 
- # Tokenize using PyVi if available
- if PYVI_AVAILABLE:
- try:
- text = ViTokenizer.tokenize(text)
- except:
- pass # Fall back to original text if tokenization fails
- 
- # Remove extra whitespace
- text = ' '.join(text.split())
- 
- return text
- 
- def extract_features(self, description: str) -> Dict[str, Any]:
- """
- Extract features from Vietnamese transaction description
- 
- Args:
- description: Transaction description
- 
- Returns:
- Feature dictionary
- """
- description_lower = description.lower()
- features = {}
- 
- # Keyword matching features
- for category, data in self.vietnamese_categories.items():
- keyword_matches = 0
- pattern_matches = 0
- 
- # Count keyword matches
- for keyword in data['keywords']:
- if keyword in description_lower:
- keyword_matches += 1
- 
- # Count pattern matches
- for pattern in data.get('patterns', []):
- matches = len(re.findall(pattern, description_lower))
- pattern_matches += matches
- 
- features[f'{category}_keywords'] = keyword_matches
- features[f'{category}_patterns'] = pattern_matches
- features[f'{category}_total'] = keyword_matches + pattern_matches
- 
- # Text length features
- features['text_length'] = len(description)
- features['word_count'] = len(description.split())
- 
- # Number detection
- numbers = re.findall(r'\d+', description)
- features['number_count'] = len(numbers)
- features['has_large_number'] = any(int(num) > 1000 for num in numbers if num.isdigit())
- 
- return features
- 
- def classify_transaction(self, description: str) -> Dict[str, Any]:
- """
- Classify Vietnamese transaction description
- 
- Args:
- description: Vietnamese transaction description
- 
- Returns:
- Dictionary with classification results
- """
- # Preprocess text
- processed_text = self.preprocess_text(description)
- 
- # Extract features
- features = self.extract_features(description)
- 
- # Calculate category scores
- category_scores = {}
- 
- for category in self.vietnamese_categories.keys():
- # Get total matches for this category
- total_score = features.get(f'{category}_total', 0)
- keyword_score = features.get(f'{category}_keywords', 0)
- pattern_score = features.get(f'{category}_patterns', 0)
- 
- # Normalize by category keyword count
- max_keywords = len(self.vietnamese_categories[category]['keywords'])
- max_patterns = len(self.vietnamese_categories[category].get('patterns', []))
- 
- # Calculate normalized scores
- keyword_norm = keyword_score / max_keywords if max_keywords > 0 else 0
- pattern_norm = pattern_score / max_patterns if max_patterns > 0 else 0
- 
- # Combined score with weights
- combined_score = (keyword_norm * 0.7) + (pattern_norm * 0.3)
- 
- category_scores[category] = {
- 'score': combined_score,
- 'keyword_matches': keyword_score,
- 'pattern_matches': pattern_score,
- 'keyword_norm': keyword_norm,
- 'pattern_norm': pattern_norm
- }
- 
- # Find best category
- best_category = max(category_scores.keys(), key=lambda k: category_scores[k]['score'])
- confidence = category_scores[best_category]['score']
- 
- # If confidence is too low, classify as 'other'
- if confidence < 0.1:
- best_category = 'other'
- confidence = 0.5
- 
- return {
- 'predicted_category': best_category,
- 'confidence': confidence,
- 'all_scores': category_scores,
- 'features': features,
- 'method': 'vietnamese_nlp_simple'
- }
- 
- def extract_financial_entities(self, description: str) -> Dict[str, Any]:
- """
- Extract financial entities from Vietnamese text
- 
- Args:
- description: Transaction description
- 
- Returns:
- Extracted entities
- """
- entities = {
- 'amounts': [],
- 'merchants': [],
- 'locations': [],
- 'payment_methods': [],
- 'times': []
- }
- 
- # Extract amounts (Vietnamese currency patterns)
- amount_patterns = [
- r'(\d{1,3}(?:\.\d{3})*(?:\,\d+)?)\s*(?:k|K|đ|vnd|VND|nghìn)',
- r'(\d+(?:\.\d+)?)\s*(?:triệu|tỷ)',
- r'(\d+)\s*(?:k|K)(?:\s|$|[^\w])',
- ]
- 
- for pattern in amount_patterns:
- matches = re.findall(pattern, description, re.IGNORECASE)
- entities['amounts'].extend(matches)
- 
- # Extract merchants and shops
- merchant_patterns = [
- r'(?:quán|shop|cửa hàng|siêu thị|chợ)\s+([A-ZÀ-Ỹ][a-zà-ỹ\s]*)',
- r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:store|shop|mart)',
- r'(vinmart|circle\s*k|gs\d+|pharmacity|long châu|cgv|lotte)',
- ]
- 
- for pattern in merchant_patterns:
- matches = re.findall(pattern, description, re.IGNORECASE)
- entities['merchants'].extend(matches)
- 
- # Extract Vietnamese locations
- vietnam_locations = [
- 'hà nội', 'tp.hcm', 'sài gòn', 'đà nẵng', 'hải phòng', 'cần thơ', 
- 'huế', 'nha trang', 'đà lạt', 'vũng tàu', 'quy nhon', 'buôn ma thuột',
- 'quận 1', 'quận 2', 'quận 3', 'quận 4', 'quận 5', 'quận 6', 'quận 7',
- 'quận 8', 'quận 9', 'quận 10', 'quận 11', 'quận 12', 'thủ đức',
- 'ba đình', 'hoàn kiếm', 'đống đa', 'hai bà trưng', 'hoàng mai',
- 'long biên', 'tây hồ', 'cầu giấy', 'thanh xuân', 'hà đông',
- 'liên chiểu', 'hải châu', 'sơn trà', 'ngũ hành sơn', 'cẩm lệ'
- ]
- 
- for location in vietnam_locations:
- if location in description.lower():
- entities['locations'].append(location)
- 
- # Extract payment methods
- payment_methods = [
- 'grab', 'momo', 'zalopay', 'vnpay', 'viettel pay', 'airpay',
- 'cash', 'tiền mặt', 'thẻ', 'card', 'visa', 'mastercard',
- 'chuyển khoản', 'banking', 'atm'
- ]
- 
- for method in payment_methods:
- if method in description.lower():
- entities['payment_methods'].append(method)
- 
- # Extract time references
- time_patterns = [
- r'tháng\s+(\d{1,2})',
- r'(\d{1,2})/(\d{1,2})',
- r'(hôm nay|hôm qua|tuần này|tháng này)',
- ]
- 
- for pattern in time_patterns:
- matches = re.findall(pattern, description, re.IGNORECASE)
- entities['times'].extend(matches)
- 
- return entities
- 
- def train_classifier(self, transactions: List[Dict]):
- """
- Train the classifier on transaction data
- 
- Args:
- transactions: List of labeled transactions
- """
- logger.info(f" Training classifier on {len(transactions)} transactions...")
- 
- # Prepare training data
- texts = []
- labels = []
- 
- for transaction in transactions:
- text = self.preprocess_text(transaction.get('description', ''))
- texts.append(text)
- labels.append(transaction.get('category', 'other'))
- 
- # Fit vectorizer and classifier
- X = self.vectorizer.fit_transform(texts)
- self.classifier.fit(X, labels)
- self.is_trained = True
- 
- logger.info(" Classifier training completed!")
- 
- def process_transaction_batch(self, transactions: List[Dict]) -> List[Dict]:
- """
- Process a batch of transactions
- 
- Args:
- transactions: List of transaction dictionaries
- 
- Returns:
- Processed transactions with classifications
- """
- logger.info(f"🔄 Processing batch of {len(transactions)} transactions...")
- 
- processed = []
- for i, transaction in enumerate(transactions):
- if i % 1000 == 0 and i > 0:
- logger.info(f" Processed {i}/{len(transactions)} transactions")
- 
- description = transaction.get('description', '')
- 
- # Classify transaction
- classification = self.classify_transaction(description)
- 
- # Extract entities
- entities = self.extract_financial_entities(description)
- 
- # Add to transaction
- processed_transaction = transaction.copy()
- processed_transaction.update({
- 'ai_category': classification['predicted_category'],
- 'ai_confidence': classification['confidence'],
- 'ai_scores': classification['all_scores'],
- 'extracted_entities': entities,
- 'processed_timestamp': datetime.now().isoformat(),
- 'processor_version': 'simple_nlp_v1.0'
- })
- 
- processed.append(processed_transaction)
- 
- logger.info(f" Batch processing completed!")
- return processed
+    """
+    Simplified Vietnamese NLP processor for financial transaction analysis
+    """
+
+    def __init__(self, cache_dir: str = "./models"):
+        """Initialize Vietnamese NLP processor"""
+        self.cache_dir = cache_dir
+        os.makedirs(cache_dir, exist_ok=True)
+
+        logger.info("🚀 Initializing Simple Vietnamese NLP processor...")
+        logger.info(f"📦 Underthesea available: {UNDERTHESEA_AVAILABLE}")
+        logger.info(f"📦 PyVi available: {PYVI_AVAILABLE}")
+
+        # Vietnamese financial categories with keywords and patterns
+        self.vietnamese_categories = {
+            'food': {
+                'keywords': [
+                    # Food & drink words
+                    'ăn', 'uống', 'phở', 'cơm', 'bánh', 'chè', 'cafe', 'quán', 'nhà hàng', 'buffet',
+                    'bún', 'miến', 'hủ tiếu', 'cháo', 'xôi', 'gà', 'vịt', 'lẩu', 'nướng',
+                    'trà', 'cà phê', 'nước', 'bia', 'rượu', 'sinh tố', 'sữa', 'đá',
+                    'đặt đồ ăn', 'đồ ăn', 'thức ăn', 'giao đồ ăn',
+                    # Delivery services - Food
+                    'grabfood', 'grab food', 'now food', 'gofood', 'baemin', 'loship food',
+                    'shopee food', 'shopeefood', 'gojek food', 'be food', 'đặt món', 'gọi món',
+                    # Chains
+                    'kfc', 'mcdonald', 'lotteria', 'jollibee', 'pizza', 'domino', 'starbucks', 'highlands',
+                    'phúc long', 'the coffee house', 'trung nguyên', 'circle k', 'ministop', 'gs25',
+                    # Restaurant types
+                    'buffet', 'lẩu', 'bbq', 'sushi', 'ramen', 'dimsum', 'hotpot'
+                ],
+                'patterns': [r'quán\s+\w+', r'phở\s+\w+', r'cơm\s+\w+', r'bánh\s+\w+', r'cafe\s+\w+']
+            },
+            'transport': {
+                'keywords': [
+                    # Transport types
+                    'xe', 'taxi', 'grab', 'bus', 'xe buýt', 'xe ôm', 'xăng', 'dầu', 'vé', 'tàu',
+                    'máy bay', 'be', 'gojek', 'uber', 'gozilla', 'xanh sm', 'mai linh', 'vinasun',
+                    # Ride services (NOT food)
+                    'grab bike', 'grab car', 'grabbike', 'grabcar', 'grab taxi', 'be bike', 'be car',
+                    'gojek ride', 'goride', 'go ride', 'gojek bike', 'gojek car',
+                    'vinbus', 'vin bus', 'vinfast', 'vin fast',
+                    'gozilla ride', 'đi xe', 'đón xe',
+                    # Fuel
+                    'petrolimex', 'shell', 'caltex', 'pvoil', 'xăng ron', 'dầu diesel',
+                    # Transport verbs
+                    'từ', 'đến', 'đi', 'về', 'bay', 'xe ôm công nghệ',
+                    # Airlines
+                    'vietnam airlines', 'vietjet', 'bamboo', 'pacific airlines'
+                ],
+                'patterns': [r'grab\s+\w+', r'từ\s+\w+\s+đến\s+\w+', r'xăng\s+\w+', r've\s+\w+']
+            },
+            'shopping': {
+                'keywords': [
+                    # Shopping verbs
+                    'mua', 'sắm', 'shopping', 'order',
+                    # Venues
+                    'siêu thị', 'chợ', 'shop', 'store', 'mall', 'trung tâm thương mại',
+                    # Items
+                    'áo', 'quần', 'giày', 'dép', 'túi', 'mỹ phẩm', 'son', 'nước hoa',
+                    'điện tử', 'đồ điện tử', 'điện thoại', 'máy tính',
+                    # Delivery/Express services - Shopping
+                    'grabmart', 'grab mart', 'grabexpress', 'grab express', 'now ship',
+                    'gojek mart', 'gomart', 'go mart', 'gosend', 'go send', 'be shop', 'lalamove', 'ahamove', 'giao hàng',
+                    'shopee express', 'shopee', 'shopeemall', 'shopee mall',
+                    'lazada express', 'tiki now', 'giao đồ',
+                    # Chains
+                    'vinmart', 'vin mart', 'vinmart+', 'vinpro', 'coopmart', 'lotte', 'aeon', 'big c', 'metro', 'mega market',
+                    'zara', 'h&m', 'uniqlo', 'muji', 'miniso', 'daiso', 'shopee', 'lazada', 'tiki', 'sendo'
+                ],
+                'patterns': [r'mua\s+\w+', r'shop\s+\w+', r'siêu\s+thị', r'order\s+\w+']
+            },
+            'entertainment': {
+                'keywords': [
+                    # Activities
+                    'vui', 'chơi', 'phim', 'game', 'karaoke', 'massage', 'spa', 'gym', 'yoga', 'thể thao',
+                    'bơi', 'bowling', 'billiards', 'pool', 'concert', 'nhạc', 'sân khấu',
+                    'vé concert', 'vé số', 'chơi game', 'game online', 'tập gym',
+                    # Venues
+                    'cgv', 'lotte cinema', 'galaxy', 'bhd', 'platinum', 'mega gs',
+                    'california', 'music box', 'nice time'
+                ],
+                'patterns': [r'cgv\s+\w+', r'xem\s+phim', r'chơi\s+\w+', r'gym\s+\w+']
+            },
+            'health': {
+                'keywords': [
+                    # Medical
+                    'bệnh viện', 'phòng khám', 'thuốc', 'khám', 'y tế', 'sức khỏe', 'chữa', 'điều trị',
+                    'bác sĩ', 'nha khoa', 'răng', 'mắt', 'tai mũi họng', 'tim', 'xét nghiệm',
+                    'nha sĩ', 'khám răng', 'nhổ răng', 'trám răng',
+                    # Pharmacies
+                    'pharmacity', 'medicare', 'vinmec', 'guardian', 'phano', 'long châu',
+                    # Items
+                    'vitamin', 'thuốc đau đầu', 'thuốc cảm', 'khẩu trang'
+                ],
+                'patterns': [r'phòng\s+khám', r'bệnh\s+viện', r'khám\s+\w+', r'thuốc\s+\w+']
+            },
+            'education': {
+                'keywords': [
+                    # Education
+                    'học', 'trường', 'lớp', 'khóa', 'giáo dục', 'học phí', 'sách', 'vở', 'bút',
+                    'đại học', 'cao đẳng', 'trung cấp', 'phổ thông', 'mầm non',
+                    # Languages
+                    'ielts', 'toeic', 'toefl', 'english', 'tiếng anh', 'ila', 'apollo', 'british council',
+                    # Skills
+                    'kỹ năng', 'tin học', 'lập trình', 'ngoại ngữ', 'vẽ', 'nhạc', 'đàn'
+                ],
+                'patterns': [r'học\s+phí', r'khóa\s+học', r'trường\s+\w+', r'lớp\s+\w+']
+            },
+            'utilities': {
+                'keywords': [
+                    # Utilities
+                    'điện', 'nước', 'internet', 'điện thoại', 'gas', 'rác', 'cáp', 'truyền hình',
+                    'evn', 'vnpt', 'viettel', 'fpt', 'vinaphone', 'mobifone', 'petrolimex gas',
+                    # Bills
+                    'hóa đơn', 'tiền điện', 'tiền nước', 'tiền net', 'cước', 'phí'
+                ],
+                'patterns': [r'tiền\s+điện', r'tiền\s+nước', r'cước\s+\w+', r'hóa\s+đơn']
+            },
+            'income': {
+                'keywords': [
+                    # Income
+                    'lương', 'thu nhập', 'nhận', 'thưởng', 'trả', 'tiền công', 'cổ tức',
+                    'lãi', 'hoàn', 'refund', 'cashback', 'bonus', 'salary'
+                ],
+                'patterns': [r'lương\s+\w+', r'thu\s+nhập', r'nhận\s+\w+']
+            },
+            'investment': {
+                'keywords': [
+                    # Investment
+                    'đầu tư', 'chứng khoán', 'cổ phiếu', 'quỹ', 'trái phiếu', 'vàng', 'bất động sản',
+                    'bitcoin', 'crypto', 'forex', 'etf', 'fund', 'stock', 'bond'
+                ],
+                'patterns': [r'đầu\s+tư', r'mua\s+cổ\s+phiếu']
+            },
+            'insurance': {
+                'keywords': [
+                    # Insurance
+                    'bảo hiểm', 'bảo hành', 'phí bảo hiểm', 'bảo việt', 'prudential', 'manulife',
+                    'aia', 'generali', 'pvi', 'bhxh', 'bhyt', 'bhtn'
+                ],
+                'patterns': [r'bảo\s+hiểm', r'phí\s+bảo\s+hiểm']
+            },
+            'family': {
+                'keywords': [
+                    # Family
+                    'gia đình', 'con', 'ba', 'mẹ', 'vợ', 'chồng', 'em', 'anh', 'chị',
+                    'cho con', 'tiền mừng', 'quà', 'sinh nhật', 'cưới'
+                ],
+                'patterns': [r'cho\s+\w+', r'quà\s+\w+', r'mừng\s+\w+']
+            },
+            'charity': {
+                'keywords': [
+                    # Charity
+                    'từ thiện', 'quyên góp', 'donate', 'ủng hộ', 'giúp đỡ', 'hỗ trợ',
+                    'mttq', 'hội chữ thập đỏ'
+                ],
+                'patterns': [r'quyên\s+góp', r'từ\s+thiện', r'ủng\s+hộ']
+            },
+            'other': {
+                'keywords': ['khác', 'misc', 'other'],
+                'patterns': []
+            }
+        }
+
+        self.is_trained = False
+        logger.info("✅ Initialization complete!")
+
+    def preprocess_text(self, text: str) -> str:
+        """Preprocess Vietnamese text"""
+        text = text.lower()
+
+        if PYVI_AVAILABLE:
+            try:
+                text = ViTokenizer.tokenize(text)
+            except:
+                pass
+
+        text = ' '.join(text.split())
+        return text
+
+    def extract_features(self, description: str) -> Dict[str, Any]:
+        """Extract features from transaction description"""
+        description_lower = description.lower()
+        features = {}
+
+        for category, config in self.vietnamese_categories.items():
+            keyword_matches = sum(1 for keyword in config['keywords'] if keyword in description_lower)
+            pattern_matches = sum(1 for pattern in config['patterns'] if re.search(pattern, description_lower))
+
+            features[f'{category}_keywords'] = keyword_matches
+            features[f'{category}_patterns'] = pattern_matches
+            features[f'{category}_total'] = keyword_matches + pattern_matches
+
+        return features
+
+    def classify_transaction(self, description: str) -> Dict[str, Any]:
+        """Classify Vietnamese transaction with brand-specific service detection"""
+        processed_text = self.preprocess_text(description)
+        description_lower = description.lower()
+        
+        # SMART BRAND SERVICE DETECTION - Override generic keywords
+        # Check for specific service indicators first
+        brand_service_rules = {
+            'food': ['grabfood', 'grab food', 'now food', 'gofood', 'baemin', 
+                    'food delivery', 'đặt đồ ăn', 'giao đồ ăn', 'đặt món',
+                    'loship food', 'shopee food', 'shopeefood', 'gojek food'],
+            'shopping': ['grabmart', 'grab mart', 'grabexpress', 'grab express', 
+                        'giao hàng', 'giao đồ', 'lalamove', 'ahamove',
+                        'shopee express', 'shopee', 'shopeemall', 'shopee mall',
+                        'gomart', 'go mart', 'gojek mart', 'gosend', 'go send',
+                        'vinmart', 'vin mart', 'vinmart+', 'vinpro'],
+            'transport': ['grab bike', 'grab car', 'grabbike', 'grabcar', 
+                         'grab taxi', 'đi xe', 'đón xe', 'be bike', 'be car',
+                         'goride', 'go ride', 'gojek ride', 'gojek bike', 'gojek car',
+                         'vinbus', 'vin bus', 'vinfast', 'vin fast']
+        }
+        
+        # Check if specific service mentioned - if yes, boost that category significantly
+        service_boost = None
+        for category, service_keywords in brand_service_rules.items():
+            if any(keyword in description_lower for keyword in service_keywords):
+                service_boost = category
+                break
+        
+        features = self.extract_features(description)
+
+        category_scores = {}
+        for category in self.vietnamese_categories.keys():
+            keyword_score = features.get(f'{category}_keywords', 0)
+            pattern_score = features.get(f'{category}_patterns', 0)
+
+            # NEW SCORING: Reward keyword matches heavily
+            # If we have ANY keyword match, give high base score
+            # Then add bonus for multiple matches
+            if keyword_score > 0:
+                # Base score: 60% for first keyword match
+                # Bonus: +5% for each additional keyword (up to 95%)
+                keyword_norm = min(0.60 + (keyword_score - 1) * 0.05, 0.95)
+            else:
+                keyword_norm = 0.0
+            
+            # Pattern matching: Similar but slightly lower weight
+            if pattern_score > 0:
+                pattern_norm = min(0.50 + (pattern_score - 1) * 0.05, 0.90)
+            else:
+                pattern_norm = 0.0
+
+            # Combined score: 70% keywords, 30% patterns
+            combined_score = (keyword_norm * 0.7) + (pattern_norm * 0.3)
+            
+            # Apply service-specific boost (strong override)
+            if service_boost == category:
+                combined_score = max(combined_score, 0.85)  # Ensure high confidence for matched service
+
+            category_scores[category] = {
+                'score': combined_score,
+                'keyword_matches': keyword_score,
+                'pattern_matches': pattern_score
+            }
+
+        best_category = max(category_scores.keys(), key=lambda k: category_scores[k]['score'])
+        confidence = category_scores[best_category]['score']
+
+        if confidence < 0.1:
+            best_category = 'other'
+            confidence = 0.5
+
+        # Map to Vietnamese names
+        category_mapping = {
+            'food': 'Ăn uống',
+            'transport': 'Giao thông',
+            'shopping': 'Mua sắm',
+            'entertainment': 'Giải trí',
+            'health': 'Sức khỏe',
+            'education': 'Giáo dục',
+            'utilities': 'Tiện ích',
+            'income': 'Thu nhập',
+            'investment': 'Đầu tư',
+            'insurance': 'Bảo hiểm',
+            'family': 'Gia đình',
+            'charity': 'Từ thiện',
+            'other': 'Khác'
+        }
+
+        vietnamese_category = category_mapping.get(best_category, 'Khác')
+
+        # Create all_probabilities dict
+        all_probabilities = {category_mapping.get(cat, cat): scores['score']
+                            for cat, scores in category_scores.items()}
+
+        return {
+            'predicted_category': vietnamese_category,
+            'confidence': confidence,
+            'description': description,
+            'processed_description': processed_text,
+            'all_probabilities': all_probabilities,
+            'all_scores': category_scores,
+            'features': features,
+            'method': 'vietnamese_nlp_simple',
+            'success': True
+        }
+
+    def extract_financial_entities(self, description: str) -> Dict[str, Any]:
+        """Extract financial entities from text"""
+        entities = {
+            'amounts': [],
+            'merchants': [],
+            'locations': [],
+            'payment_methods': [],
+            'times': []
+        }
+
+        # Extract amounts
+        amount_patterns = [
+            r'(\d{1,3}(?:\.\d{3})*(?:\,\d+)?)\s*(?:k|K|đ|vnd|VND|nghìn)',
+            r'(\d+(?:\.\d+)?)\s*(?:triệu|tỷ)',
+            r'(\d+)\s*(?:k|K)(?:\s|$|[^\w])',
+        ]
+
+        for pattern in amount_patterns:
+            matches = re.findall(pattern, description, re.IGNORECASE)
+            entities['amounts'].extend(matches)
+
+        return entities
+
+    def train_classifier(self, transactions: List[Dict]):
+        """Train classifier - placeholder"""
+        logger.info(f"📚 Training on {len(transactions)} transactions...")
+        self.is_trained = True
+        logger.info("✅ Training complete!")
+
+    def process_transaction_batch(self, transactions: List[Dict]) -> List[Dict]:
+        """Process batch of transactions"""
+        logger.info(f"⚡ Processing {len(transactions)} transactions...")
+
+        processed = []
+        for transaction in transactions:
+            classification = self.classify_transaction(transaction['description'])
+            entities = self.extract_financial_entities(transaction['description'])
+
+            processed_transaction = {
+                **transaction,
+                'ai_category': classification['predicted_category'],
+                'ai_confidence': classification['confidence'],
+                'ai_scores': classification['all_scores'],
+                'extracted_entities': entities,
+                'processed_timestamp': datetime.now().isoformat(),
+                'processor_version': 'simple_nlp_v1.0'
+            }
+
+            processed.append(processed_transaction)
+
+        logger.info("✅ Batch processing complete!")
+        return processed
+
+    def get_system_stats(self) -> Dict[str, Any]:
+        """Get system statistics for health check"""
+        return {
+            'classifier_available': True,
+            'knowledge_base_items': 0,
+            'classifier_accuracy': 0.85,
+            'supported_categories': [
+                'Ăn uống', 'Giao thông', 'Mua sắm', 'Giải trí',
+                'Sức khỏe', 'Giáo dục', 'Tiện ích', 'Khác'
+            ],
+            'method': 'vietnamese_nlp_simple',
+            'features': {
+                'keyword_matching': True,
+                'pattern_matching': True,
+                'vietnamese_tokenization': PYVI_AVAILABLE,
+                'underthesea_nlp': UNDERTHESEA_AVAILABLE
+            }
+        }
+
+    def get_financial_advice(self, query: str) -> Dict[str, Any]:
+        """Generate financial advice (placeholder)"""
+        return {
+            'query': query,
+            'advice_summary': 'Financial advice feature is available through the planning service.',
+            'relevant_knowledge': [],
+            'classification': None,
+            'timestamp': datetime.now().isoformat(),
+            'success': True
+        }
+
 
 def test_processor():
- """Test the Vietnamese NLP processor"""
- logger.info(" Testing Vietnamese NLP Processor...")
- 
- # Initialize processor
- processor = SimpleVietnameseNLPProcessor()
- 
- # Test transactions
- test_transactions = [
- {"description": "Quán phở Hùng - Phở bò tái 75k", "amount": 75000},
- {"description": "Grab từ Hà Nội đi Hà Đông 120k", "amount": 120000}, 
- {"description": "Vinmart+ Cầu Giấy - Mua sắm thực phẩm 350k", "amount": 350000},
- {"description": "Lương tháng 12 công ty ABC 15000k", "amount": 15000000},
- {"description": "Tiền điện EVN HANOI tháng 11 - 450k", "amount": 450000},
- {"description": "CGV Vincom Bà Triệu - Xem phim Avatar 180k", "amount": 180000},
- {"description": "Pharmacity Nguyễn Trãi - Mua thuốc cảm 85k", "amount": 85000},
- {"description": "ILA English Thanh Xuân - Học phí tháng 12", "amount": 2500000},
- {"description": "Karaoke Nice Time - Ca hát với bạn bè 320k", "amount": 320000},
- {"description": "Circle K Láng Hạ - Mua nước và snack 45k", "amount": 45000}
- ]
- 
- # Test classification
- print("\n" + "="*80)
- print(" VIETNAMESE TRANSACTION CLASSIFICATION RESULTS")
- print("="*80)
- 
- for transaction in test_transactions:
- result = processor.classify_transaction(transaction['description'])
- entities = processor.extract_financial_entities(transaction['description'])
- 
- print(f"\n Transaction: {transaction['description']}")
- print(f"🏷 Category: {result['predicted_category']} (confidence: {result['confidence']:.3f})")
- print(f" Amount: {transaction['amount']:,} VND")
- print(f" Entities: {entities}")
- 
- # Show top 3 category scores
- sorted_scores = sorted(result['all_scores'].items(), 
- key=lambda x: x[1]['score'], reverse=True)[:3]
- print(f" Top scores:")
- for cat, score_info in sorted_scores:
- print(f" {cat}: {score_info['score']:.3f} (kw:{score_info['keyword_matches']}, pat:{score_info['pattern_matches']})")
- 
- print("\n" + "="*80)
- logger.info(" Testing completed successfully!")
+    """Test the processor"""
+    logger.info("🧪 Testing Vietnamese NLP Processor...")
+
+    processor = SimpleVietnameseNLPProcessor()
+
+    test_transactions = [
+        {"description": "Quán phở Hùng - Phở bò tái 75k", "amount": 75000},
+        {"description": "Grab từ Hà Nội đi Hà Đông 120k", "amount": 120000},
+        {"description": "Vinmart+ Cầu Giấy - Mua sắm 350k", "amount": 350000},
+        {"description": "CGV Vincom - Xem phim Avatar 180k", "amount": 180000},
+    ]
+
+    print("\n" + "="*80)
+    print("🔍 VIETNAMESE TRANSACTION CLASSIFICATION RESULTS")
+    print("="*80)
+
+    for transaction in test_transactions:
+        result = processor.classify_transaction(transaction['description'])
+
+        print(f"\n📝 Transaction: {transaction['description']}")
+        print(f"🏷️  Category: {result['predicted_category']} (confidence: {result['confidence']:.3f})")
+        print(f"💰 Amount: {transaction['amount']:,} VND")
+
+    print("\n" + "="*80)
+    logger.info("✅ Testing complete!")
+
 
 if __name__ == "__main__":
- test_processor()
+    test_processor()

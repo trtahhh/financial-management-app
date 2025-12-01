@@ -11,10 +11,41 @@ import uvicorn
 import logging
 from datetime import datetime
 
-# Import our enhanced Vietnamese AI system (temporarily disabled)
+# Import Vietnamese NLP classifier
 AI_AVAILABLE = False
 vietnamese_ai = None
-print("Vietnamese AI temporarily disabled - focusing on Planning features")
+try:
+    from simple_vietnamese_nlp import SimpleVietnameseNLPProcessor
+    vietnamese_ai = SimpleVietnameseNLPProcessor()
+    AI_AVAILABLE = True
+    logger = logging.getLogger(__name__)
+    logger.info("✅ Vietnamese AI Classification enabled!")
+except Exception as e:
+    print(f"Vietnamese AI failed to load: {e}")
+    AI_AVAILABLE = False
+
+# Import English classifier
+ENGLISH_AI_AVAILABLE = False
+english_ai = None
+try:
+    from english_classifier import EnglishClassifier
+    english_ai = EnglishClassifier()
+    ENGLISH_AI_AVAILABLE = True
+    logger = logging.getLogger(__name__)
+    logger.info("✅ English AI Classification enabled!")
+except Exception as e:
+    print(f"English AI failed to load: {e}")
+    ENGLISH_AI_AVAILABLE = False
+
+# Import language detection
+try:
+    from langdetect import detect, LangDetectException
+    LANGDETECT_AVAILABLE = True
+    logger = logging.getLogger(__name__)
+    logger.info("✅ Language detection enabled!")
+except Exception as e:
+    print(f"Language detection failed to load: {e}")
+    LANGDETECT_AVAILABLE = False
 
 # Import Ultra Enhanced Planning Service (9/10 libraries working!)
 try:
@@ -178,8 +209,11 @@ async def health_check():
     """Health check with AI system status"""
     return {
         "status": "healthy",
-        "service": "ultra-vietnamese-financial-ai-planning",
+        "service": "multilingual-financial-ai-planning",
         "ai_available": AI_AVAILABLE,
+        "english_ai_available": ENGLISH_AI_AVAILABLE,
+        "langdetect_available": LANGDETECT_AVAILABLE,
+        "supported_languages": ["vi", "en"] if AI_AVAILABLE and ENGLISH_AI_AVAILABLE else (["vi"] if AI_AVAILABLE else (["en"] if ENGLISH_AI_AVAILABLE else [])),
         "planning_available": PLANNING_AVAILABLE,
         "ultra_available": ULTRA_AVAILABLE,
         "ml_libraries": {
@@ -193,7 +227,7 @@ async def health_check():
             "textblob": ULTRA_AVAILABLE,
             "word2vec": ULTRA_AVAILABLE
         },
-        "version": "3.0.0",
+        "version": "3.1.0",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -203,9 +237,15 @@ async def get_system_stats():
     """Get comprehensive AI system statistics"""
     features_available = ["Health Check", "System Stats"]
     
-    if AI_AVAILABLE:
+    if AI_AVAILABLE or ENGLISH_AI_AVAILABLE:
         features_available.extend([
             "Transaction Classification",
+            "Multilingual Support (Vietnamese & English)" if (AI_AVAILABLE and ENGLISH_AI_AVAILABLE) else ("Vietnamese Classification" if AI_AVAILABLE else "English Classification"),
+            "Auto Language Detection" if LANGDETECT_AVAILABLE else "Manual Language Selection"
+        ])
+    
+    if AI_AVAILABLE:
+        features_available.extend([
             "Financial Advice",
             "Chat AI",
             "Knowledge Search",
@@ -277,23 +317,108 @@ async def get_system_stats():
         }
     )
 
-# Enhanced transaction classification endpoint
+# Enhanced transaction classification endpoint with multilingual support
 @app.post("/classify", response_model=ClassificationResponse)
 async def classify_transaction(request: TransactionRequest):
-    """Classify Vietnamese transaction description using trained ML model"""
-    if not AI_AVAILABLE:
+    """Classify transaction description using Vietnamese or English AI (auto-detected)"""
+    if not AI_AVAILABLE and not ENGLISH_AI_AVAILABLE:
         raise HTTPException(status_code=503, detail="AI system not available")
     
     try:
-        result = vietnamese_ai.classify_transaction(request.description)
+        # Auto-detect language with improved Vietnamese detection
+        detected_lang = 'vi'  # Default to Vietnamese
+        description_lower = request.description.lower()
+        
+        # Check for Vietnamese diacritics first (highest priority)
+        has_vietnamese_chars = any(char in request.description for char in 'àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ')
+        
+        # Check for common Vietnamese words/patterns (expanded)
+        vietnamese_keywords = ['ăn', 'uống', 'phở', 'cơm', 'cafe', 'trà sữa', 'taxi', 
+                              'mua', 'sắm', 'đồ', 'quần áo', 'giày', 'dép', 'thuốc', 'bệnh viện',
+                              'khám', 'xem', 'phim', 'tập', 'karaoke', 'đổ xăng', 'vé', 'máy bay',
+                              'siêu thị', 'vinmart', 'bigc', 'highlands', 'đặt', 'gửi', 'buýt',
+                              'về', 'nhà', 'đi làm', 'xe', 'concert', 'nha sĩ', 'điện tử', 'thế giới']
+        has_vietnamese_keywords = any(keyword in description_lower for keyword in vietnamese_keywords)
+        
+        # Also check for English-only indicators (including brand names)
+        english_only_patterns = ['from hotel', 'at amc', 'at cvs', 'at walmart', 'at zara', 
+                                'uber ride', 'uber eats', 'ubereats', 'lyft', 'doordash', 'grubhub', 
+                                'postmates', 'instacart', 'shipt', 'dashmart',
+                                'starbucks', 'mcdonalds', 'netflix', 'spotify',
+                                'amazon', 'whole foods', 'walmart', 'target',
+                                'order from', 'grocery', 'pickup', 'subscription']
+        has_english_only = any(pattern in description_lower for pattern in english_only_patterns)
+        
+        # If Vietnamese chars OR Vietnamese keywords detected, force Vietnamese (unless clear English pattern)
+        if (has_vietnamese_chars or has_vietnamese_keywords) and not has_english_only:
+            detected_lang = 'vi'
+        elif LANGDETECT_AVAILABLE:
+            try:
+                detected_lang = detect(request.description)
+                # Normalize language codes
+                if detected_lang not in ['vi', 'en']:
+                    detected_lang = 'en'  # Default to English for other languages
+            except LangDetectException:
+                # Default to English if no Vietnamese indicators
+                detected_lang = 'en'
+        else:
+            # Fallback: default to English if no Vietnamese indicators
+            detected_lang = 'en' if not (has_vietnamese_chars or has_vietnamese_keywords) else 'vi'
+        
+        # Route to appropriate classifier
+        if detected_lang == 'vi' and AI_AVAILABLE:
+            result = vietnamese_ai.classify_transaction(request.description)
+        elif detected_lang == 'en' and ENGLISH_AI_AVAILABLE:
+            result = english_ai.classify_transaction(request.description)
+        elif AI_AVAILABLE:
+            # Fallback to Vietnamese if detected language classifier not available
+            result = vietnamese_ai.classify_transaction(request.description)
+        elif ENGLISH_AI_AVAILABLE:
+            # Fallback to English if Vietnamese not available
+            result = english_ai.classify_transaction(request.description)
+        else:
+            raise HTTPException(status_code=503, detail="No classifier available")
         
         if 'error' in result:
             raise HTTPException(status_code=500, detail=result['error'])
+        
+        # Add detected language to result
+        result['detected_language'] = detected_lang
         
         return ClassificationResponse(**result)
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Classification error: {str(e)}")
+
+# Language detection endpoint
+@app.post("/detect-language")
+async def detect_language(request: TransactionRequest):
+    """Detect language of transaction description"""
+    if not LANGDETECT_AVAILABLE:
+        # Fallback to character-based detection
+        if any(char in request.description for char in 'àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ'):
+            return {"language": "vi", "confidence": 0.8, "method": "character_detection"}
+        else:
+            return {"language": "en", "confidence": 0.6, "method": "character_detection"}
+    
+    try:
+        detected_lang = detect(request.description)
+        # Normalize language codes
+        if detected_lang not in ['vi', 'en']:
+            detected_lang = 'en'
+        
+        return {
+            "language": detected_lang,
+            "confidence": 0.95,
+            "method": "langdetect",
+            "description": request.description
+        }
+    except LangDetectException:
+        # Fallback to character-based detection
+        if any(char in request.description for char in 'àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ'):
+            return {"language": "vi", "confidence": 0.7, "method": "character_detection_fallback"}
+        else:
+            return {"language": "en", "confidence": 0.5, "method": "character_detection_fallback"}
 
 # Enhanced financial advice endpoint with RAG
 @app.post("/advice", response_model=AdviceResponse)
