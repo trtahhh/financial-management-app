@@ -1,0 +1,532 @@
+<!-- Modern Transactions Page -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Giao Dịch</h2>
+        <p class="text-secondary mb-0">Quản lý tất cả giao dịch thu chi của bạn</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" onclick="triggerOcr()" title="Quét hóa đơn từ ảnh">
+            <i class="bi bi-camera"></i>
+            Quét Hóa Đơn
+        </button>
+        <button class="btn btn-primary" onclick="showAddModal()">
+            <i class="bi bi-plus-lg"></i>
+            Thêm Giao Dịch
+        </button>
+    </div>
+</div>
+
+<!-- Hidden file input for OCR -->
+<input id="ocrFileInput" type="file" accept="image/*" style="display:none" />
+
+<!-- Stats Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card stats-card-success">
+            <div class="stats-card-icon">
+                <i class="bi bi-arrow-down-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Thu</div>
+                <div class="stats-card-value" id="totalIncome">0 ₫</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-danger">
+            <div class="stats-card-icon">
+                <i class="bi bi-arrow-up-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Chi</div>
+                <div class="stats-card-value" id="totalExpense">0 ₫</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-info">
+            <div class="stats-card-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Số Giao Dịch</div>
+                <div class="stats-card-value" id="totalCount">0</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-warning">
+            <div class="stats-card-icon">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Trung Bình</div>
+                <div class="stats-card-value" id="avgAmount">0 ₫</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label fw-medium">Khoảng Thời Gian</label>
+                <select id="time-range-filter" class="form-control">
+                    <option value="all">Tất cả giao dịch</option>
+                    <option value="month">Tháng này</option>
+                    <option value="year">Năm này</option>
+                    <option value="custom">Tùy chỉnh</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Loại giao dịch</label>
+                <select id="type-filter" class="form-control">
+                    <option value="">Tất cả loại</option>
+                    <option value="income">Thu nhập</option>
+                    <option value="expense">Chi tiêu</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Danh mục</label>
+                <select id="tx-filter" class="form-control">
+                    <option value="">Tất cả danh mục</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-none" id="custom-date-range">
+                <label class="form-label fw-medium">Từ ngày</label>
+                <input type="date" id="date-from" class="form-control">
+            </div>
+            <div class="col-md-2 d-none" id="custom-date-to">
+                <label class="form-label fw-medium">Đến ngày</label>
+                <input type="date" id="date-to" class="form-control">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-secondary w-100" onclick="resetFilters()">
+                    <i class="bi bi-x-lg"></i>
+                    Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Table Card -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-list-ul"></i>
+                Danh Sách Giao Dịch
+            </h5>
+            <div class="d-flex gap-2">
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="search-input" placeholder="Tìm kiếm...">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-secondary">
+                    <tr>
+                        <th style="width: 50px;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                        </th>
+                        <th>Ngày</th>
+                        <th>Danh Mục</th>
+                        <th>Mô Tả</th>
+                        <th>Ví</th>
+                        <th class="text-end">Số Tiền</th>
+                        <th class="text-center" style="width: 100px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tx-list">
+                    <tr>
+                        <td colspan="7" class="text-center text-secondary py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="mt-3 mb-0">Chưa có giao dịch nào</p>
+                            <button class="btn btn-primary btn-sm mt-3" onclick="showAddModal()">
+                                <i class="bi bi-plus-lg"></i>
+                                Thêm giao dịch đầu tiên
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-sm text-secondary">
+                Hiển thị <span id="showing-from">0</span> - <span id="showing-to">0</span> trong tổng <span id="total-items">0</span> giao dịch
+            </div>
+            <div>
+                <div class="btn-group" role="group" id="pagination">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="previousPage()" id="prevBtn">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary disabled" id="pageInfo">
+                        Trang 1
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="nextPage()" id="nextBtn">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Transaction Modal -->
+<div class="modal fade" id="txModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle"></i>
+                    <span id="modalTitle">Thêm Giao Dịch</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="txForm">
+                    <input type="hidden" id="tx-id">
+                    <input type="hidden" id="suggestedCategoryId">
+                    <input type="hidden" id="suggestedCategoryName">
+                    
+                    <!-- Transaction Type -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Loại Giao Dịch</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="type" id="type-income" value="income" checked>
+                            <label class="btn btn-outline-success" for="type-income">
+                                <i class="bi bi-arrow-down-circle"></i>
+                                Thu Nhập
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="type" id="type-expense" value="expense">
+                            <label class="btn btn-outline-danger" for="type-expense">
+                                <i class="bi bi-arrow-up-circle"></i>
+                                Chi Tiêu
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Số Tiền <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="tx-amount" name="amount" placeholder="0" required>
+                                <span class="input-group-text">₫</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Ngày <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="tx-date" name="date" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Danh Mục <span class="text-danger">*</span></label>
+                            <select class="form-control" id="tx-category" name="category" required>
+                                <option value="">Chọn danh mục</option>
+                            </select>
+                            <small id="categoryHint" class="form-text text-muted d-block mt-2">
+                                AI sẽ tự động phân loại sau khi bạn quét hóa đơn
+                            </small>
+                            <small id="categoryConfidence" class="form-text text-success d-none d-block mt-1"></small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Ví <span class="text-danger">*</span></label>
+                            <select class="form-control" id="tx-wallet" name="wallet" required>
+                                <option value="">Chọn ví</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Mô Tả</label>
+                            <textarea class="form-control" id="tx-description" name="note" rows="3" placeholder="Nhập mô tả chi tiết..."></textarea>
+                        </div>
+
+                        <!-- OCR Image Preview -->
+                        <div class="col-12 d-none" id="ocr-image-preview-wrapper">
+                            <label class="form-label fw-medium">Ảnh Quét Hóa Đơn</label>
+                            <div class="card border-light position-relative" style="overflow: hidden;">
+                                <img id="ocr-image-preview" src="" alt="OCR Preview" class="card-img-top" style="max-height: 300px; object-fit: contain; cursor: zoom-in; transition: transform 0.3s ease;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <button type="button" class="btn btn-sm btn-light" onclick="zoomOcrImage()" title="Phóng to">
+                                        <i class="bi bi-zoom-in"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                    Hủy
+                </button>
+                <button type="button" id="saveTransactionBtn" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn xóa giao dịch này không? Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="bi bi-trash"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OCR Loading Modal -->
+<div class="modal fade" id="ocrLoadingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quét Hóa Đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status" id="ocrSpinner">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <h5 id="ocrStatus">Đang Quét Hóa Đơn...</h5>
+                <p class="text-secondary mb-0">Vui lòng đợi trong giây lát</p>
+            </div>
+            <div class="modal-footer" id="ocrFooter" style="display: none;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include transaction script -->
+<script src="/js/transactions.js"></script>
+
+<script>
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    // Set default date
+    document.getElementById('tx-date').valueAsDate = new Date();
+    
+    // Set date filters to current month
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    document.getElementById('date-from').valueAsDate = firstDay;
+    document.getElementById('date-to').valueAsDate = today;
+    
+    // Set time range filter to month by default
+    document.getElementById('time-range-filter').value = 'month';
+    
+    // Load data - wait for all to complete before applying filters
+    try {
+        await Promise.all([
+            typeof loadTransactions === 'function' ? loadTransactions() : Promise.resolve(),
+            typeof loadCategories === 'function' ? loadCategories() : Promise.resolve(),
+            typeof loadWallets === 'function' ? loadWallets() : Promise.resolve()
+        ]);
+        
+        // Only apply filters after all data is loaded
+        if (typeof applyFilters === 'function') {
+            applyFilters();
+        }
+    } catch (error) {
+        console.error('Error initializing transaction page:', error);
+    }
+    
+    // Setup event listeners
+    setupEventListeners();
+});
+
+// Setup Event Listeners
+function setupEventListeners() {
+    // Time range filter event
+    const timeRangeFilter = document.getElementById('time-range-filter');
+    if (timeRangeFilter) {
+        timeRangeFilter.addEventListener('change', handleTimeRangeChange);
+    }
+    
+    // Filter change events
+    document.getElementById('type-filter').addEventListener('change', applyFilters);
+    document.getElementById('tx-filter').addEventListener('change', applyFilters);
+    document.getElementById('date-from').addEventListener('change', applyFilters);
+    document.getElementById('date-to').addEventListener('change', applyFilters);
+    
+    // Search input with debounce
+    let searchTimeout;
+    document.getElementById('search-input').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500);
+    });
+    
+    // File input for OCR
+    document.getElementById('ocrFileInput').addEventListener('change', handleOcrUpload);
+}
+
+// Reset Filters
+function resetFilters() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    document.getElementById('time-range-filter').value = 'month';
+    document.getElementById('type-filter').value = '';
+    document.getElementById('tx-filter').value = '';
+    document.getElementById('date-from').valueAsDate = firstDay;
+    document.getElementById('date-to').valueAsDate = today;
+    document.getElementById('search-input').value = '';
+    
+    // Hide custom date inputs
+    const customDateRange = document.getElementById('custom-date-range');
+    const customDateTo = document.getElementById('custom-date-to');
+    if (customDateRange) customDateRange.classList.add('d-none');
+    if (customDateTo) customDateTo.classList.add('d-none');
+    
+    // applyFilters is defined in transactions.js
+    if (typeof applyFilters === 'function') {
+        applyFilters();
+    }
+}
+
+// Toggle Select All
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('#tx-list input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+}
+
+// Pagination
+let currentPage = 1;
+let totalPages = 1;
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        loadTransactions();
+    }
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        loadTransactions();
+    }
+}
+
+// Export Transactions
+function exportTransactions() {
+    // Will be implemented in transactions.js
+    console.log('Export transactions');
+}
+
+// Trigger OCR
+function triggerOcr() {
+    document.getElementById('ocrFileInput').click();
+}
+
+// Handle OCR Upload
+async function handleOcrUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    try {
+        // Call handleOcrFile từ transactions.js - nó tự quản lý modal
+        if (typeof handleOcrFile === 'function') {
+            await handleOcrFile(file);
+        } else {
+            console.error('OCR processor not available');
+            alert('Lỗi: Chức năng quét hóa đơn không khả dụng');
+        }
+    } catch (error) {
+        console.error('OCR Error:', error);
+        alert('Lỗi khi xử lý ảnh. Vui lòng thử lại.');
+    } finally {
+        event.target.value = '';
+    }
+}
+
+// Cancel OCR
+function cancelOcr() {
+    const modalEl = document.getElementById('ocrLoadingModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+        modal.hide();
+    }
+    // Ensure backdrop is removed
+    setTimeout(() => {
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+    }, 100);
+}
+
+// Show Add Modal
+function showAddModal() {
+    document.getElementById('modalTitle').textContent = 'Thêm Giao Dịch';
+    document.getElementById('txForm').reset();
+    document.getElementById('tx-id').value = '';
+    document.getElementById('tx-date').valueAsDate = new Date();
+    
+    const modal = new bootstrap.Modal(document.getElementById('txModal'));
+    modal.show();
+}
+
+// Show Edit Modal
+function showEditModal(id) {
+    // Will load transaction data and show modal
+    if (typeof loadTransactionForEdit === 'function') {
+        loadTransactionForEdit(id);
+    }
+}
+
+// Save Transaction - NOTE: Actual implementation is in transactions.js
+// This function is removed to avoid conflict with the main saveTransaction in transactions.js
+
+// Show Delete Modal
+let deleteTransactionId = null;
+
+function showDeleteModal(id) {
+    deleteTransactionId = id;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Confirm Delete
+async function confirmDelete() {
+    if (deleteTransactionId && typeof deleteTransactionData === 'function') {
+        await deleteTransactionData(deleteTransactionId);
+        deleteTransactionId = null;
+    }
+}
+</script>

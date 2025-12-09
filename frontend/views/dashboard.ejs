@@ -1,0 +1,866 @@
+<!-- Modern Dashboard using Design System -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1" style="color: var(--text-primary);">Dashboard</h2>
+        <p class="mb-0" style="color: var(--text-secondary);">Tổng quan tài chính của bạn</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.location.href='/transactions'">
+        <i class="bi bi-plus-lg"></i>
+        Thêm giao dịch
+    </button>
+</div>
+
+<!-- Date Filter Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Từ ngày</label>
+                <input type="date" id="dash-date-from" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Đến ngày</label>
+                <input type="date" id="dash-date-to" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" onclick="applyDateFilter()">
+                    <i class="bi bi-filter"></i>
+                    Áp dụng
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-secondary w-100" onclick="resetDateFilter()">
+                    <i class="bi bi-x-lg"></i>
+                    Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-card-icon success">
+                <i class="bi bi-arrow-down-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Thu</div>
+                <div class="stats-card-value" id="totalIncome">0 ₫</div>
+                <div class="stats-card-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    <span id="incomeTrend">0%</span> so với tháng trước
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-card-icon danger">
+                <i class="bi bi-arrow-up-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Chi</div>
+                <div class="stats-card-value" id="totalExpense">0 ₫</div>
+                <div class="stats-card-change negative">
+                    <i class="bi bi-arrow-down"></i>
+                    <span id="expenseTrend">0%</span> so với tháng trước
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-card-icon info">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Số Dư</div>
+                <div class="stats-card-value" id="balance">0 ₫</div>
+                <div class="stats-card-change" style="color: var(--text-secondary);">
+                    <i class="bi bi-info-circle"></i>
+                    Tổng số dư hiện tại
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-card-icon warning">
+                <i class="bi bi-pie-chart"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Ngân Sách</div>
+                <div class="stats-card-value" id="budget-percentage">0%</div>
+                <div class="stats-card-change" id="budget-details" style="color: var(--text-secondary);">
+                    0₫ / 0₫
+                </div>
+                <div id="budget-status-badge" style="margin-top: 8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Health Score Card -->
+<div class="card card-gradient mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center">
+                <div class="health-score-circle" id="healthScoreCircle">
+                    <svg width="120" height="120" style="transform: rotate(-90deg);">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="8"></circle>
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="white" stroke-width="8" 
+                                stroke-dasharray="339.292" stroke-dashoffset="339.292" id="healthScoreProgress"
+                                style="transition: stroke-dashoffset 1s ease;">
+                        </circle>
+                    </svg>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: white;" id="healthScoreValue">--</div>
+                        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.9);">/ 100</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h4 class="mb-0 text-white">
+                        <i class="bi bi-heart-pulse"></i>
+                        Sức Khỏe Tài Chính
+                    </h4>
+                    <span class="badge badge-lg" id="healthRatingBadge">Chưa có dữ liệu</span>
+                </div>
+                <p class="text-white mb-3 opacity-90" id="healthDescription">
+                    Đánh giá tổng quan về tình hình tài chính của bạn dựa trên các yếu tố: tiết kiệm, ngân sách, nợ, thu nhập và thói quen chi tiêu.
+                </p>
+                <div class="d-flex gap-2">
+                    <a href="/health-score" class="btn btn-light">
+                        <i class="bi bi-graph-up"></i>
+                        Xem chi tiết
+                    </a>
+                    <button class="btn btn-outline-light" onclick="refreshHealthScore()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Làm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-pie-chart-fill text-primary"></i>
+                    Phân Bổ Chi Tiêu
+                </h5>
+                <p class="text-sm mb-0" style="color: var(--text-secondary);">Theo danh mục</p>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-pie"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-bar-chart-fill text-success"></i>
+                    Thu Chi Theo Tuần
+                </h5>
+                <p class="text-sm mb-0" style="color: var(--text-secondary);">7 ngày gần nhất</p>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-bar"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Cards Row -->
+<div class="row g-4 mb-4">
+    <!-- Goals Progress -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-gradient">
+                <h5 class="card-title text-white mb-0">
+                    <i class="bi bi-trophy"></i>
+                    Tiến Độ Mục Tiêu
+                </h5>
+            </div>
+            <div class="card-body" id="goal-progress">
+                <div class="text-center py-4">
+                    <i class="bi bi-trophy" style="font-size: 3rem; color: var(--text-tertiary);"></i>
+                    <p class="mt-3 mb-3" style="color: var(--text-secondary);">Chưa có mục tiêu nào được thiết lập</p>
+                    <a href="/goals" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg"></i>
+                        Tạo mục tiêu
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Budget Alerts -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-gradient">
+                <h5 class="card-title text-white mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Cảnh Báo Ngân Sách
+                </h5>
+            </div>
+            <div class="card-body" id="budget-alerts">
+                <div class="text-center py-4">
+                    <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--success);"></i>
+                    <p class="mt-3 mb-0" style="color: var(--text-secondary);">Tất cả ngân sách đều trong tầm kiểm soát</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-gradient">
+                <h5 class="card-title text-white mb-0">
+                    <i class="bi bi-graph-up"></i>
+                    Thống Kê Nhanh
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center g-3">
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background-color: var(--primary-50);">
+                            <h4 class="mb-1" style="color: var(--primary-600); font-weight: 700;" id="transaction-count">0</h4>
+                            <small style="color: var(--text-secondary);">Giao dịch tháng này</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background-color: var(--success-light);">
+                            <h4 class="mb-1" style="color: var(--success-dark); font-weight: 700;" id="average-transaction">0₫</h4>
+                            <small style="color: var(--text-secondary);">TB mỗi giao dịch</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background-color: var(--warning-light);">
+                            <h4 class="mb-1" style="color: var(--warning-dark); font-weight: 700;" id="wallet-count">0</h4>
+                            <small style="color: var(--text-secondary);">Ví tiền</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background-color: var(--info-light);">
+                            <h4 class="mb-1" style="color: var(--info-dark); font-weight: 700;" id="category-count">0</h4>
+                            <small style="color: var(--text-secondary);">Danh mục</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI-Powered Insights - Removed due to API errors -->
+
+<!-- Recent Transactions -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history text-primary"></i>
+                    Giao Dịch Gần Đây
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="recent-transactions-table">
+                <tbody id="recent-transactions">
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-tertiary);"></i>
+                            <p class="mt-3 mb-0" style="color: var(--text-secondary);">Chưa có giao dịch nào trong tháng này</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Dashboard Script -->
+<script src="/js/dashboard.js"></script>
+
+<!-- Balance Patch - Use actual wallet balance instead of transaction-based -->
+<script src="/js/balance-patch.js?v=<%= Date.now() %>"></script>
+
+<!-- Health Score Patch - Translate rating to Vietnamese -->
+<script src="/js/health-score-patch.js?v=<%= Date.now() %>"></script>
+
+<!-- Additional Dashboard Enhancements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date range to current month
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    document.getElementById('dash-date-from').valueAsDate = firstDay;
+    document.getElementById('dash-date-to').valueAsDate = today;
+    
+    // Load financial health score
+    loadFinancialHealthScore();
+    
+    // Auto-refresh every 5 minutes
+    setInterval(function() {
+        loadDashboardData();
+    }, 300000);
+});
+
+// Load Financial Health Score
+async function loadFinancialHealthScore() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return;
+        
+        const response = await fetch('/api/financial-health/score', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            updateHealthScoreDisplay(data);
+        }
+    } catch (error) {
+        console.error('Error loading health score:', error);
+    }
+}
+
+// Update Health Score Display
+function updateHealthScoreDisplay(data) {
+    const scoreValue = document.getElementById('healthScoreValue');
+    const scoreProgress = document.getElementById('healthScoreProgress');
+    const ratingBadge = document.getElementById('healthRatingBadge');
+    const description = document.getElementById('healthDescription');
+    
+    // Update score value
+    scoreValue.textContent = data.totalScore || 0;
+    
+    // Update progress circle
+    const circumference = 339.292;
+    const offset = circumference - (data.totalScore / 100) * circumference;
+    scoreProgress.style.strokeDashoffset = offset;
+    
+    // Update badge with Vietnamese translation
+    const ratingColors = {
+        'EXCELLENT': 'success',
+        'GOOD': 'info',
+        'FAIR': 'warning',
+        'POOR': 'danger',
+        'CRITICAL': 'danger'
+    };
+    
+    const ratingTranslations = {
+        'EXCELLENT': 'Xuất sắc',
+        'GOOD': 'Tốt',
+        'FAIR': 'Trung bình',
+        'POOR': 'Kém',
+        'CRITICAL': 'Tới hạn'
+    };
+    
+    const badgeClass = ratingColors[data.rating] || 'secondary';
+    const ratingText = ratingTranslations[data.rating] || data.rating || 'N/A';
+    ratingBadge.className = `badge badge-lg badge-${badgeClass}`;
+    ratingBadge.textContent = ratingText;
+    
+    // Update description
+    if (data.recommendations && data.recommendations.length > 0) {
+        description.textContent = data.recommendations[0].message;
+    }
+}
+
+// Refresh Health Score
+async function refreshHealthScore() {
+    const btn = event.target.closest('button');
+    const icon = btn.querySelector('i');
+    icon.classList.add('spin');
+    
+    await loadFinancialHealthScore();
+    
+    setTimeout(() => {
+        icon.classList.remove('spin');
+    }, 1000);
+}
+
+// Date Filter Functions
+function applyDateFilter() {
+    loadDashboardData();
+}
+
+function resetDateFilter() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    document.getElementById('dash-date-from').valueAsDate = firstDay;
+    document.getElementById('dash-date-to').valueAsDate = today;
+    
+    loadDashboardData();
+}
+
+// Helper function to load all dashboard data
+function loadDashboardData() {
+    if (typeof loadDashboard === 'function') {
+        loadDashboard();
+    }
+}
+
+// Add spin animation for refresh buttons
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .health-score-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+    }
+`;
+document.head.appendChild(style);
+
+// Override AI functions to prevent errors
+window.loadPersonalizedTips = function() {
+    console.log('AI Tips feature disabled');
+};
+window.loadSmartAnalytics = function() {
+    console.log('AI Analytics feature disabled');
+};
+
+// Debug: Check if elements exist
+console.log('Dashboard elements check:');
+console.log('totalIncome:', document.getElementById('totalIncome'));
+console.log('totalExpense:', document.getElementById('totalExpense'));
+console.log('balance:', document.getElementById('balance'));
+console.log('budget-percentage:', document.getElementById('budget-percentage'));
+console.log('goal-progress:', document.getElementById('goal-progress'));
+console.log('budget-alerts:', document.getElementById('budget-alerts'));
+console.log('transaction-count:', document.getElementById('transaction-count'));
+console.log('chart-pie:', document.getElementById('chart-pie'));
+console.log('chart-bar:', document.getElementById('chart-bar'));
+console.log('recent-transactions:', document.getElementById('recent-transactions'));
+
+// Manual dashboard data loading
+console.log('🔄 Manually loading dashboard data...');
+
+function getUserIdFromToken() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return null;
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        return decoded.userId || decoded.sub || null;
+    } catch (error) {
+        console.error('Error extracting userId:', error);
+        return null;
+    }
+}
+
+async function loadDashboardManually() {
+    console.log('📊 Loading dashboard data...');
+    
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        console.error('No access token found');
+        return;
+    }
+    
+    const userId = getUserIdFromToken();
+    const from = document.getElementById('dash-date-from')?.value;
+    const to = document.getElementById('dash-date-to')?.value;
+    
+    const url = from && to 
+        ? `http://localhost:8080/api/dashboard/data-by-date?userId=${userId}&dateFrom=${from}&dateTo=${to}`
+        : `http://localhost:8080/api/dashboard/data`;
+    
+    console.log('Fetching from:', url);
+    
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Dashboard data received:', data);
+        
+        // Update stats
+        document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString('vi-VN') + ' ₫';
+        document.getElementById('totalExpense').textContent = (data.totalExpense || 0).toLocaleString('vi-VN') + ' ₫';
+        document.getElementById('balance').textContent = (data.totalBalance || 0).toLocaleString('vi-VN') + ' ₫';
+        
+        // Update budget
+        console.log('📊 Budget info from API:', data.totalBudgetInfo);
+        const budgetInfo = data.totalBudgetInfo || {};
+        const totalBudgetAmount = budgetInfo.totalBudgetAmount || 0;
+        const totalBudgetSpent = budgetInfo.totalBudgetSpent || 0;
+        const budgetUsagePercent = budgetInfo.budgetUsagePercent || 0;
+        
+        if (totalBudgetAmount > 0) {
+            const percent = Math.round(budgetUsagePercent);
+            document.getElementById('budget-percentage').textContent = percent + '%';
+            document.getElementById('budget-details').textContent = 
+                `${totalBudgetSpent.toLocaleString('vi-VN')}₫ / ${totalBudgetAmount.toLocaleString('vi-VN')}₫`;
+            
+            // Thêm hiển thị status badge
+            let statusBadge = '';
+            let statusColor = 'success';
+            let statusText = '✓ Bình thường';
+            
+            if (percent >= 100) {
+                statusBadge = '<span class="badge bg-danger" style="font-size: 11px; padding: 4px 8px;">⚠ Vượt ngân sách</span>';
+                statusColor = 'danger';
+                statusText = '⚠ Vượt ngân sách';
+            } else if (percent >= 80) {
+                statusBadge = '<span class="badge bg-warning" style="font-size: 11px; padding: 4px 8px;">⚠ Gần hết ngân sách</span>';
+                statusColor = 'warning';
+                statusText = '⚠ Gần hết ngân sách';
+            } else {
+                statusBadge = '<span class="badge bg-success" style="font-size: 11px; padding: 4px 8px;">✓ Bình thường</span>';
+            }
+            
+            document.getElementById('budget-status-badge').innerHTML = statusBadge;
+            console.log('✅ Budget updated:', percent + '%', totalBudgetSpent, '/', totalBudgetAmount, 'Status:', statusText);
+        } else {
+            document.getElementById('budget-percentage').textContent = '0%';
+            document.getElementById('budget-details').textContent = 'Chưa có ngân sách';
+            document.getElementById('budget-status-badge').innerHTML = '';
+            console.log('ℹ️ No budget data available');
+        }
+        
+        // Update transaction count
+        const txCount = (data.recentTransactions || []).length;
+        document.getElementById('transaction-count').textContent = txCount;
+        
+        // Update average transaction
+        if (txCount > 0) {
+            const total = data.recentTransactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+            const avg = total / txCount;
+            document.getElementById('average-transaction').textContent = Math.round(avg).toLocaleString('vi-VN') + '₫';
+        }
+        
+        // Update wallet count
+        const walletCountEl = document.getElementById('wallet-count');
+        if (walletCountEl && data.wallets) {
+            walletCountEl.textContent = data.wallets.length || 0;
+        }
+        
+        // Update category count  
+        const categoryCountEl = document.getElementById('category-count');
+        if (categoryCountEl) {
+            categoryCountEl.textContent = 14; // Fixed 14 categories
+        }
+        
+        // Update recent transactions
+        updateRecentTransactions(data.recentTransactions || []);
+        
+        // Update goal progress
+        updateGoalProgress(data.goalProgress || []);
+        
+        // Update charts
+        if (data.expensesByCategory && data.expensesByCategory.length > 0) {
+            renderPieChart(data.expensesByCategory);
+        }
+        
+        if (data.spendingTrend && data.spendingTrend.length > 0) {
+            renderBarChart(data.spendingTrend);
+        }
+        
+        // Update budget alerts (phần dưới dashboard)
+        const budgetAlertsContainer = document.getElementById('budget-alerts');
+        if (budgetAlertsContainer) {
+            const budgetWarnings = data.budgetWarnings || [];
+            console.log('📊 Budget warnings data:', budgetWarnings);
+            
+            if (!budgetWarnings || budgetWarnings.length === 0) {
+                budgetAlertsContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--success);"></i>
+                        <p class="mt-3 mb-0" style="color: var(--text-secondary);">Tất cả ngân sách đều trong tầm kiểm soát</p>
+                    </div>
+                `;
+            } else {
+                let alertsHtml = '';
+                const exceededBudgets = budgetWarnings.filter(b => b.status === 'EXCEEDED');
+                const warningBudgets = budgetWarnings.filter(b => b.status === 'WARNING');
+                
+                if (exceededBudgets.length > 0) {
+                    alertsHtml += '<div class="alert alert-danger mb-2"><strong>⚠ Vượt ngân sách:</strong><br>';
+                    exceededBudgets.forEach(b => {
+                        const spent = Number(b.spentAmount || 0);
+                        const budget = Number(b.budgetAmount || 0);
+                        const percent = Number(b.usagePercent || 0);
+                        alertsHtml += `<small>• ${b.categoryName}: ${spent.toLocaleString('vi-VN')}₫ / ${budget.toLocaleString('vi-VN')}₫ (${percent.toFixed(1)}%)</small><br>`;
+                    });
+                    alertsHtml += '</div>';
+                }
+                
+                if (warningBudgets.length > 0) {
+                    alertsHtml += '<div class="alert alert-warning mb-2"><strong>⚠ Gần đạt giới hạn:</strong><br>';
+                    warningBudgets.forEach(b => {
+                        const spent = Number(b.spentAmount || 0);
+                        const budget = Number(b.budgetAmount || 0);
+                        const percent = Number(b.usagePercent || 0);
+                        alertsHtml += `<small>• ${b.categoryName}: ${spent.toLocaleString('vi-VN')}₫ / ${budget.toLocaleString('vi-VN')}₫ (${percent.toFixed(1)}%)</small><br>`;
+                    });
+                    alertsHtml += '</div>';
+                }
+                
+                alertsHtml += '<a href="/budgets" class="btn btn-warning btn-sm">Xem chi tiết</a>';
+                budgetAlertsContainer.innerHTML = alertsHtml;
+            }
+        }
+        
+        console.log('✅ Dashboard updated successfully!');
+        
+    } catch (error) {
+        console.error('❌ Error loading dashboard:', error);
+    }
+}
+
+function updateRecentTransactions(transactions) {
+    const tbody = document.getElementById('recent-transactions');
+    if (!tbody) return;
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="mt-3 mb-0">Chưa có giao dịch nào trong tháng này</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = transactions.slice(0, 10).map(tx => {
+        const isIncome = tx.type === 'income' || tx.type === 'THU';
+        const amountClass = isIncome ? 'text-success' : 'text-danger';
+        const icon = isIncome ? 'arrow-down-circle' : 'arrow-up-circle';
+        return `
+            <tr>
+                <td><i class="bi bi-${icon} ${amountClass}"></i></td>
+                <td>${tx.note || 'Giao dịch'}</td>
+                <td>${tx.categoryName || 'Khác'}</td>
+                <td>${new Date(tx.date).toLocaleDateString('vi-VN')}</td>
+                <td class="${amountClass} fw-bold">${(tx.amount || 0).toLocaleString('vi-VN')} ₫</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function updateGoalProgress(goals) {
+    const container = document.getElementById('goal-progress');
+    if (!container) return;
+    
+    console.log('📊 Updating goal progress:', goals);
+    
+    if (!goals || goals.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="bi bi-trophy" style="font-size: 3rem; color: var(--text-tertiary);"></i>
+                <p class="mt-3 mb-3" style="color: var(--text-secondary);">Chưa có mục tiêu nào được thiết lập</p>
+                <a href="/goals" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i>
+                    Tạo mục tiêu
+                </a>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    goals.slice(0, 3).forEach(goal => {
+        const current = goal.currentAmount || 0;
+        const target = goal.targetAmount || 1;
+        const percent = Math.min(Math.round((current / target) * 100), 100);
+        const progressClass = percent >= 100 ? 'bg-success' : percent >= 75 ? 'bg-info' : percent >= 50 ? 'bg-warning' : 'bg-secondary';
+        
+        html += `
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold">${goal.goalName || goal.name || 'Mục tiêu'}</span>
+                    <span class="badge ${progressClass}">${percent}%</span>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                    <div class="progress-bar ${progressClass}" style="width: ${percent}%"></div>
+                </div>
+                <small class="text-muted">
+                    ${current.toLocaleString('vi-VN')}₫ / ${target.toLocaleString('vi-VN')}₫
+                </small>
+            </div>
+        `;
+    });
+    
+    if (goals.length > 3) {
+        html += `
+            <div class="text-center mt-3">
+                <a href="/goals" class="btn btn-outline-primary btn-sm">
+                    Xem tất cả mục tiêu
+                </a>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function renderPieChart(expensesByCategory) {
+    const canvas = document.getElementById('chart-pie');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    const labels = expensesByCategory.map(item => item.categoryName);
+    const data = expensesByCategory.map(item => item.totalAmount);
+    const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#FF6B9D', '#4ECDC4', '#45B7D1', '#96CEB4',
+        '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+    ];
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 15, usePointStyle: true, font: { size: 12 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.toLocaleString('vi-VN')} ₫`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderBarChart(spendingTrend) {
+    const canvas = document.getElementById('chart-bar');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    const labels = spendingTrend.map(item => item.period);
+    const incomeData = spendingTrend.map(item => item.income || 0);
+    const expenseData = spendingTrend.map(item => item.expense || item.amount || 0);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Thu nhập',
+                    data: incomeData,
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Chi tiêu',
+                    data: expenseData,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y.toLocaleString('vi-VN')} ₫`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('vi-VN') + ' ₫';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Load on page ready
+setTimeout(() => {
+    loadDashboardManually();
+}, 500);
+
+// Reload on date change
+document.getElementById('dash-date-from')?.addEventListener('change', loadDashboardManually);
+document.getElementById('dash-date-to')?.addEventListener('change', loadDashboardManually);
+
+window.applyDateFilter = loadDashboardManually;
+window.resetDateFilter = function() {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    document.getElementById('dash-date-from').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('dash-date-to').value = now.toISOString().split('T')[0];
+    loadDashboardManually();
+};
+</script>

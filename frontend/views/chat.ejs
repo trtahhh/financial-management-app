@@ -1,0 +1,461 @@
+<!-- Modern AI Chat Page -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">AI Chat Tài Chính</h2>
+        <p class="text-secondary mb-0">Trò chuyện với trợ lý AI về tài chính của bạn</p>
+    </div>
+    <button class="btn btn-outline-danger" onclick="clearChat()">
+        <i class="bi bi-trash"></i>
+        Xóa Lịch Sử
+    </button>
+</div>
+
+<div class="row g-4">
+    <!-- Chat Area -->
+    <div class="col-lg-8">
+        <div class="card card-bordered" style="height: calc(100vh - 250px); display: flex; flex-direction: column;">
+            <!-- Chat Header -->
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" 
+                             style="width: 48px; height: 48px;">
+                            <i class="bi bi-robot fs-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Finance AI Assistant</h6>
+                        <small class="text-success">
+                            <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                            Đang hoạt động
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="card-body flex-grow-1 overflow-auto" id="chatMessages" style="scroll-behavior: smooth;">
+                <!-- Welcome Message -->
+                <div class="text-center py-5">
+                    <i class="bi bi-chat-dots" style="font-size: 3rem; color: var(--primary-200);"></i>
+                    <h5 class="mt-3 mb-2">Xin chào! Tôi là trợ lý AI của bạn</h5>
+                    <p class="text-secondary mb-4">Hãy hỏi tôi bất cứ điều gì về tài chính của bạn</p>
+                    
+                    <div class="row g-2 justify-content-center">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="sendQuickQuestion('Phân tích chi tiêu của tôi')">
+                                📊 Phân tích chi tiêu của tôi
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="sendQuickQuestion('Làm sao để tiết kiệm nhiều hơn?')">
+                                💰 Làm sao để tiết kiệm nhiều hơn?
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="sendQuickQuestion('Đề xuất ngân sách cho tháng tới')">
+                                📅 Đề xuất ngân sách cho tháng tới
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="sendQuickQuestion('Kiểm tra sức khỏe tài chính')">
+                                ❤️ Kiểm tra sức khỏe tài chính
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="card-footer bg-white">
+                <form id="chatForm" onsubmit="sendMessage(event)">
+                    <div class="input-group">
+                        <input type="text" 
+                               class="form-control" 
+                               id="messageInput" 
+                               placeholder="Nhập câu hỏi của bạn..."
+                               autocomplete="off">
+                        <button class="btn btn-primary" type="submit" id="sendBtn">
+                            <i class="bi bi-send"></i>
+                            Gửi
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-2">
+                    <small class="text-secondary">
+                        <i class="bi bi-lightbulb"></i>
+                        Mẹo: Hỏi về chi tiêu, ngân sách, tiết kiệm, hoặc mục tiêu tài chính
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Stats -->
+        <div class="card card-gradient mb-4">
+            <div class="card-body text-white">
+                <h6 class="text-white mb-3">
+                    <i class="bi bi-graph-up"></i>
+                    Tóm Tắt Tài Chính
+                </h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="opacity-75">Số dư hiện tại</small>
+                        <strong id="quickBalance">0 ₫</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="opacity-75">Thu tháng này</small>
+                        <strong id="quickIncome">0 ₫</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small class="opacity-75">Chi tháng này</small>
+                        <strong id="quickExpense">0 ₫</strong>
+                    </div>
+                </div>
+                <button class="btn btn-light btn-sm w-100" onclick="askAboutFinances()">
+                    <i class="bi bi-chat-square-text"></i>
+                    Hỏi về số liệu này
+                </button>
+            </div>
+        </div>
+
+        <!-- Suggested Questions -->
+        <div class="card card-bordered mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-question-circle"></i>
+                    Gợi Ý Câu Hỏi
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-sm btn-outline-primary text-start" onclick="sendQuickQuestion('Tôi chi nhiều nhất vào mục nào?')">
+                        <i class="bi bi-arrow-right"></i>
+                        Tôi chi nhiều nhất vào mục nào?
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary text-start" onclick="sendQuickQuestion('So sánh thu chi tháng này với tháng trước')">
+                        <i class="bi bi-arrow-right"></i>
+                        So sánh thu chi với tháng trước
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary text-start" onclick="sendQuickQuestion('Dự đoán chi tiêu tháng tới')">
+                        <i class="bi bi-arrow-right"></i>
+                        Dự đoán chi tiêu tháng tới
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary text-start" onclick="sendQuickQuestion('Gợi ý cách tối ưu chi tiêu')">
+                        <i class="bi bi-arrow-right"></i>
+                        Gợi ý cách tối ưu chi tiêu
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary text-start" onclick="sendQuickQuestion('Tiến độ mục tiêu của tôi thế nào?')">
+                        <i class="bi bi-arrow-right"></i>
+                        Tiến độ mục tiêu của tôi?
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="card card-bordered">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-clock-history"></i>
+                    Lịch Sử Gần Đây
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="chatHistory">
+                    <div class="text-center text-secondary py-3">
+                        <small>Chưa có lịch sử chat</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let chatMessages = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadChatHistory();
+    loadQuickStats();
+    
+    // Focus input
+    document.getElementById('messageInput').focus();
+});
+
+// Load Chat History from localStorage
+function loadChatHistory() {
+    const saved = localStorage.getItem('chatMessages');
+    if (saved) {
+        chatMessages = JSON.parse(saved);
+        renderMessages();
+    }
+}
+
+// Save Chat History
+function saveChatHistory() {
+    localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+}
+
+// Load Quick Stats
+async function loadQuickStats() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        
+        // Get wallets for balance
+        const walletsResponse = await fetch('/api/wallets', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (walletsResponse.ok) {
+            const wallets = await walletsResponse.json();
+            const totalBalance = wallets.reduce((sum, w) => sum + (w.balance || 0), 0);
+            document.getElementById('quickBalance').textContent = formatCurrency(totalBalance);
+        }
+        
+        // Get transactions for income/expense
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        const today = now.toISOString().split('T')[0];
+        
+        const txResponse = await fetch(`/api/transactions?from=${firstDay}&to=${today}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (txResponse.ok) {
+            const transactions = await txResponse.json();
+            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            
+            document.getElementById('quickIncome').textContent = formatCurrency(income);
+            document.getElementById('quickExpense').textContent = formatCurrency(expense);
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// Send Message
+async function sendMessage(event) {
+    if (event) event.preventDefault();
+    
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addMessage('user', message);
+    input.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        });
+        
+        removeTypingIndicator();
+        
+        if (response.ok) {
+            const data = await response.json();
+            addMessage('ai', data.response);
+        } else {
+            addMessage('ai', 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này. Vui lòng thử lại sau.');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        removeTypingIndicator();
+        addMessage('ai', 'Đã xảy ra lỗi khi kết nối với AI. Vui lòng kiểm tra kết nối và thử lại.');
+    }
+}
+
+// Send Quick Question
+function sendQuickQuestion(question) {
+    document.getElementById('messageInput').value = question;
+    sendMessage();
+}
+
+// Ask About Finances
+function askAboutFinances() {
+    sendQuickQuestion('Phân tích tổng quan tình hình tài chính hiện tại của tôi');
+}
+
+// Add Message
+function addMessage(sender, text) {
+    const message = {
+        id: Date.now(),
+        sender: sender,
+        text: text,
+        timestamp: new Date().toISOString()
+    };
+    
+    chatMessages.push(message);
+    saveChatHistory();
+    renderMessages();
+}
+
+// Render Messages
+function renderMessages() {
+    const container = document.getElementById('chatMessages');
+    
+    // Clear welcome message if messages exist
+    if (chatMessages.length > 0) {
+        container.innerHTML = '';
+    }
+    
+    chatMessages.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `d-flex mb-3 ${msg.sender === 'user' ? 'justify-content-end' : ''}`;
+        
+        if (msg.sender === 'ai') {
+            messageDiv.innerHTML = `
+                <div class="me-2">
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" 
+                         style="width: 36px; height: 36px;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1" style="max-width: 70%;">
+                    <div class="bg-secondary p-3 rounded">
+                        <div class="text-break">${escapeHtml(msg.text)}</div>
+                    </div>
+                    <small class="text-secondary">${formatTime(msg.timestamp)}</small>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="flex-grow-1 text-end" style="max-width: 70%;">
+                    <div class="bg-primary text-white p-3 rounded">
+                        <div class="text-break">${escapeHtml(msg.text)}</div>
+                    </div>
+                    <small class="text-secondary">${formatTime(msg.timestamp)}</small>
+                </div>
+            `;
+        }
+        
+        container.appendChild(messageDiv);
+    });
+    
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+// Show Typing Indicator
+function showTypingIndicator() {
+    const container = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'd-flex mb-3';
+    typingDiv.innerHTML = `
+        <div class="me-2">
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" 
+                 style="width: 36px; height: 36px;">
+                <i class="bi bi-robot"></i>
+            </div>
+        </div>
+        <div class="bg-secondary p-3 rounded">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    container.appendChild(typingDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+// Remove Typing Indicator
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+// Clear Chat
+function clearChat() {
+    if (!confirm('Xóa toàn bộ lịch sử chat?')) return;
+    
+    chatMessages = [];
+    localStorage.removeItem('chatMessages');
+    location.reload();
+}
+
+// Helper Functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+
+<style>
+/* Typing Animation */
+.typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    animation: typing 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-8px);
+    }
+}
+
+/* Scrollbar */
+#chatMessages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chatMessages::-webkit-scrollbar-thumb {
+    background: var(--neutral-300);
+    border-radius: 3px;
+}
+
+#chatMessages::-webkit-scrollbar-thumb:hover {
+    background: var(--neutral-400);
+}
+</style>

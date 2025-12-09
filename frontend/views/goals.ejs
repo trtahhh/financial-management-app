@@ -1,0 +1,683 @@
+<!-- Modern Goals Page -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Mục Tiêu Tài Chính</h2>
+        <p class="text-secondary mb-0">Đặt và theo dõi các mục tiêu tiết kiệm của bạn</p>
+    </div>
+    <button class="btn btn-primary" onclick="showAddGoalModal()">
+        <i class="bi bi-plus-lg"></i>
+        Thêm Mục Tiêu
+    </button>
+</div>
+
+<!-- Goals Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card stats-card-primary">
+            <div class="stats-card-icon">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Mục Tiêu</div>
+                <div class="stats-card-value" id="totalGoals">0</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-success">
+            <div class="stats-card-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Đã Hoàn Thành</div>
+                <div class="stats-card-value" id="completedGoals">0</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-warning">
+            <div class="stats-card-icon">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Đang Thực Hiện</div>
+                <div class="stats-card-value" id="activeGoals">0</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-info">
+            <div class="stats-card-icon">
+                <i class="bi bi-piggy-bank"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Tiết Kiệm</div>
+                <div class="stats-card-value" id="totalSaved">0 ₫</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="card mb-4">
+    <div class="card-body p-0">
+        <ul class="nav nav-tabs border-0" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#all-goals" onclick="filterGoals('all')">
+                    <i class="bi bi-list-ul"></i> Tất cả
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#active-goals-tab" onclick="filterGoals('active')">
+                    <i class="bi bi-play-circle"></i> Đang thực hiện
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#completed-goals-tab" onclick="filterGoals('completed')">
+                    <i class="bi bi-check-circle"></i> Đã hoàn thành
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#upcoming-goals-tab" onclick="filterGoals('upcoming')">
+                    <i class="bi bi-calendar"></i> Sắp đến hạn
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Goals Grid -->
+<div class="row g-4 mb-4" id="goalsGrid">
+    <!-- Goals will be loaded here -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-trophy" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p class="mt-3 mb-3 text-secondary">Bạn chưa có mục tiêu nào</p>
+                <button class="btn btn-primary" onclick="showAddGoalModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    Tạo mục tiêu đầu tiên
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Goal Modal -->
+<div class="modal fade" id="goalModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-trophy"></i>
+                    <span id="goalModalTitle">Thêm Mục Tiêu</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="goalForm">
+                    <input type="hidden" id="goal-id">
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Tên Mục Tiêu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="goal-name" placeholder="VD: Mua xe máy, Du lịch Đà Lạt..." required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Số Tiền Mục Tiêu <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="goal-target" placeholder="0" required>
+                                <span class="input-group-text">₫</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Số Tiền Hiện Tại</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="goal-current" placeholder="0" value="0">
+                                <span class="input-group-text">₫</span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Ngày Bắt Đầu</label>
+                            <input type="date" class="form-control" id="goal-start">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Ngày Đích <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="goal-deadline" required>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Danh Mục</label>
+                            <select class="form-control" id="goal-category">
+                                <option value="">Chọn danh mục</option>
+                                <option value="SAVINGS">Tiết kiệm</option>
+                                <option value="INVESTMENT">Đầu tư</option>
+                                <option value="PURCHASE">Mua sắm</option>
+                                <option value="TRAVEL">Du lịch</option>
+                                <option value="EDUCATION">Giáo dục</option>
+                                <option value="EMERGENCY">Dự phòng</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Mô Tả</label>
+                            <textarea class="form-control" id="goal-description" rows="3" placeholder="Mô tả chi tiết về mục tiêu..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveGoal()">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contribute to Goal Modal -->
+<div class="modal fade" id="contributeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-piggy-bank"></i>
+                    Đóng Góp Vào Mục Tiêu
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6 id="contributeGoalName" class="mb-2"></h6>
+                    <div class="d-flex justify-content-between text-sm">
+                        <span class="text-secondary">Hiện tại:</span>
+                        <span class="fw-semibold" id="contributeCurrent">0 ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-sm">
+                        <span class="text-secondary">Mục tiêu:</span>
+                        <span class="fw-semibold" id="contributeTarget">0 ₫</span>
+                    </div>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-success" id="contributeProgress"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Số Tiền Đóng Góp <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="contribute-amount" placeholder="0" required>
+                        <span class="input-group-text">₫</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Ghi Chú</label>
+                    <input type="text" class="form-control" id="contribute-note" placeholder="VD: Tiết kiệm tháng 12">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="confirmContribute()">
+                    <i class="bi bi-check-lg"></i>
+                    Xác Nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteGoalModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn xóa mục tiêu "<strong id="deleteGoalName"></strong>" không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteGoal()">
+                    <i class="bi bi-trash"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/goals.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadGoals();
+    loadGoalStats();
+    
+    // Set default dates
+    document.getElementById('goal-start').valueAsDate = new Date();
+    const deadline = new Date();
+    deadline.setMonth(deadline.getMonth() + 6);
+    document.getElementById('goal-deadline').valueAsDate = deadline;
+});
+
+// Global variables
+let currentFilter = 'all';
+let currentGoalId = null;
+let deleteGoalId = null;
+let contributeGoalId = null;
+
+// Load Goals
+async function loadGoals() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/goals', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const goals = await response.json();
+            renderGoals(goals);
+        }
+    } catch (error) {
+        console.error('Error loading goals:', error);
+    }
+}
+
+// Render Goals
+function renderGoals(goals) {
+    let filteredGoals = goals;
+    
+    // Apply filter
+    if (currentFilter !== 'all') {
+        if (currentFilter === 'active') {
+            filteredGoals = goals.filter(g => g.status === 'IN_PROGRESS');
+        } else if (currentFilter === 'completed') {
+            filteredGoals = goals.filter(g => g.status === 'COMPLETED');
+        } else if (currentFilter === 'upcoming') {
+            const now = new Date();
+            const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+            filteredGoals = goals.filter(g => {
+                const deadline = new Date(g.deadline);
+                return g.status === 'IN_PROGRESS' && deadline <= thirtyDaysLater;
+            });
+        }
+    }
+    
+    const grid = document.getElementById('goalsGrid');
+    
+    if (filteredGoals.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-trophy" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3 mb-3 text-secondary">Không có mục tiêu nào</p>
+                        ${currentFilter === 'all' ? '<button class="btn btn-primary" onclick="showAddGoalModal()"><i class="bi bi-plus-lg"></i> Tạo mục tiêu đầu tiên</button>' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = filteredGoals.map(goal => {
+        const progress = goal.targetAmount > 0 ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100) : 0;
+        const remaining = goal.targetAmount - goal.currentAmount;
+        const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-bordered h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">${goal.name}</h5>
+                                <span class="badge badge-${getStatusColor(goal.status)}">${getStatusLabel(goal.status)}</span>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-ghost" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" onclick="showContributeModal(${goal.id})">
+                                        <i class="bi bi-piggy-bank"></i> Đóng góp
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="showEditGoalModal(${goal.id})">
+                                        <i class="bi bi-pencil"></i> Chỉnh sửa
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="showDeleteGoalModal(${goal.id}, '${goal.name}')">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between text-sm mb-2">
+                                <span class="text-secondary">Tiến độ</span>
+                                <span class="fw-semibold">${progress.toFixed(1)}%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-${progress >= 100 ? 'success' : progress >= 70 ? 'info' : progress >= 40 ? 'warning' : 'danger'}" 
+                                     style="width: ${progress}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-sm mt-2">
+                                <span class="text-secondary">${formatCurrency(goal.currentAmount)}</span>
+                                <span class="fw-semibold">${formatCurrency(goal.targetAmount)}</span>
+                            </div>
+                        </div>
+                        
+                        ${remaining > 0 ? `
+                            <div class="alert alert-${daysLeft > 30 ? 'info' : daysLeft > 7 ? 'warning' : 'danger'} py-2 mb-3">
+                                <small>
+                                    <i class="bi bi-info-circle"></i>
+                                    Còn ${formatCurrency(remaining)} • ${daysLeft} ngày
+                                </small>
+                            </div>
+                        ` : ''}
+                        
+                        ${goal.description ? `<p class="text-sm text-secondary mb-3">${goal.description}</p>` : ''}
+                        
+                        <div class="d-grid gap-2">
+                            ${progress < 100 ? `
+                                <button class="btn btn-primary btn-sm" onclick="showContributeModal(${goal.id})">
+                                    <i class="bi bi-piggy-bank"></i>
+                                    Đóng góp
+                                </button>
+                            ` : `
+                                <button class="btn btn-success btn-sm" disabled>
+                                    <i class="bi bi-check-circle"></i>
+                                    Đã hoàn thành!
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Load Goal Stats
+async function loadGoalStats() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/goals', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const goals = await response.json();
+            
+            const completed = goals.filter(g => g.status === 'COMPLETED').length;
+            const active = goals.filter(g => g.status === 'IN_PROGRESS').length;
+            const totalSaved = goals.reduce((sum, g) => sum + (g.currentAmount || 0), 0);
+            
+            document.getElementById('totalGoals').textContent = goals.length;
+            document.getElementById('completedGoals').textContent = completed;
+            document.getElementById('activeGoals').textContent = active;
+            document.getElementById('totalSaved').textContent = formatCurrency(totalSaved);
+        }
+    } catch (error) {
+        console.error('Error loading goal stats:', error);
+    }
+}
+
+// Filter Goals
+function filterGoals(filter) {
+    currentFilter = filter;
+    loadGoals();
+}
+
+// Show Add Modal
+function showAddGoalModal() {
+    document.getElementById('goalModalTitle').textContent = 'Thêm Mục Tiêu';
+    document.getElementById('goalForm').reset();
+    document.getElementById('goal-id').value = '';
+    document.getElementById('goal-start').valueAsDate = new Date();
+    const deadline = new Date();
+    deadline.setMonth(deadline.getMonth() + 6);
+    document.getElementById('goal-deadline').valueAsDate = deadline;
+    currentGoalId = null;
+    
+    const modal = new bootstrap.Modal(document.getElementById('goalModal'));
+    modal.show();
+}
+
+// Show Edit Modal
+async function showEditGoalModal(id) {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/goals/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const goal = await response.json();
+            
+            document.getElementById('goalModalTitle').textContent = 'Chỉnh Sửa Mục Tiêu';
+            document.getElementById('goal-id').value = goal.id;
+            document.getElementById('goal-name').value = goal.name;
+            document.getElementById('goal-target').value = goal.targetAmount;
+            document.getElementById('goal-current').value = goal.currentAmount;
+            document.getElementById('goal-start').valueAsDate = goal.startDate ? new Date(goal.startDate) : new Date();
+            document.getElementById('goal-deadline').valueAsDate = new Date(goal.deadline);
+            document.getElementById('goal-category').value = goal.category || '';
+            document.getElementById('goal-description').value = goal.description || '';
+            
+            currentGoalId = id;
+            
+            const modal = new bootstrap.Modal(document.getElementById('goalModal'));
+            modal.show();
+        }
+    } catch (error) {
+        console.error('Error loading goal:', error);
+    }
+}
+
+// Save Goal
+async function saveGoal() {
+    const form = document.getElementById('goalForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const data = {
+        name: document.getElementById('goal-name').value,
+        targetAmount: parseFloat(document.getElementById('goal-target').value),
+        currentAmount: parseFloat(document.getElementById('goal-current').value) || 0,
+        startDate: document.getElementById('goal-start').value,
+        deadline: document.getElementById('goal-deadline').value,
+        category: document.getElementById('goal-category').value,
+        description: document.getElementById('goal-description').value
+    };
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const url = currentGoalId ? `/api/goals/${currentGoalId}` : '/api/goals';
+        const method = currentGoalId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('goalModal')).hide();
+            loadGoals();
+            loadGoalStats();
+            showSuccessMessage(currentGoalId ? 'Cập nhật mục tiêu thành công!' : 'Thêm mục tiêu thành công!');
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể lưu mục tiêu'));
+        }
+    } catch (error) {
+        console.error('Error saving goal:', error);
+        alert('Lỗi khi lưu mục tiêu');
+    }
+}
+
+// Show Contribute Modal
+async function showContributeModal(id) {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/goals/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const goal = await response.json();
+            contributeGoalId = id;
+            
+            document.getElementById('contributeGoalName').textContent = goal.name;
+            document.getElementById('contributeCurrent').textContent = formatCurrency(goal.currentAmount);
+            document.getElementById('contributeTarget').textContent = formatCurrency(goal.targetAmount);
+            
+            const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
+            document.getElementById('contributeProgress').style.width = progress + '%';
+            
+            document.getElementById('contribute-amount').value = '';
+            document.getElementById('contribute-note').value = '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('contributeModal'));
+            modal.show();
+        }
+    } catch (error) {
+        console.error('Error loading goal:', error);
+    }
+}
+
+// Confirm Contribute
+async function confirmContribute() {
+    const amount = parseFloat(document.getElementById('contribute-amount').value);
+    if (!amount || amount <= 0) {
+        alert('Vui lòng nhập số tiền hợp lệ');
+        return;
+    }
+    
+    const note = document.getElementById('contribute-note').value;
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/goals/${contributeGoalId}/contribute`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount, note })
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('contributeModal')).hide();
+            loadGoals();
+            loadGoalStats();
+            showSuccessMessage('Đóng góp thành công!');
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể đóng góp'));
+        }
+    } catch (error) {
+        console.error('Error contributing to goal:', error);
+        alert('Lỗi khi đóng góp');
+    }
+}
+
+// Show Delete Modal
+function showDeleteGoalModal(id, name) {
+    deleteGoalId = id;
+    document.getElementById('deleteGoalName').textContent = name;
+    const modal = new bootstrap.Modal(document.getElementById('deleteGoalModal'));
+    modal.show();
+}
+
+// Confirm Delete
+async function confirmDeleteGoal() {
+    if (!deleteGoalId) return;
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/goals/${deleteGoalId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('deleteGoalModal')).hide();
+            loadGoals();
+            loadGoalStats();
+            showSuccessMessage('Xóa mục tiêu thành công!');
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể xóa mục tiêu'));
+        }
+    } catch (error) {
+        console.error('Error deleting goal:', error);
+        alert('Lỗi khi xóa mục tiêu');
+    } finally {
+        deleteGoalId = null;
+    }
+}
+
+// Helper Functions
+function getStatusColor(status) {
+    const colors = {
+        'IN_PROGRESS': 'warning',
+        'COMPLETED': 'success',
+        'CANCELLED': 'danger',
+        'PAUSED': 'secondary'
+    };
+    return colors[status] || 'secondary';
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'IN_PROGRESS': 'Đang thực hiện',
+        'COMPLETED': 'Đã hoàn thành',
+        'CANCELLED': 'Đã hủy',
+        'PAUSED': 'Tạm dừng'
+    };
+    return labels[status] || status;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+function showSuccessMessage(message) {
+    alert(message);
+}
+</script>

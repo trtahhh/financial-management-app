@@ -1,0 +1,460 @@
+<style>
+    .health-score-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .score-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 40px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .score-circle {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 20px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .score-number {
+        font-size: 72px;
+        font-weight: bold;
+    }
+
+    .rating-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.3);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .category-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .category-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .category-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .category-score {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .progress-bar-custom {
+        height: 10px;
+        border-radius: 10px;
+        background: #e9ecef;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+        border-radius: 10px;
+    }
+
+    .status-excellent { color: #10b981; }
+    .status-good { color: #3b82f6; }
+    .status-needs-improvement { color: #f59e0b; }
+    .status-poor { color: #ef4444; }
+
+    .recommendation-card {
+        background: #f8f9fa;
+        border-left: 4px solid;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .priority-high { border-left-color: #ef4444; }
+    .priority-medium { border-left-color: #f59e0b; }
+    .priority-low { border-left-color: #3b82f6; }
+
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+    .trend-stable { color: #6b7280; }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .summary-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .summary-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .summary-label {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 5px;
+    }
+
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+    }
+</style>
+
+<main class="container-fluid py-4">
+    <div class="health-score-container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="text-success fw-bold mb-1">
+                    <i class="bi bi-heart-pulse"></i> Điểm Sức khỏe Tài chính
+                </h2>
+                <p class="text-muted mb-0">Đánh giá tổng quan tình hình tài chính của bạn</p>
+            </div>
+            <button class="btn btn-success" onclick="refreshScore()">
+                <i class="bi bi-arrow-clockwise"></i> Làm mới
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" style="display: none;">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Lỗi!</h4>
+                <p id="errorMessage">Không thể tải điểm sức khỏe tài chính</p>
+                <hr>
+                <button class="btn btn-danger" onclick="refreshScore()">Thử lại</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div id="content" style="display: none;">
+            <!-- Overall Score Card -->
+            <div class="score-card mb-4">
+                <div class="score-circle">
+                    <div class="score-number" id="totalScore">0</div>
+                </div>
+                <div class="rating-badge" id="rating">Đang tải...</div>
+                <p class="mt-3 mb-0" id="scoreDescription">Điểm sức khỏe tài chính của bạn</p>
+                <div class="mt-3">
+                    <span id="trendIcon"></span>
+                    <span id="trendText"></span>
+                </div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Tổng quan Tài chính</h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-grid" id="summary"></div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Chi tiết Điểm số</h5>
+                </div>
+                <div class="card-body">
+                    <div id="breakdown"></div>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Gợi ý Cải thiện</h5>
+                </div>
+                <div class="card-body">
+                    <div id="recommendations"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+let healthData = null;
+
+// Load health score on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadHealthScore();
+});
+
+async function loadHealthScore() {
+    showLoading();
+    
+    try {
+        console.log('🏥 Loading health score...');
+        const response = await fetch('/api/financial-health/score', {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+            }
+        });
+
+        console.log('📊 Health score response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Health score error:', errorText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        healthData = await response.json();
+        console.log('✅ Health data received:', healthData);
+        console.log('📈 Summary:', healthData.summary);
+        
+        renderHealthScore();
+        showContent();
+    } catch (error) {
+        console.error('❌ Error loading health score:', error);
+        showError(error.message);
+    }
+}
+
+function showLoading() {
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('content').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+}
+
+function showContent() {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('error').style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('errorMessage').textContent = message;
+}
+
+function renderHealthScore() {
+    if (!healthData) return;
+
+    // Overall Score
+    document.getElementById('totalScore').textContent = healthData.totalScore || 0;
+    document.getElementById('rating').textContent = getRatingText(healthData.rating);
+    document.getElementById('rating').style.background = healthData.ratingColor || '#6b7280';
+
+    // Trend
+    renderTrend();
+
+    // Summary
+    renderSummary();
+
+    // Breakdown
+    renderBreakdown();
+
+    // Recommendations
+    renderRecommendations();
+}
+
+function getRatingText(rating) {
+    const ratingMap = {
+        'EXCELLENT': 'Xuất sắc',
+        'GOOD': 'Tốt',
+        'FAIR': 'Trung bình',
+        'POOR': 'Kém',
+        'CRITICAL': 'Nguy hiểm'
+    };
+    return ratingMap[rating] || rating;
+}
+
+function renderTrend() {
+    const trend = healthData.trend;
+    const percentage = healthData.trendPercentage || 0;
+    
+    let icon = '<i class="bi bi-dash-circle trend-stable"></i>';
+    let text = 'Không thay đổi';
+    let className = 'trend-stable';
+
+    if (trend === 'UP') {
+        icon = '<i class="bi bi-arrow-up-circle trend-up"></i>';
+        text = `Tăng ${percentage.toFixed(1)}% so với tháng trước`;
+        className = 'trend-up';
+    } else if (trend === 'DOWN') {
+        icon = '<i class="bi bi-arrow-down-circle trend-down"></i>';
+        text = `Giảm ${Math.abs(percentage).toFixed(1)}% so với tháng trước`;
+        className = 'trend-down';
+    }
+
+    document.getElementById('trendIcon').innerHTML = icon;
+    document.getElementById('trendText').innerHTML = `<span class="${className}">${text}</span>`;
+}
+
+function renderSummary() {
+    const summary = healthData.summary;
+    if (!summary) return;
+
+    const html = `
+        <div class="summary-item">
+            <div class="summary-value text-success">${formatCurrency(summary.monthlyIncome)}</div>
+            <div class="summary-label">Thu nhập tháng này</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-value text-danger">${formatCurrency(summary.monthlyExpense)}</div>
+            <div class="summary-label">Chi tiêu tháng này</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-value text-primary">${formatCurrency(summary.monthlySavings)}</div>
+            <div class="summary-label">Tiết kiệm</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-value">${summary.savingsRate?.toFixed(1)}%</div>
+            <div class="summary-label">Tỷ lệ tiết kiệm</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-value">${summary.activeBudgets}</div>
+            <div class="summary-label">Ngân sách đang theo dõi</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-value">${summary.activeGoals}</div>
+            <div class="summary-label">Mục tiêu tài chính</div>
+        </div>
+    `;
+
+    document.getElementById('summary').innerHTML = html;
+}
+
+function renderBreakdown() {
+    const breakdown = healthData.breakdown;
+    if (!breakdown) return;
+
+    const categories = [
+        breakdown.savingsRate,
+        breakdown.budgetManagement,
+        breakdown.debtCredit,
+        breakdown.incomeDiversity,
+        breakdown.transactionHabits
+    ];
+
+    const html = categories.map(cat => {
+        if (!cat) return '';
+        
+        const percentage = (cat.score / cat.maxScore) * 100;
+        const statusClass = `status-${cat.status?.toLowerCase().replace('_', '-')}`;
+
+        return `
+            <div class="category-card">
+                <div class="category-header">
+                    <span class="category-title">${cat.name}</span>
+                    <span class="category-score ${statusClass}">${cat.score}/${cat.maxScore}</span>
+                </div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill ${statusClass}" style="width: ${percentage}%; background: currentColor;"></div>
+                </div>
+                <p class="mb-2 ${statusClass}">${cat.description}</p>
+                ${cat.details && cat.details.length > 0 ? `
+                    <ul class="list-unstyled small text-muted mb-0">
+                        ${cat.details.map(d => `<li><i class="bi bi-check-circle"></i> ${d}</li>`).join('')}
+                    </ul>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('breakdown').innerHTML = html;
+}
+
+function renderRecommendations() {
+    const recommendations = healthData.recommendations || [];
+    
+    if (recommendations.length === 0) {
+        document.getElementById('recommendations').innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-check-circle" style="font-size: 48px;"></i>
+                <p class="mt-3">Tuyệt vời! Bạn đang quản lý tài chính rất tốt!</p>
+            </div>
+        `;
+        return;
+    }
+
+    const html = recommendations.map(rec => {
+        const priorityClass = `priority-${rec.priority?.toLowerCase()}`;
+        const priorityText = rec.priority === 'HIGH' ? 'Ưu tiên cao' : 
+                           rec.priority === 'MEDIUM' ? 'Ưu tiên trung bình' : 'Ưu tiên thấp';
+
+        return `
+            <div class="recommendation-card ${priorityClass}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0"><i class="bi bi-bookmark"></i> ${rec.title}</h6>
+                    <span class="badge bg-secondary">${priorityText}</span>
+                </div>
+                <p class="mb-2">${rec.description}</p>
+                <div class="small text-muted">
+                    <i class="bi bi-lightbulb-fill text-warning"></i> ${rec.actionable}
+                </div>
+                ${rec.potentialScoreGain ? `
+                    <div class="mt-2 small">
+                        <span class="badge bg-success">+${rec.potentialScoreGain} điểm</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('recommendations').innerHTML = html;
+}
+
+function formatCurrency(amount) {
+    if (!amount) return '0đ';
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(amount);
+}
+
+function refreshScore() {
+    loadHealthScore();
+}
+</script>

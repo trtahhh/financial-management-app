@@ -1,0 +1,11 @@
+{
+  "model_type": "Linear SVM",
+  "feature_extractor": "TF-IDF",
+  "accuracy": 0.9962,
+  "training_samples": 2645,
+  "vocabulary_size": 500,
+  "categories": 14,
+  "trained_date": "Mon Nov 24 06:11:41 2025",
+  "language": "Vietnamese",
+  "version": "2.0"
+}

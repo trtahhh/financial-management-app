@@ -1,0 +1,659 @@
+<!-- Modern Wallets Page -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Quản Lý Ví</h2>
+        <p class="text-secondary mb-0">Theo dõi và quản lý các ví tiền của bạn</p>
+    </div>
+    <button class="btn btn-primary" onclick="showAddWalletModal()">
+        <i class="bi bi-plus-lg"></i>
+        Thêm Ví
+    </button>
+</div>
+
+<!-- Total Balance Card -->
+<div class="card card-gradient mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="text-white mb-3">
+                    <h6 class="text-white opacity-75 mb-2">Tổng Số Dư</h6>
+                    <h1 class="display-4 fw-bold mb-0" id="totalBalance">0 ₫</h1>
+                </div>
+                <div class="row g-3">
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 bg-white bg-opacity-10 rounded">
+                            <div class="text-white opacity-75 small">Tổng Ví</div>
+                            <h4 class="text-white mb-0" id="walletCount">0</h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 bg-white bg-opacity-10 rounded">
+                            <div class="text-white opacity-75 small">Ví Có Tiền</div>
+                            <h4 class="text-white mb-0" id="activeWalletCount">0</h4>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 bg-white bg-opacity-10 rounded">
+                            <div class="text-white opacity-75 small">Ví Mặc Định</div>
+                            <h4 class="text-white mb-0" id="defaultWalletName">-</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="position-relative d-inline-block">
+                    <i class="bi bi-wallet2" style="font-size: 8rem; color: rgba(255,255,255,0.2);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallets Grid -->
+<div class="row g-4 mb-4" id="walletsGrid">
+    <!-- Wallets will be loaded here -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-wallet2" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p class="mt-3 mb-3 text-secondary">Bạn chưa có ví nào</p>
+                <button class="btn btn-primary" onclick="showAddWalletModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    Tạo ví đầu tiên
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions by Wallet -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-clock-history"></i>
+                Giao Dịch Gần Đây Theo Ví
+            </h5>
+            <select class="form-control w-auto" id="walletFilter" onchange="loadWalletTransactions()">
+                <option value="">Tất cả ví</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-secondary">
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Mô Tả</th>
+                        <th>Danh Mục</th>
+                        <th class="text-end">Số Tiền</th>
+                    </tr>
+                </thead>
+                <tbody id="walletTransactions">
+                    <tr>
+                        <td colspan="4" class="text-center text-secondary py-4">
+                            Chọn ví để xem giao dịch
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Wallet Modal -->
+<div class="modal fade" id="walletModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-wallet2"></i>
+                    <span id="walletModalTitle">Thêm Ví</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="walletForm">
+                    <input type="hidden" id="wallet-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Tên Ví <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="wallet-name" placeholder="VD: Ví tiền mặt, Ngân hàng..." required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Số Dư Ban Đầu <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="wallet-balance" placeholder="0" required>
+                            <span class="input-group-text">₫</span>
+                        </div>
+                        <small class="text-secondary">Nhập số dư hiện tại của ví này</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Loại Ví</label>
+                        <select class="form-control" id="wallet-type">
+                            <option value="CASH">Tiền mặt</option>
+                            <option value="BANK">Ngân hàng</option>
+                            <option value="CREDIT_CARD">Thẻ tín dụng</option>
+                            <option value="E_WALLET">Ví điện tử</option>
+                            <option value="INVESTMENT">Đầu tư</option>
+                            <option value="OTHER">Khác</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Màu Sắc</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="walletColor" id="color-primary" value="primary" checked>
+                                <label class="form-check-label" for="color-primary">
+                                    <span class="badge badge-primary">Xanh</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="walletColor" id="color-success" value="success">
+                                <label class="form-check-label" for="color-success">
+                                    <span class="badge badge-success">Xanh lá</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="walletColor" id="color-warning" value="warning">
+                                <label class="form-check-label" for="color-warning">
+                                    <span class="badge badge-warning">Vàng</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="walletColor" id="color-danger" value="danger">
+                                <label class="form-check-label" for="color-danger">
+                                    <span class="badge badge-danger">Đỏ</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="walletColor" id="color-info" value="info">
+                                <label class="form-check-label" for="color-info">
+                                    <span class="badge badge-info">Xanh dương</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Mô Tả</label>
+                        <textarea class="form-control" id="wallet-description" rows="2" placeholder="Mô tả về ví này..."></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="wallet-default">
+                        <label class="form-check-label" for="wallet-default">
+                            Đặt làm ví mặc định
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveWallet()">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteWalletModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Cảnh báo:</strong> Xóa ví sẽ xóa tất cả giao dịch liên quan!
+                </div>
+                <p class="mb-0">Bạn có chắc chắn muốn xóa ví "<strong id="deleteWalletName"></strong>" không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteWallet()">
+                    <i class="bi bi-trash"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/wallets.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadWallets();
+    loadWalletStats();
+    loadWalletTransactions(); // Load all transactions on page load
+});
+
+// Global variables
+let currentWalletId = null;
+let deleteWalletId = null;
+
+// Load Wallets
+async function loadWallets() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/wallets', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const wallets = await response.json();
+            renderWallets(wallets);
+            updateWalletFilter(wallets);
+        }
+    } catch (error) {
+        console.error('Error loading wallets:', error);
+    }
+}
+
+// Render Wallets Grid
+function renderWallets(wallets) {
+    const grid = document.getElementById('walletsGrid');
+    
+    if (wallets.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-wallet2" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3 mb-3 text-secondary">Bạn chưa có ví nào</p>
+                        <button class="btn btn-primary" onclick="showAddWalletModal()">
+                            <i class="bi bi-plus-lg"></i>
+                            Tạo ví đầu tiên
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = wallets.map(wallet => `
+        <div class="col-md-6 col-lg-4">
+            <div class="card card-bordered h-100 wallet-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="wallet-icon bg-${wallet.color || 'primary'} bg-opacity-10 text-${wallet.color || 'primary'} rounded p-2">
+                                <i class="bi bi-wallet2 fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">${wallet.name}</h5>
+                                ${wallet.isDefault ? '<span class="badge badge-primary badge-sm">Mặc định</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-ghost" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="showEditWalletModal(${wallet.id})">
+                                    <i class="bi bi-pencil"></i> Chỉnh sửa
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="setDefaultWallet(${wallet.id})">
+                                    <i class="bi bi-star"></i> Đặt mặc định
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="showDeleteWalletModal(${wallet.id}, '${wallet.name}')">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="text-secondary small">Số dư hiện tại</div>
+                        <h3 class="mb-0 ${wallet.balance >= 0 ? 'text-success' : 'text-danger'}">
+                            ${formatCurrency(wallet.balance)}
+                        </h3>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between text-sm">
+                        <span class="text-secondary">Loại: ${getWalletTypeLabel(wallet.type)}</span>
+                        <span class="text-secondary">${wallet.transactionCount || 0} giao dịch</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Load Wallet Stats
+async function loadWalletStats() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/wallets', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const wallets = await response.json();
+            
+            const totalBalance = wallets.reduce((sum, w) => sum + (w.balance || 0), 0);
+            const activeWallets = wallets.filter(w => w.balance > 0).length;
+            const defaultWallet = wallets.find(w => w.isDefault);
+            
+            document.getElementById('totalBalance').textContent = formatCurrency(totalBalance);
+            document.getElementById('walletCount').textContent = wallets.length;
+            document.getElementById('activeWalletCount').textContent = activeWallets;
+            document.getElementById('defaultWalletName').textContent = defaultWallet ? defaultWallet.name : '-';
+        }
+    } catch (error) {
+        console.error('Error loading wallet stats:', error);
+    }
+}
+
+// Update Wallet Filter
+function updateWalletFilter(wallets) {
+    const select = document.getElementById('walletFilter');
+    select.innerHTML = '<option value="">Tất cả ví</option>' + 
+        wallets.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+}
+
+// Show Add Modal
+function showAddWalletModal() {
+    document.getElementById('walletModalTitle').textContent = 'Thêm Ví';
+    document.getElementById('walletForm').reset();
+    document.getElementById('wallet-id').value = '';
+    currentWalletId = null;
+    
+    const modal = new bootstrap.Modal(document.getElementById('walletModal'));
+    modal.show();
+}
+
+// Show Edit Modal
+async function showEditWalletModal(id) {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/wallets/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const wallet = await response.json();
+            
+            document.getElementById('walletModalTitle').textContent = 'Chỉnh Sửa Ví';
+            document.getElementById('wallet-id').value = wallet.id;
+            document.getElementById('wallet-name').value = wallet.name;
+            document.getElementById('wallet-balance').value = wallet.balance;
+            document.getElementById('wallet-type').value = wallet.type || 'CASH';
+            document.getElementById('wallet-description').value = wallet.description || '';
+            document.getElementById('wallet-default').checked = wallet.isDefault || false;
+            
+            const colorRadio = document.querySelector(`input[name="walletColor"][value="${wallet.color || 'primary'}"]`);
+            if (colorRadio) colorRadio.checked = true;
+            
+            currentWalletId = id;
+            
+            const modal = new bootstrap.Modal(document.getElementById('walletModal'));
+            modal.show();
+        }
+    } catch (error) {
+        console.error('Error loading wallet:', error);
+    }
+}
+
+// Save Wallet
+async function saveWallet() {
+    const form = document.getElementById('walletForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const data = {
+        name: document.getElementById('wallet-name').value,
+        balance: parseFloat(document.getElementById('wallet-balance').value),
+        type: document.getElementById('wallet-type').value,
+        description: document.getElementById('wallet-description').value,
+        isDefault: document.getElementById('wallet-default').checked,
+        color: document.querySelector('input[name="walletColor"]:checked').value
+    };
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const url = currentWalletId ? `/api/wallets/${currentWalletId}` : '/api/wallets';
+        const method = currentWalletId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('walletModal')).hide();
+            loadWallets();
+            loadWalletStats();
+            showSuccessMessage(currentWalletId ? 'Cập nhật ví thành công!' : 'Thêm ví thành công!');
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể lưu ví'));
+        }
+    } catch (error) {
+        console.error('Error saving wallet:', error);
+        alert('Lỗi khi lưu ví');
+    }
+}
+
+// Set Default Wallet
+async function setDefaultWallet(id) {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/wallets/${id}/set-default`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            loadWallets();
+            loadWalletStats();
+            showSuccessMessage('Đã đặt ví mặc định!');
+        }
+    } catch (error) {
+        console.error('Error setting default wallet:', error);
+    }
+}
+
+// Show Delete Modal
+function showDeleteWalletModal(id, name) {
+    deleteWalletId = id;
+    document.getElementById('deleteWalletName').textContent = name;
+    const modal = new bootstrap.Modal(document.getElementById('deleteWalletModal'));
+    modal.show();
+}
+
+// Confirm Delete
+async function confirmDeleteWallet() {
+    if (!deleteWalletId) return;
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/wallets/${deleteWalletId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('deleteWalletModal')).hide();
+            loadWallets();
+            loadWalletStats();
+            showSuccessMessage('Xóa ví thành công!');
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể xóa ví'));
+        }
+    } catch (error) {
+        console.error('Error deleting wallet:', error);
+        alert('Lỗi khi xóa ví');
+    } finally {
+        deleteWalletId = null;
+    }
+}
+
+// Load Wallet Transactions
+async function loadWalletTransactions() {
+    const walletId = document.getElementById('walletFilter').value;
+    
+    console.log('🔍 Loading transactions for walletId:', walletId);
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        // Build URL - if walletId is empty, load all transactions
+        const url = walletId 
+            ? `/api/transactions?walletId=${walletId}&limit=10`
+            : `/api/transactions?limit=10`;
+        
+        console.log('📡 Fetching from URL:', url);
+            
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const transactions = await response.json();
+            console.log('📦 Raw response:', transactions);
+            
+            // Handle Spring Page response format
+            const txArray = Array.isArray(transactions) ? transactions : (transactions.content || transactions.data || []);
+            console.log('✅ Extracted transactions array:', txArray);
+            console.log('📊 Number of transactions:', txArray.length);
+            
+            // Filter by walletId on frontend if backend doesn't filter
+            const filtered = walletId 
+                ? txArray.filter(tx => tx.walletId == walletId || tx.wallet?.id == walletId)
+                : txArray;
+            
+            console.log('🔎 Filtered transactions:', filtered.length, 'for walletId:', walletId);
+            renderWalletTransactions(filtered);
+        }
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+        document.getElementById('walletTransactions').innerHTML = `
+            <tr><td colspan="4" class="text-center text-danger py-4">Lỗi tải giao dịch</td></tr>
+        `;
+    }
+}
+
+// Render Wallet Transactions
+function renderWalletTransactions(transactions) {
+    const tbody = document.getElementById('walletTransactions');
+    
+    console.log('📊 Rendering transactions:', transactions);
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-secondary py-4">Chưa có giao dịch nào</td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = transactions.map(tx => {
+        console.log('Transaction object:', tx);
+        
+        // Get description - try multiple field names
+        const description = tx.description || tx.note || tx.details || '-';
+        
+        // Get category name - try multiple field names
+        const categoryName = tx.categoryName || tx.category?.name || tx.categoryId || 'Khác';
+        
+        // Format date
+        const date = tx.date ? formatDate(tx.date) : '-';
+        
+        // Get type
+        const type = (tx.type || '').toLowerCase();
+        const isIncome = type === 'income' || type === 'thu nhập';
+        
+        return `
+            <tr>
+                <td>${date}</td>
+                <td>${description}</td>
+                <td><span class="badge badge-${isIncome ? 'success' : 'danger'}">${categoryName}</span></td>
+                <td class="text-end ${isIncome ? 'text-success' : 'text-danger'}">
+                    ${isIncome ? '+' : '-'}${formatCurrency(Math.abs(tx.amount || 0))}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Helper Functions
+function getWalletTypeLabel(type) {
+    const types = {
+        'CASH': 'Tiền mặt',
+        'BANK': 'Ngân hàng',
+        'CREDIT_CARD': 'Thẻ tín dụng',
+        'E_WALLET': 'Ví điện tử',
+        'INVESTMENT': 'Đầu tư',
+        'OTHER': 'Khác'
+    };
+    return types[type] || type;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('vi-VN');
+}
+
+function showSuccessMessage(message) {
+    // You can implement a toast notification here
+    alert(message);
+}
+</script>
+
+<style>
+.wallet-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wallet-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.wallet-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>

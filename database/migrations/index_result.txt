@@ -1,0 +1,63 @@
+Changed database context to 'FinancialManagement'.
+Starting index creation process...
+Creating Transactions table indexes...
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Creating Budgets table indexes...
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Creating Goals table indexes...
+Msg 1934, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+CREATE INDEX failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'. Verify that SET options are correct for use with indexed views and/or indexes on computed columns and/or filtered indexes and/or query notifications and/or XML data type methods and/or spatial index operations.
+Msg 1911, Level 16, State 1, Server MSI\SQLEXPRESS, Line 5
+Column name 'deadline' does not exist in the target table or view.
+Creating Wallets table indexes...
+Msg 207, Level 16, State 1, Server MSI\SQLEXPRESS, Line 7
+Invalid column name 'is_deleted'.
+Msg 207, Level 16, State 1, Server MSI\SQLEXPRESS, Line 7
+Invalid column name 'is_deleted'.
+Creating Categories table indexes...
+Msg 207, Level 16, State 1, Server MSI\SQLEXPRESS, Line 7
+Invalid column name 'is_deleted'.
+Msg 207, Level 16, State 1, Server MSI\SQLEXPRESS, Line 7
+Invalid column name 'is_deleted'.
+Creating Notifications table indexes...
+Created idx_notifications_user_unread
+Created idx_notifications_user_type
+Creating Gamification table indexes...
+Msg 1088, Level 16, State 12, Server MSI\SQLEXPRESS, Line 5
+Cannot find the object "UserGamification" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server MSI\SQLEXPRESS, Line 5
+Cannot find the object "UserGamification" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server MSI\SQLEXPRESS, Line 5
+Cannot find the object "UserAchievements" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server MSI\SQLEXPRESS, Line 5
+Cannot find the object "Challenges" because it does not exist or you do not have permissions.
+Msg 1088, Level 16, State 12, Server MSI\SQLEXPRESS, Line 5
+Cannot find the object "UserChallenges" because it does not exist or you do not have permissions.
+Creating Users table indexes...
+Created idx_users_email
+Created idx_users_username
+Updating statistics...
+Msg 2706, Level 16, State 6, Server MSI\SQLEXPRESS, Line 8
+Table 'UserGamification' does not exist.
+Index creation completed successfully!
+Total indexes created: Check sys.indexes for complete list
+TableName                                                                                                                        IndexName                                                                                                                        IndexType                                                    IsUnique
+-------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ --------
+Notifications                                                                                                                    idx_notifications_user_type                                                                                                      NONCLUSTERED                                                        0
+Notifications                                                                                                                    idx_notifications_user_unread                                                                                                    NONCLUSTERED                                                        0
+Users                                                                                                                            idx_users_email                                                                                                                  NONCLUSTERED                                                        1
+Users                                                                                                                            idx_users_username                                                                                                               NONCLUSTERED                                                        1
+
+(4 rows affected)

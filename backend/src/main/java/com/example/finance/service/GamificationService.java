@@ -1,0 +1,353 @@
+package com.example.finance.service;
+
+import com.example.finance.entity.*;
+import com.example.finance.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class GamificationService {
+
+    @Autowired
+    private UserGamificationRepository userGamificationRepository;
+
+    @Autowired
+    private UserChallengeRepository userChallengeRepository;
+
+    @Autowired
+    private ChallengeRepository challengeRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private BudgetRepository budgetRepository;
+
+    @Autowired
+    private AchievementService achievementService;
+
+    /**
+     * Get or create user gamification profile
+     */
+    @Transactional
+    public UserGamification getUserGamification(User user) {
+        return userGamificationRepository.findByUserId(user.getId())
+                .orElseGet(() -> createUserGamification(user));
+    }
+
+    /**
+     * Create user gamification profile
+     */
+    private UserGamification createUserGamification(User user) {
+        UserGamification gamification = new UserGamification();
+        gamification.setUser(user);
+        gamification.setTotalPoints(0);
+        gamification.setLevel(1);
+        gamification.setCurrentStreak(0);
+        gamification.setLongestStreak(0);
+        gamification.setLastActivityDate(LocalDate.now());
+        gamification.setTransactionCount(0);
+        gamification.setBudgetCount(0);
+        gamification.setGoalCount(0);
+        gamification.setTotalSavings(0.0);
+        return userGamificationRepository.save(gamification);
+    }
+
+    /**
+     * Update user activity and streak
+     */
+    @Transactional
+    public UserGamification updateUserActivity(User user, String activityType) {
+        UserGamification gamification = getUserGamification(user);
+        
+        // Update streak
+        gamification.updateStreak(LocalDate.now());
+        
+        // Update activity counters
+        switch (activityType) {
+            case "transaction":
+                gamification.setTransactionCount(gamification.getTransactionCount() + 1);
+                break;
+            case "budget":
+                gamification.setBudgetCount(gamification.getBudgetCount() + 1);
+                break;
+            case "goal":
+                gamification.setGoalCount(gamification.getGoalCount() + 1);
+                break;
+        }
+        
+        gamification.setLastActivityDate(LocalDate.now());
+        userGamificationRepository.save(gamification);
+
+        // Check for new achievements
+        achievementService.checkAndUnlockAchievements(user);
+
+        // Update challenge progress
+        updateChallengeProgress(user, activityType);
+
+        return gamification;
+    }
+
+    /**
+     * Award points to user
+     */
+    @Transactional
+    public UserGamification awardPoints(User user, int points, String reason) {
+        UserGamification gamification = getUserGamification(user);
+        gamification.setTotalPoints(gamification.getTotalPoints() + points);
+        gamification.calculateLevel();
+        return userGamificationRepository.save(gamification);
+    }
+
+    /**
+     * Update savings amount
+     */
+    @Transactional
+    public UserGamification updateSavings(User user, double amount) {
+        UserGamification gamification = getUserGamification(user);
+        gamification.setTotalSavings(gamification.getTotalSavings() + amount);
+        userGamificationRepository.save(gamification);
+        
+        // Check for savings-related achievements
+        achievementService.checkAndUnlockAchievements(user);
+        
+        return gamification;
+    }
+
+    /**
+     * Get leaderboard
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getLeaderboard(int limit) {
+        List<UserGamification> topUsers = userGamificationRepository.findTopByOrderByTotalPointsDesc();
+        
+        return topUsers.stream()
+                .limit(limit)
+                .map(ug -> {
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("userId", ug.getUser().getId());
+                    entry.put("username", ug.getUser().getUsername());
+                    entry.put("totalPoints", ug.getTotalPoints());
+                    entry.put("level", ug.getLevel());
+                    entry.put("currentStreak", ug.getCurrentStreak());
+                    return entry;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get user rank
+     */
+    public int getUserRank(Long userId) {
+        List<UserGamification> allUsers = userGamificationRepository.findTopByOrderByTotalPointsDesc();
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (allUsers.get(i).getUser().getId().equals(userId)) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Get active challenges
+     */
+    public List<Challenge> getActiveChallenges() {
+        return challengeRepository.findActiveChallenges(LocalDateTime.now());
+    }
+
+    /**
+     * Join a challenge
+     */
+    @Transactional
+    public UserChallenge joinChallenge(User user, Long challengeId) {
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("Challenge not found"));
+
+        // Check if already joined
+        Optional<UserChallenge> existing = userChallengeRepository.findByUserAndChallenge(user, challenge);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        UserChallenge userChallenge = new UserChallenge();
+        userChallenge.setUser(user);
+        userChallenge.setChallenge(challenge);
+        userChallenge.setCurrentProgress(0);
+        userChallenge.setIsCompleted(false);
+        userChallenge.setJoinedAt(LocalDateTime.now());
+        
+        return userChallengeRepository.save(userChallenge);
+    }
+
+    /**
+     * Get user's active challenges
+     */
+    public List<Map<String, Object>> getUserActiveChallenges(Long userId) {
+        List<UserChallenge> userChallenges = userChallengeRepository.findActiveUserChallenges(userId);
+        
+        return userChallenges.stream().map(uc -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("userChallenge", uc);
+            item.put("challenge", uc.getChallenge());
+            
+            double progress = 0;
+            if (uc.getChallenge().getTargetValue() > 0) {
+                progress = (uc.getCurrentProgress() * 100.0) / uc.getChallenge().getTargetValue();
+            }
+            item.put("progressPercentage", Math.min(100, progress));
+            
+            return item;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Update challenge progress
+     */
+    @Transactional
+    public void updateChallengeProgress(User user, String activityType) {
+        List<UserChallenge> activeChallenges = userChallengeRepository.findActiveUserChallenges(user.getId());
+        
+        for (UserChallenge userChallenge : activeChallenges) {
+            Challenge challenge = userChallenge.getChallenge();
+            
+            // Calculate progress based on challenge type
+            int newProgress = calculateChallengeProgress(user, challenge);
+            userChallenge.setCurrentProgress(newProgress);
+            
+            // Check if completed
+            if (newProgress >= challenge.getTargetValue() && !userChallenge.getIsCompleted()) {
+                completeChallenge(userChallenge);
+            }
+            
+            userChallengeRepository.save(userChallenge);
+        }
+    }
+
+    /**
+     * Calculate challenge progress
+     */
+    private int calculateChallengeProgress(User user, Challenge challenge) {
+        String category = challenge.getCategory();
+        LocalDateTime startDate = challenge.getStartDate();
+        LocalDateTime endDate = challenge.getEndDate();
+        
+        LocalDate startLocalDate = startDate.toLocalDate();
+        LocalDate endLocalDate = endDate.toLocalDate();
+        
+        switch (category) {
+            case "transactions":
+                long transactionCount = transactionRepository.countByUserIdAndDateBetween(
+                    user.getId(), startLocalDate, endLocalDate);
+                return (int) transactionCount;
+                
+            case "savings":
+                List<Transaction> transactions = transactionRepository.findByUserIdAndDateBetweenOrderByCreatedAtDesc(
+                    user.getId(), startLocalDate, endLocalDate);
+                double totalSavings = transactions.stream()
+                    .filter(t -> "income".equals(t.getType()))
+                    .mapToDouble(t -> t.getAmount().doubleValue())
+                    .sum();
+                return (int) totalSavings;
+                
+            case "budget_adherence":
+                // Calculate budget adherence percentage
+                List<Budget> budgets = budgetRepository.findByUserId(user.getId());
+                if (budgets.isEmpty()) return 0;
+                
+                double adherenceSum = 0;
+                for (Budget budget : budgets) {
+                    Double spent = transactionRepository.sumByUserIdAndCategoryAndDateBetween(
+                        user.getId(), budget.getCategory().getName(), startLocalDate, endLocalDate);
+                    if (spent == null) spent = 0.0;
+                    double adherence = Math.max(0, 100 - ((spent / budget.getAmount().doubleValue()) * 100));
+                    adherenceSum += adherence;
+                }
+                return (int) (adherenceSum / budgets.size());
+                
+            case "streak":
+                UserGamification gamification = userGamificationRepository.findByUserId(user.getId()).orElse(null);
+                return gamification != null ? gamification.getCurrentStreak() : 0;
+                
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * Complete a challenge
+     */
+    @Transactional
+    private void completeChallenge(UserChallenge userChallenge) {
+        userChallenge.setIsCompleted(true);
+        userChallenge.setCompletedAt(LocalDateTime.now());
+        userChallengeRepository.save(userChallenge);
+        
+        // Award reward points
+        Challenge challenge = userChallenge.getChallenge();
+        awardPoints(userChallenge.getUser(), challenge.getRewardPoints(), 
+                   "Completed challenge: " + challenge.getName());
+    }
+
+    /**
+     * Get user statistics
+     */
+    public Map<String, Object> getUserStatistics(User user) {
+        UserGamification gamification = getUserGamification(user);
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalPoints", gamification.getTotalPoints());
+        stats.put("level", gamification.getLevel());
+        stats.put("currentStreak", gamification.getCurrentStreak());
+        stats.put("longestStreak", gamification.getLongestStreak());
+        stats.put("totalTransactions", gamification.getTransactionCount());
+        stats.put("totalBudgets", gamification.getBudgetCount());
+        stats.put("totalGoals", gamification.getGoalCount());
+        stats.put("totalSavings", gamification.getTotalSavings());
+        
+        // Calculate points to next level
+        int currentLevelPoints = (gamification.getLevel() - 1) * 100;
+        int nextLevelPoints = gamification.getLevel() * 100;
+        int pointsToNextLevel = nextLevelPoints - gamification.getTotalPoints();
+        stats.put("pointsToNextLevel", pointsToNextLevel);
+        stats.put("levelProgress", ((gamification.getTotalPoints() - currentLevelPoints) * 100) / 100);
+        
+        // Achievement count
+        long achievementCount = achievementService.getUserAchievements(user.getId()).size();
+        stats.put("achievementsUnlocked", achievementCount);
+        
+        // Challenge count
+        long completedChallenges = userChallengeRepository.countByUserIdAndIsCompletedTrue(user.getId());
+        stats.put("challengesCompleted", completedChallenges);
+        
+        // User rank
+        int rank = getUserRank(user.getId());
+        stats.put("rank", rank);
+        
+        return stats;
+    }
+
+    /**
+     * Get streak leaderboard
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getStreakLeaderboard(int limit) {
+        List<UserGamification> topStreaks = userGamificationRepository.findTopByOrderByCurrentStreakDesc();
+        
+        return topStreaks.stream()
+                .limit(limit)
+                .map(ug -> {
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("userId", ug.getUser().getId());
+                    entry.put("username", ug.getUser().getUsername());
+                    entry.put("currentStreak", ug.getCurrentStreak());
+                    entry.put("longestStreak", ug.getLongestStreak());
+                    return entry;
+                })
+                .collect(Collectors.toList());
+    }
+}

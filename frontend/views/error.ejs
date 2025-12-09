@@ -1,0 +1,8 @@
+<main class="container py-5 text-center">
+  <h1 class="display-5 text-danger mb-3">Lỗi</h1>
+  <div class="alert alert-danger">
+    <b><%= error.message || error %></b>
+  </div>
+  <pre class="text-muted"><%= error.stack || '' %></pre>
+  <a href="/" class="btn btn-success mt-3">Về trang chủ</a>
+</main>

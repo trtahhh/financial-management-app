@@ -1,0 +1,669 @@
+<!-- Modern Recurring Transactions Page -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Giao Dịch Định Kỳ</h2>
+        <p class="text-secondary mb-0">Quản lý các khoản thu chi tự động lặp lại</p>
+    </div>
+    <button class="btn btn-primary" onclick="showRecurringModal()">
+        <i class="bi bi-plus-lg"></i>
+        Thêm Giao Dịch Định Kỳ
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon bg-primary">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div>
+                <div class="stats-value" id="totalRecurring">0</div>
+                <div class="stats-label">Tổng Số</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon bg-success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div>
+                <div class="stats-value" id="activeRecurring">0</div>
+                <div class="stats-label">Đang Hoạt Động</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon bg-warning">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div>
+                <div class="stats-value" id="upcomingCount">0</div>
+                <div class="stats-label">Sắp Tới</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon bg-info">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+                <div class="stats-value" id="monthlyTotal">0 ₫</div>
+                <div class="stats-label">Tổng/Tháng</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recurring List -->
+    <div class="col-lg-8">
+        <!-- Filter Tabs -->
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" data-filter="all" href="#" onclick="filterRecurring('all'); return false;">
+                    <i class="bi bi-grid"></i>
+                    Tất Cả
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-filter="active" href="#" onclick="filterRecurring('active'); return false;">
+                    <i class="bi bi-check-circle"></i>
+                    Hoạt Động
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-filter="paused" href="#" onclick="filterRecurring('paused'); return false;">
+                    <i class="bi bi-pause-circle"></i>
+                    Tạm Dừng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-filter="income" href="#" onclick="filterRecurring('income'); return false;">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    Thu Nhập
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-filter="expense" href="#" onclick="filterRecurring('expense'); return false;">
+                    <i class="bi bi-arrow-up-circle"></i>
+                    Chi Tiêu
+                </a>
+            </li>
+        </ul>
+
+        <!-- Recurring Items -->
+        <div id="recurringContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-2 text-secondary">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Upcoming Payments -->
+        <div class="card card-bordered mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-calendar-event"></i>
+                    Thanh Toán Sắp Tới
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="upcomingPayments">
+                    <div class="text-center text-secondary py-3">
+                        <small>Đang tải...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Summary -->
+        <div class="card card-gradient text-white">
+            <div class="card-body">
+                <h6 class="text-white mb-3">
+                    <i class="bi bi-calendar-month"></i>
+                    Tháng Này
+                </h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="opacity-75">Thu nhập định kỳ</small>
+                        <strong id="monthlyIncome">0 ₫</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <small class="opacity-75">Chi tiêu định kỳ</small>
+                        <strong id="monthlyExpense">0 ₫</strong>
+                    </div>
+                </div>
+                <hr class="border-white opacity-25">
+                <div class="d-flex justify-content-between">
+                    <strong>Chênh lệch</strong>
+                    <strong id="monthlyDiff">0 ₫</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Recurring Modal -->
+<div class="modal fade" id="recurringModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span id="modalTitle">Thêm Giao Dịch Định Kỳ</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="recurringForm">
+                    <input type="hidden" id="recurringId">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Loại Giao Dịch *</label>
+                            <select class="form-control" id="transactionType" required>
+                                <option value="">Chọn loại</option>
+                                <option value="income">Thu Nhập</option>
+                                <option value="expense">Chi Tiêu</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Danh Mục *</label>
+                            <select class="form-control" id="categoryId" required>
+                                <option value="">Chọn danh mục</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Số Tiền *</label>
+                            <input type="number" class="form-control" id="amount" placeholder="0" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Ví *</label>
+                            <select class="form-control" id="walletId" required>
+                                <option value="">Chọn ví</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Mô Tả *</label>
+                            <input type="text" class="form-control" id="description" placeholder="Ví dụ: Lương tháng, Hóa đơn điện" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Tần Suất *</label>
+                            <select class="form-control" id="frequency" required>
+                                <option value="DAILY">Hàng Ngày</option>
+                                <option value="WEEKLY">Hàng Tuần</option>
+                                <option value="MONTHLY" selected>Hàng Tháng</option>
+                                <option value="QUARTERLY">Hàng Quý</option>
+                                <option value="YEARLY">Hàng Năm</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Ngày Bắt Đầu *</label>
+                            <input type="date" class="form-control" id="startDate" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Ngày Kết Thúc</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoExecute" checked>
+                                <label class="form-check-label" for="autoExecute">
+                                    Tự động tạo giao dịch
+                                </label>
+                            </div>
+                            <small class="text-secondary">Giao dịch sẽ được tạo tự động vào ngày đến hạn</small>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Ghi Chú</label>
+                            <textarea class="form-control" id="note" rows="2" placeholder="Ghi chú thêm"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="saveRecurring()">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa giao dịch định kỳ này?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <small>Các giao dịch đã tạo sẽ không bị xóa.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="bi bi-trash"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let recurringTransactions = [];
+let categories = [];
+let wallets = [];
+let currentFilter = 'all';
+let recurringToDelete = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadCategories();
+    loadWallets();
+    loadRecurring();
+    
+    // Set default start date to today
+    document.getElementById('startDate').valueAsDate = new Date();
+});
+
+// Load Categories
+async function loadCategories() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/categories', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            categories = await response.json();
+            const select = document.getElementById('categoryId');
+            select.innerHTML = '<option value="">Chọn danh mục</option>' + 
+                categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+// Load Wallets
+async function loadWallets() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/wallets', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            wallets = await response.json();
+            const select = document.getElementById('walletId');
+            select.innerHTML = '<option value="">Chọn ví</option>' + 
+                wallets.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading wallets:', error);
+    }
+}
+
+// Load Recurring Transactions
+async function loadRecurring() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/recurring-transactions', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            recurringTransactions = await response.json();
+            updateStats();
+            renderRecurring();
+            renderUpcoming();
+        } else {
+            throw new Error('Failed to load recurring transactions');
+        }
+    } catch (error) {
+        console.error('Error loading recurring:', error);
+        document.getElementById('recurringContainer').innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                <p class="mt-3 text-secondary">Không thể tải giao dịch định kỳ</p>
+            </div>
+        `;
+    }
+}
+
+// Update Stats
+function updateStats() {
+    const total = recurringTransactions.length;
+    const active = recurringTransactions.filter(r => r.status === 'active').length;
+    
+    // Calculate monthly total
+    let monthlyIncome = 0;
+    let monthlyExpense = 0;
+    
+    recurringTransactions.filter(r => r.status === 'active').forEach(r => {
+        const amount = r.amount || 0;
+        if (r.type === 'income') {
+            monthlyIncome += amount;
+        } else {
+            monthlyExpense += amount;
+        }
+    });
+    
+    document.getElementById('totalRecurring').textContent = total;
+    document.getElementById('activeRecurring').textContent = active;
+    document.getElementById('upcomingCount').textContent = active;
+    document.getElementById('monthlyTotal').textContent = formatCurrency(monthlyIncome + monthlyExpense);
+    
+    document.getElementById('monthlyIncome').textContent = formatCurrency(monthlyIncome);
+    document.getElementById('monthlyExpense').textContent = formatCurrency(monthlyExpense);
+    document.getElementById('monthlyDiff').textContent = formatCurrency(monthlyIncome - monthlyExpense);
+}
+
+// Render Recurring Transactions
+function renderRecurring() {
+    const container = document.getElementById('recurringContainer');
+    
+    let filtered = recurringTransactions;
+    if (currentFilter === 'active') {
+        filtered = recurringTransactions.filter(r => r.status === 'active');
+    } else if (currentFilter === 'paused') {
+        filtered = recurringTransactions.filter(r => r.status === 'paused');
+    } else if (currentFilter === 'income') {
+        filtered = recurringTransactions.filter(r => r.type === 'income');
+    } else if (currentFilter === 'expense') {
+        filtered = recurringTransactions.filter(r => r.type === 'expense');
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--neutral-300);"></i>
+                <p class="mt-3 text-secondary">Chưa có giao dịch định kỳ nào</p>
+                <button class="btn btn-primary" onclick="showRecurringModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    Thêm Giao Dịch Định Kỳ
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = filtered.map(recurring => {
+        const category = categories.find(c => c.id === recurring.categoryId);
+        const wallet = wallets.find(w => w.id === recurring.walletId);
+        const frequencyMap = {
+            'DAILY': 'Hàng ngày',
+            'WEEKLY': 'Hàng tuần',
+            'MONTHLY': 'Hàng tháng',
+            'QUARTERLY': 'Hàng quý',
+            'YEARLY': 'Hàng năm'
+        };
+        
+        return `
+            <div class="card card-bordered card-hover mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <h6 class="mb-0 me-2">${recurring.description}</h6>
+                                <span class="badge ${recurring.type === 'income' ? 'badge-success' : 'badge-danger'} badge-sm">
+                                    <i class="bi ${recurring.type === 'income' ? 'bi-arrow-down' : 'bi-arrow-up'}"></i>
+                                    ${recurring.type === 'income' ? 'Thu' : 'Chi'}
+                                </span>
+                                <span class="badge badge-secondary badge-sm ms-2">
+                                    ${frequencyMap[recurring.frequency]}
+                                </span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <span class="fw-bold ${recurring.type === 'income' ? 'text-success' : 'text-danger'}">
+                                    ${formatCurrency(recurring.amount)}
+                                </span>
+                            </div>
+                            
+                            <div class="text-secondary small">
+                                <i class="bi bi-tag"></i> ${category?.name || 'N/A'}
+                                <span class="mx-2">•</span>
+                                <i class="bi bi-wallet2"></i> ${wallet?.name || 'N/A'}
+                                <span class="mx-2">•</span>
+                                <i class="bi bi-calendar"></i> ${formatDate(recurring.nextDate || recurring.startDate)}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm ${recurring.status === 'active' ? 'btn-warning' : 'btn-success'}" 
+                                    onclick="toggleStatus(${recurring.id})"
+                                    title="${recurring.status === 'active' ? 'Tạm dừng' : 'Kích hoạt'}">
+                                <i class="bi ${recurring.status === 'active' ? 'bi-pause' : 'bi-play'}"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editRecurring(${recurring.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="showDeleteModal(${recurring.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Render Upcoming Payments
+function renderUpcoming() {
+    const container = document.getElementById('upcomingPayments');
+    const upcoming = recurringTransactions
+        .filter(r => r.status === 'active')
+        .sort((a, b) => new Date(a.nextDate || a.startDate) - new Date(b.nextDate || b.startDate))
+        .slice(0, 5);
+    
+    if (upcoming.length === 0) {
+        container.innerHTML = '<div class="text-center text-secondary py-3"><small>Không có thanh toán sắp tới</small></div>';
+        return;
+    }
+    
+    container.innerHTML = upcoming.map(r => `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="flex-grow-1">
+                <div class="fw-medium small">${r.description}</div>
+                <small class="text-secondary">${formatDate(r.nextDate || r.startDate)}</small>
+            </div>
+            <div class="text-end">
+                <div class="fw-bold ${r.type === 'income' ? 'text-success' : 'text-danger'} small">
+                    ${formatCurrency(r.amount)}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Filter Recurring
+function filterRecurring(filter) {
+    currentFilter = filter;
+    
+    document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    
+    renderRecurring();
+}
+
+// Show Recurring Modal
+function showRecurringModal(recurring = null) {
+    const modal = new bootstrap.Modal(document.getElementById('recurringModal'));
+    
+    if (recurring) {
+        document.getElementById('modalTitle').textContent = 'Sửa Giao Dịch Định Kỳ';
+        document.getElementById('recurringId').value = recurring.id;
+        document.getElementById('transactionType').value = recurring.type;
+        document.getElementById('categoryId').value = recurring.categoryId;
+        document.getElementById('amount').value = recurring.amount;
+        document.getElementById('walletId').value = recurring.walletId;
+        document.getElementById('description').value = recurring.description;
+        document.getElementById('frequency').value = recurring.frequency;
+        document.getElementById('startDate').value = recurring.startDate?.split('T')[0];
+        document.getElementById('endDate').value = recurring.endDate?.split('T')[0] || '';
+        document.getElementById('autoExecute').checked = recurring.autoExecute !== false;
+        document.getElementById('note').value = recurring.note || '';
+    } else {
+        document.getElementById('modalTitle').textContent = 'Thêm Giao Dịch Định Kỳ';
+        document.getElementById('recurringForm').reset();
+        document.getElementById('recurringId').value = '';
+        document.getElementById('startDate').valueAsDate = new Date();
+        document.getElementById('autoExecute').checked = true;
+    }
+    
+    modal.show();
+}
+
+// Edit Recurring
+function editRecurring(id) {
+    const recurring = recurringTransactions.find(r => r.id === id);
+    if (recurring) {
+        showRecurringModal(recurring);
+    }
+}
+
+// Save Recurring
+async function saveRecurring() {
+    const form = document.getElementById('recurringForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const id = document.getElementById('recurringId').value;
+    const data = {
+        type: document.getElementById('transactionType').value,
+        categoryId: parseInt(document.getElementById('categoryId').value),
+        amount: parseFloat(document.getElementById('amount').value),
+        walletId: parseInt(document.getElementById('walletId').value),
+        description: document.getElementById('description').value,
+        frequency: document.getElementById('frequency').value,
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value || null,
+        autoExecute: document.getElementById('autoExecute').checked,
+        note: document.getElementById('note').value,
+        status: 'active'
+    };
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const url = id ? `/api/recurring-transactions/${id}` : '/api/recurring-transactions';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('recurringModal')).hide();
+            loadRecurring();
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể lưu'));
+        }
+    } catch (error) {
+        console.error('Error saving recurring:', error);
+        alert('Đã xảy ra lỗi khi lưu');
+    }
+}
+
+// Toggle Status
+async function toggleStatus(id) {
+    const recurring = recurringTransactions.find(r => r.id === id);
+    if (!recurring) return;
+    
+    const newStatus = recurring.status === 'active' ? 'paused' : 'active';
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/recurring-transactions/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ...recurring, status: newStatus })
+        });
+        
+        if (response.ok) {
+            loadRecurring();
+        }
+    } catch (error) {
+        console.error('Error toggling status:', error);
+    }
+}
+
+// Show Delete Modal
+function showDeleteModal(id) {
+    recurringToDelete = id;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Confirm Delete
+async function confirmDelete() {
+    if (!recurringToDelete) return;
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/recurring-transactions/${recurringToDelete}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            loadRecurring();
+        }
+    } catch (error) {
+        console.error('Error deleting recurring:', error);
+    }
+}
+
+// Helpers
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('vi-VN');
+}
+</script>

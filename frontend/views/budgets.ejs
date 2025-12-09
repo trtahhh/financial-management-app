@@ -1,0 +1,797 @@
+<!-- Modern Budgets Page -->
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Ngân Sách</h2>
+        <p class="text-secondary mb-0">Quản lý và theo dõi ngân sách chi tiêu của bạn</p>
+    </div>
+    <button class="btn btn-primary" onclick="showAddBudgetModal()">
+        <i class="bi bi-plus-lg"></i>
+        Thêm Ngân Sách
+    </button>
+</div>
+
+<!-- Budget Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card stats-card-primary">
+            <div class="stats-card-icon">
+                <i class="bi bi-pie-chart"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Tổng Ngân Sách</div>
+                <div class="stats-card-value" id="totalBudget">0 ₫</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-danger">
+            <div class="stats-card-icon">
+                <i class="bi bi-arrow-up-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Đã Chi Tiêu</div>
+                <div class="stats-card-value" id="totalSpent">0 ₫</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-success">
+            <div class="stats-card-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Còn Lại</div>
+                <div class="stats-card-value" id="remaining">0 ₫</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card stats-card-warning">
+            <div class="stats-card-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="stats-card-content">
+                <div class="stats-card-label">Cảnh Báo</div>
+                <div class="stats-card-value" id="alertCount">0</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Budget Recommendations -->
+<div class="card card-gradient mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="text-white mb-3">
+                    <i class="bi bi-robot"></i>
+                    Gợi Ý Ngân Sách Thông Minh
+                    <span class="badge bg-white text-primary ms-2">AI</span>
+                </h5>
+                <p class="text-white opacity-90 mb-3">
+                    AI phân tích lịch sử chi tiêu của bạn và đưa ra gợi ý ngân sách tối ưu cho từng danh mục
+                </p>
+                <div class="d-flex gap-2">
+                    <select class="form-control w-auto bg-white" id="smart-budget-months">
+                        <option value="1">1 tháng gần nhất</option>
+                        <option value="3" selected>3 tháng gần nhất</option>
+                        <option value="6">6 tháng gần nhất</option>
+                    </select>
+                    <button class="btn btn-light" onclick="getSmartBudget()">
+                        <i class="bi bi-magic"></i>
+                        Nhận Gợi Ý
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-lightbulb" style="font-size: 6rem; color: rgba(255,255,255,0.2);"></i>
+            </div>
+        </div>
+        <div id="smart-budget-result" class="mt-4"></div>
+    </div>
+</div>
+
+<!-- Period Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Kỳ hạn</label>
+                <input type="month" class="form-control" id="budget-period" onchange="loadBudgets()">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-secondary" onclick="setCurrentMonth()">
+                    <i class="bi bi-calendar"></i>
+                    Tháng này
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Budgets Grid -->
+<div class="row g-4 mb-4" id="budgetsGrid">
+    <!-- Budgets will be loaded here -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-pie-chart" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p class="mt-3 mb-3 text-secondary">Chưa có ngân sách nào cho kỳ này</p>
+                <button class="btn btn-primary" onclick="showAddBudgetModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    Tạo ngân sách
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Budget Chart -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-bar-chart"></i>
+            Biểu Đồ Chi Tiêu
+        </h5>
+    </div>
+    <div class="card-body">
+        <div style="height: 300px; position: relative;">
+            <canvas id="budgetChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Budget Modal -->
+<div class="modal fade" id="budgetModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-pie-chart"></i>
+                    <span id="budgetModalTitle">Thêm Ngân Sách</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="budgetForm">
+                    <input type="hidden" id="budget-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Danh Mục <span class="text-danger">*</span></label>
+                        <select class="form-control" id="budget-category" required>
+                            <option value="">Chọn danh mục</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Số Tiền <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="budget-amount" placeholder="0" required>
+                            <span class="input-group-text">₫</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Kỳ Hạn <span class="text-danger">*</span></label>
+                        <input type="month" class="form-control" id="budget-period-input" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Ngưỡng Cảnh Báo (%)</label>
+                        <input type="number" class="form-control" id="budget-threshold" placeholder="80" value="80" min="0" max="100">
+                        <small class="text-secondary">Nhận cảnh báo khi chi tiêu đạt % này</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveBudget()">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteBudgetModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn xóa ngân sách này không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDeleteBudget()">
+                    <i class="bi bi-trash"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/budgets.js"></script>
+
+<script>
+let budgetChart = null;
+let currentBudgetId = null;
+let deleteBudgetId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    setCurrentMonth();
+    loadCategories();
+    loadBudgets();
+    loadBudgetStats();
+});
+
+// Set Current Month
+function setCurrentMonth() {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    document.getElementById('budget-period').value = `${year}-${month}`;
+    document.getElementById('budget-period-input').value = `${year}-${month}`;
+    loadBudgets();
+}
+
+// Load Categories
+async function loadCategories() {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/categories', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            let data = await response.json();
+            console.log('📦 Categories response:', data);
+            
+            // Handle different response formats
+            let categories = [];
+            if (Array.isArray(data)) {
+                categories = data;
+            } else if (data.content && Array.isArray(data.content)) {
+                categories = data.content;
+            } else if (data.data && Array.isArray(data.data)) {
+                categories = data.data;
+            }
+            
+            console.log('✅ Categories loaded:', categories.length);
+            
+            const select = document.getElementById('budget-category');
+            if (select) {
+                select.innerHTML = '<option value="">Chọn danh mục</option>' +
+                    categories.filter(c => c.type === 'CHI' || c.type === 'EXPENSE' || c.type === 'expense')
+                        .map(c => `<option value="${c.id}">${c.name}</option>`)
+                        .join('');
+                        
+                console.log('✅ Category dropdown populated with', select.options.length - 1, 'categories');
+            }
+        } else {
+            console.error('Failed to load categories:', response.status);
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+// Load Budgets
+async function loadBudgets() {
+    const period = document.getElementById('budget-period').value;
+    if (!period) return;
+    
+    const [year, month] = period.split('-').map(Number);
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        console.log('📊 Loading budgets for period:', period, '(month:', month, 'year:', year, ')');
+        
+        const response = await fetch('/api/budgets', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const allBudgets = await response.json();
+            console.log('✅ Loaded', allBudgets.length, 'total budgets');
+            
+            // Filter budgets by selected month and year
+            const budgets = allBudgets.filter(b => b.month === month && b.year === year);
+            console.log('✅ Filtered to', budgets.length, 'budgets for', period);
+            
+            renderBudgets(budgets);
+            renderBudgetChart(budgets);
+        } else {
+            console.error('❌ Failed to load budgets:', response.status);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+        }
+    } catch (error) {
+        console.error('❌ Error loading budgets:', error);
+    }
+}
+
+// Render Budgets
+function renderBudgets(budgets) {
+    const grid = document.getElementById('budgetsGrid');
+    
+    if (budgets.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-pie-chart" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3 mb-3 text-secondary">Chưa có ngân sách nào cho kỳ này</p>
+                        <button class="btn btn-primary" onclick="showAddBudgetModal()">
+                            <i class="bi bi-plus-lg"></i>
+                            Tạo ngân sách
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = budgets.map(budget => {
+        const spent = budget.spentAmount || budget.spent || 0;
+        const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+        const remaining = budget.amount - spent;
+        const status = percentage >= 100 ? 'danger' : percentage >= 80 ? 'warning' : 'success';
+        const categoryName = budget.categoryName || 'Không xác định';
+        
+        return `
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-bordered h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">${categoryName}</h5>
+                                <span class="badge badge-${status}">${percentage.toFixed(0)}% đã dùng</span>
+                                ${percentage >= 100 ? `<span class="badge bg-danger ms-2"><i class="bi bi-exclamation-triangle"></i> Vượt ngân sách</span>` : ''}
+                                ${percentage >= 80 && percentage < 100 ? `<span class="badge bg-warning ms-2"><i class="bi bi-exclamation-circle"></i> Gần hết</span>` : ''}
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-ghost" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" onclick="showEditBudgetModal(${budget.id})">
+                                        <i class="bi bi-pencil"></i> Chỉnh sửa
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="showDeleteBudgetModal(${budget.id})">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between text-sm mb-2">
+                                <span class="text-secondary">Chi tiêu</span>
+                                <span class="fw-semibold">${percentage.toFixed(1)}%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-${status}" style="width: ${Math.min(percentage, 100)}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-sm mt-2">
+                                <span class="text-${status}">${formatCurrency(spent)}</span>
+                                <span class="fw-semibold">${formatCurrency(budget.amount)}</span>
+                            </div>
+                        </div>
+                        
+                        ${remaining > 0 ? `
+                            <div class="alert alert-${status} py-2 mb-0">
+                                <small>
+                                    <i class="bi bi-info-circle"></i>
+                                    Còn lại: ${formatCurrency(remaining)}
+                                </small>
+                            </div>
+                        ` : remaining === 0 ? `
+                            <div class="alert alert-warning py-2 mb-0">
+                                <small>
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Hết ngân sách
+                                </small>
+                            </div>
+                        ` : `
+                            <div class="alert alert-danger py-2 mb-0">
+                                <small>
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Vượt: ${formatCurrency(Math.abs(remaining))}
+                                </small>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Render Budget Chart
+function renderBudgetChart(budgets) {
+    const ctx = document.getElementById('budgetChart');
+    
+    if (budgetChart) {
+        budgetChart.destroy();
+    }
+    
+    budgetChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: budgets.map(b => b.categoryName || 'Không xác định'),
+            datasets: [{
+                label: 'Ngân sách',
+                data: budgets.map(b => b.amount),
+                backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                borderColor: 'rgb(34, 197, 94)',
+                borderWidth: 1
+            }, {
+                label: 'Đã chi',
+                data: budgets.map(b => b.spentAmount || b.spent || 0),
+                backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                borderColor: 'rgb(239, 68, 68)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Load Budget Stats
+async function loadBudgetStats() {
+    const period = document.getElementById('budget-period').value;
+    if (!period) return;
+    
+    const [year, month] = period.split('-').map(Number);
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch('/api/budgets', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const allBudgets = await response.json();
+            
+            // Filter budgets by selected month and year
+            const budgets = allBudgets.filter(b => b.month === month && b.year === year);
+            
+            const totalBudget = budgets.reduce((sum, b) => sum + (b.amount || 0), 0);
+            const totalSpent = budgets.reduce((sum, b) => sum + (b.spentAmount || b.spent || 0), 0);
+            const remaining = totalBudget - totalSpent;
+            const alerts = budgets.filter(b => {
+                const spent = b.spentAmount || b.spent || 0;
+                const amount = b.amount || 1;
+                return (spent / amount) >= 0.8;
+            }).length;
+            
+            document.getElementById('totalBudget').textContent = formatCurrency(totalBudget);
+            document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+            document.getElementById('remaining').textContent = formatCurrency(remaining);
+            document.getElementById('alertCount').textContent = alerts;
+        }
+    } catch (error) {
+        console.error('Error loading budget stats:', error);
+    }
+}
+
+// Show Add Modal
+async function showAddBudgetModal() {
+    // Reload categories to ensure dropdown is populated
+    await loadCategories();
+    
+    document.getElementById('budgetModalTitle').textContent = 'Thêm Ngân Sách';
+    document.getElementById('budgetForm').reset();
+    document.getElementById('budget-id').value = '';
+    document.getElementById('budget-period-input').value = document.getElementById('budget-period').value;
+    document.getElementById('budget-threshold').value = '80';
+    currentBudgetId = null;
+    
+    console.log('🎯 Opening Add Budget Modal');
+    const modal = new bootstrap.Modal(document.getElementById('budgetModal'));
+    modal.show();
+}
+
+// Show Edit Modal
+async function showEditBudgetModal(id) {
+    try {
+        // Reload categories to ensure dropdown is populated
+        await loadCategories();
+        
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/budgets/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const budget = await response.json();
+            
+            document.getElementById('budgetModalTitle').textContent = 'Chỉnh Sửa Ngân Sách';
+            document.getElementById('budget-id').value = budget.id;
+            document.getElementById('budget-category').value = budget.categoryId;
+            document.getElementById('budget-amount').value = budget.amount;
+            document.getElementById('budget-period-input').value = budget.period;
+            document.getElementById('budget-threshold').value = budget.threshold || 80;
+            
+            currentBudgetId = id;
+            
+            console.log('✏️ Opening Edit Budget Modal for budget', id);
+            const modal = new bootstrap.Modal(document.getElementById('budgetModal'));
+            modal.show();
+        }
+    } catch (error) {
+        console.error('Error loading budget:', error);
+    }
+}
+
+// Save Budget
+async function saveBudget() {
+    const form = document.getElementById('budgetForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Parse period "YYYY-MM" to month and year
+    const period = document.getElementById('budget-period-input').value;
+    const [year, month] = period.split('-').map(Number);
+    
+    // Validate parsed values
+    if (!month || month < 1 || month > 12) {
+        alert('Lỗi: Tháng không hợp lệ. Vui lòng chọn lại kỳ hạn.');
+        console.error('Invalid month:', month, 'from period:', period);
+        return;
+    }
+    
+    if (!year || year < 2000) {
+        alert('Lỗi: Năm không hợp lệ. Vui lòng chọn lại kỳ hạn.');
+        console.error('Invalid year:', year, 'from period:', period);
+        return;
+    }
+    
+    const categoryId = parseInt(document.getElementById('budget-category').value);
+    const amount = parseFloat(document.getElementById('budget-amount').value);
+    
+    if (!categoryId) {
+        alert('Vui lòng chọn danh mục');
+        return;
+    }
+    
+    if (!amount || amount <= 0) {
+        alert('Số tiền phải lớn hơn 0');
+        return;
+    }
+    
+    const data = {
+        categoryId: categoryId,
+        amount: amount,
+        month: month,
+        year: year
+    };
+    
+    console.log('💾 Saving budget:', data);
+    console.log('  - Category ID:', categoryId, '(type:', typeof categoryId, ')');
+    console.log('  - Amount:', amount, '(type:', typeof amount, ')');
+    console.log('  - Month:', month, '(type:', typeof month, ')');
+    console.log('  - Year:', year, '(type:', typeof year, ')');
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const url = currentBudgetId ? `/api/budgets/${currentBudgetId}` : '/api/budgets';
+        const method = currentBudgetId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            console.log('✅ Budget saved successfully');
+            bootstrap.Modal.getInstance(document.getElementById('budgetModal')).hide();
+            loadBudgets();
+            loadBudgetStats();
+            showSuccessMessage(currentBudgetId ? 'Cập nhật ngân sách thành công!' : 'Thêm ngân sách thành công!');
+        } else {
+            console.error('❌ Failed to save budget:', response.status);
+            let errorMessage = 'Không thể lưu ngân sách';
+            try {
+                const errorData = await response.json();
+                console.error('Error details:', errorData);
+                errorMessage = errorData.message || errorData.error || errorMessage;
+            } catch (e) {
+                const errorText = await response.text();
+                console.error('Error text:', errorText);
+                errorMessage = errorText || errorMessage;
+            }
+            alert('Lỗi: ' + errorMessage);
+        }
+    } catch (error) {
+        console.error('❌ Error saving budget:', error);
+        alert('Lỗi khi lưu ngân sách: ' + error.message);
+    }
+}
+
+// Show Delete Modal
+function showDeleteBudgetModal(id) {
+    deleteBudgetId = id;
+    const modal = new bootstrap.Modal(document.getElementById('deleteBudgetModal'));
+    modal.show();
+}
+
+// Confirm Delete
+async function confirmDeleteBudget() {
+    if (!deleteBudgetId) return;
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/budgets/${deleteBudgetId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('deleteBudgetModal')).hide();
+            loadBudgets();
+            loadBudgetStats();
+            showSuccessMessage('Xóa ngân sách thành công!');
+        } else {
+            const error = await response.json();
+            alert('Lỗi: ' + (error.message || 'Không thể xóa ngân sách'));
+        }
+    } catch (error) {
+        console.error('Error deleting budget:', error);
+        alert('Lỗi khi xóa ngân sách');
+    } finally {
+        deleteBudgetId = null;
+    }
+}
+
+// Get Smart Budget Recommendations (AI Feature)
+async function getSmartBudget() {
+    const months = document.getElementById('smart-budget-months').value;
+    const resultDiv = document.getElementById('smart-budget-result');
+    
+    resultDiv.innerHTML = `
+        <div class="text-center py-3">
+            <div class="spinner spinner-md mx-auto mb-2"></div>
+            <p class="text-white mb-0">Đang phân tích...</p>
+        </div>
+    `;
+    
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/budgets/smart-recommendations?months=${months}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const recommendations = await response.json();
+            renderSmartBudgetRecommendations(recommendations);
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-light">
+                    <i class="bi bi-info-circle"></i>
+                    Chưa đủ dữ liệu để đưa ra gợi ý. Hãy thêm giao dịch để AI có thể phân tích.
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error getting smart budget:', error);
+        resultDiv.innerHTML = `
+            <div class="alert alert-light">
+                <i class="bi bi-exclamation-triangle"></i>
+                Lỗi khi lấy gợi ý. Vui lòng thử lại sau.
+            </div>
+        `;
+    }
+}
+
+// Render Smart Budget Recommendations
+function renderSmartBudgetRecommendations(recommendations) {
+    const resultDiv = document.getElementById('smart-budget-result');
+    
+    if (!recommendations || recommendations.length === 0) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-light">
+                <i class="bi bi-info-circle"></i>
+                Không có gợi ý nào cho thời điểm này.
+            </div>
+        `;
+        return;
+    }
+    
+    resultDiv.innerHTML = `
+        <div class="bg-white rounded p-3">
+            <h6 class="mb-3">Gợi Ý Ngân Sách:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Danh Mục</th>
+                            <th class="text-end">Gợi Ý</th>
+                            <th class="text-end">TB 3 Tháng</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recommendations.map(rec => `
+                            <tr>
+                                <td>${rec.categoryName}</td>
+                                <td class="text-end fw-semibold">${formatCurrency(rec.recommendedAmount)}</td>
+                                <td class="text-end text-secondary">${formatCurrency(rec.averageSpent)}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-primary" onclick="applyRecommendation(${rec.categoryId}, ${rec.recommendedAmount})">
+                                        Áp dụng
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Apply Recommendation
+function applyRecommendation(categoryId, amount) {
+    document.getElementById('budget-category').value = categoryId;
+    document.getElementById('budget-amount').value = amount;
+    showAddBudgetModal();
+}
+
+// Helper Functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+function showSuccessMessage(message) {
+    alert(message);
+}
+</script>

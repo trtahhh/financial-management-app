@@ -1,0 +1,137 @@
+# Build output
+/target/
+/backend/target/
+/frontend/build/
+/frontend/dist/
+
+# IDE files
+/backend/.idea/
+/.idea/
+.vscode/
+
+# Dependencies
+/node_modules/
+/frontend/node_modules/
+/backend/.mvn/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+/backend/.env
+/frontend/.env
+.env.local
+.env.production
+.env.development
+backend/src/main/resources/application-secret.properties
+
+# Temporary files
+/uploads/
+/backend/uploads/
+*.log
+*.tmp
+
+# Test coverage
+/coverage/
+/backend/coverage/
+/frontend/coverage/
+
+# Build folders
+target/
+**/target/
+*.class
+
+# Batch files and scripts
+*.bat
+
+# GitHub Copilot files
+.gitcopilot
+
+# === AI Service - EXCLUDE LARGE DATASETS ===
+ai-service/__pycache__/
+ai-service/venv/
+ai-service/.venv
+ai-service/data/*.json
+ai-service/data/*.csv
+ai-service/*.pkl
+ai-service/*.pth
+ai-service/*.pt
+ai-service/models/
+ai-service/*.model
+
+# === OCR Service - EXCLUDE LARGE DATASETS ===
+ORC_Service/__pycache__/
+ORC_Service/venv/
+ORC_Service/.venv
+ORC_Service/CRNN_DATASET/
+ORC_Service/SROIE2019/
+ORC_Service/SROIE_CROPS/
+ORC_Service/SROIE_YOLO/
+ORC_Service/runs/
+ORC_Service/visualizations/
+ORC_Service/visualizations_*/
+ORC_Service/*.pt
+ORC_Service/*.pth
+ORC_Service/*.weights
+ORC_Service/batch_results*.json
+ORC_Service/model_comparison.json
+ORC_Service/quick_test_result.jpg
+ORC_Service/result_*.jpg
+ORC_Service/demo_output/
+ORC_Service/crnn_models/
+
+# === Python Cache ===
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+
+# === Database ===
+*.mdf
+*.ldf
+*.bak
+database/backups/
+
+# === Node ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Python ===
+.pytest_cache/
+.tox/
+.hypothesis/
+
+# Temporary JWT files
+temp_jwt.txt
+**/temp_jwt.txt
+
+# Test HTML files
+test-*.html
+**/test-*.html
+
+# Backup files
+*.backup
+**/*.backup
+
+# Markdown docs except README
+*.md
+!README.md
+!**/README.md
+
+# Python virtual environments
+venv/
+env/
+.venv/
+**/venv/
+**/env/
+ai-service/venv/
+ai-service/.venv/
+
+# AI Service data files (too large for git)
+ai-service/compressed/
+ai-service/simple_chroma_db/
+ai-service/massive_vietnamese_dataset*.json
