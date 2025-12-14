@@ -2,6 +2,8 @@ package com.example.finance.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
 import com.example.finance.entity.Transaction;
 import com.example.finance.entity.UserCategorizationPreference;
 import com.example.finance.repository.TransactionRepository;
@@ -37,6 +39,17 @@ public class AICategorizationService {
     
     @Autowired
     private ConfidenceCalibrationService confidenceCalibrator;
+    
+    @Autowired
+    private CategorizationMonitoringService monitoringService;  // NEW: Performance monitoring
+    
+    @Autowired
+    private UserLearningService learningService;  // NEW: User preference learning
+    
+    // Python AI Service integration
+    private final RestTemplate restTemplate = new RestTemplate();
+    private static final String PYTHON_AI_URL = "http://localhost:8001/classify";
+    private static final double PYTHON_AI_CONFIDENCE_THRESHOLD = 0.70; // 70% confidence required
     
     // ML Models (kept for backward compatibility but not primary layer anymore)
     private LinearSVMClassifier svmModel;
@@ -101,7 +114,13 @@ public class AICategorizationService {
     }};
     
     /**
-     * NEW 3-LAYER CATEGORIZATION ARCHITECTURE:
+     * NEW 4-LAYER CATEGORIZATION ARCHITECTURE:
+     * 
+     * Layer 0: Python AI Service (INTELLIGENT ML - 9 libraries)
+     *   - XGBoost, LightGBM, Prophet, SHAP, Optuna, SMOTE, VADER, TextBlob, Word2Vec
+     *   - Vietnamese NLP with underthesea + pyvi
+     *   - Response time ~50ms
+     *   - Returns if confidence ≥ 70%
      * 
      * Layer 1: Rule-based Keyword Matching (FAST - exact matches)
      *   - Instant response < 5ms
@@ -130,6 +149,49 @@ public class AICategorizationService {
         System.out.println("[INPUT] Normalized: " + normalized);
         System.out.println("[INPUT] Amount: " + amount);
         
+        // ===== LAYER 0: Python AI Service (NEW!) =====
+        long layer0Start = System.currentTimeMillis();
+        CategorizationResult pythonAIResult = callPythonAIService(description);
+        long layer0Time = System.currentTimeMillis() - layer0Start;
+        
+        if (pythonAIResult != null && pythonAIResult.getConfidence() >= PYTHON_AI_CONFIDENCE_THRESHOLD) {
+            // Apply user learning confidence adjustment
+            double adjustedConfidence = pythonAIResult.getConfidence();
+            if (userId != null) {
+                double adjustment = learningService.getConfidenceAdjustment(userId, pythonAIResult.getCategory(), description);
+                adjustedConfidence *= adjustment;
+                
+                if (adjustment != 1.0) {
+                    System.out.println("[LEARNING] Confidence adjusted: " + 
+                        (pythonAIResult.getConfidence() * 100) + "% → " + (adjustedConfidence * 100) + "%");
+                }
+                
+                // Check if user has a learned preference for this pattern
+                Long suggestedCategory = learningService.getSuggestedCategory(userId, description, pythonAIResult.getCategory());
+                if (suggestedCategory != null && !suggestedCategory.equals(pythonAIResult.getCategory())) {
+                    System.out.println("[LEARNING] User pattern detected: Overriding AI prediction with learned preference");
+                    pythonAIResult = buildResult(suggestedCategory, 0.95, "Layer 0 + User Learning Override");
+                    adjustedConfidence = 0.95;
+                }
+            }
+            
+            System.out.println("[LAYER 0 ✓] Python AI matched category: " + pythonAIResult.getCategory() + 
+                             " with " + (adjustedConfidence * 100) + "% confidence in " + layer0Time + "ms");
+            
+            // Record monitoring stats
+            monitoringService.recordCategorization(0, layer0Time, adjustedConfidence);
+            
+            // Save to user preferences for future learning
+            if (userId != null) {
+                saveUserPreference(userId, normalized, pythonAIResult.getCategory());
+            }
+            
+            printPerformanceStats(startTime, layer0Time, 0L, 0L, 0L, 0L);
+            return pythonAIResult;
+        }
+        
+        System.out.println("[LAYER 0 ✗] Python AI unavailable or low confidence, proceeding to Layer 1");
+        
         // ===== LAYER 1: Rule-based Keyword Matching =====
         long layer1Start = System.currentTimeMillis();
         Long categoryId = matchByKeywords(normalized);
@@ -139,12 +201,15 @@ public class AICategorizationService {
             System.out.println("[LAYER 1 ✓] Matched category: " + categoryId + " in " + layer1Time + "ms");
             CategorizationResult result = buildResult(categoryId, 0.95, "Layer 1: Exact keyword match");
             
+            // Record monitoring stats
+            monitoringService.recordCategorization(1, layer1Time, 0.95);
+            
             // Save to user preferences for future learning
             if (userId != null) {
                 saveUserPreference(userId, normalized, categoryId);
             }
             
-            printPerformanceStats(startTime, layer1Time, 0, 0, 0);
+            printPerformanceStats(startTime, layer0Time, layer1Time, 0L, 0L, 0L);
             return result;
         }
         
@@ -159,12 +224,15 @@ public class AICategorizationService {
             System.out.println("[LAYER 2 ✓] Fuzzy matched category: " + fuzzyResult.getCategory() + 
                              " with " + (fuzzyResult.getConfidence() * 100) + "% confidence in " + layer2Time + "ms");
             
+            // Record monitoring stats
+            monitoringService.recordCategorization(2, layer2Time, fuzzyResult.getConfidence());
+            
             // Save to user preferences
             if (userId != null) {
                 saveUserPreference(userId, normalized, fuzzyResult.getCategory());
             }
             
-            printPerformanceStats(startTime, layer1Time, layer2Time, 0, 0);
+            printPerformanceStats(startTime, layer0Time, layer1Time, layer2Time, 0L, 0L);
             return fuzzyResult;
         }
         
@@ -184,7 +252,7 @@ public class AICategorizationService {
                 saveUserPreference(userId, normalized, mlResult.getCategory());
             }
             
-            printPerformanceStats(startTime, layer1Time, layer2Time, layer25Time, 0);
+            printPerformanceStats(startTime, layer0Time, layer1Time, layer2Time, layer25Time, 0L);
             return mlResult;
         }
         
@@ -197,6 +265,9 @@ public class AICategorizationService {
         
         if (llmResult != null) {
             System.out.println("[LAYER 3 ✓] LLM categorized: " + llmResult.getCategory() + " in " + layer3Time + "ms");
+            
+            // Record monitoring stats (LLM usage triggers alert if > 10%)
+            monitoringService.recordCategorization(3, layer3Time, llmResult.getConfidence());
             
             // Save to user preferences
             if (userId != null) {
@@ -213,7 +284,7 @@ public class AICategorizationService {
                 });
             }
             
-            printPerformanceStats(startTime, layer1Time, layer2Time, layer25Time, layer3Time);
+            printPerformanceStats(startTime, layer0Time, layer1Time, layer2Time, layer25Time, layer3Time);
             return llmResult;
         }
         
@@ -230,17 +301,18 @@ public class AICategorizationService {
             });
         }
         
-        printPerformanceStats(startTime, layer1Time, layer2Time, layer25Time, layer3Time);
+        printPerformanceStats(startTime, layer0Time, layer1Time, layer2Time, layer25Time, layer3Time);
         return buildResult(14L, 0.30, "Fallback: Uncategorized");
     }
     
-    private void printPerformanceStats(long totalStart, long layer1Time, long layer2Time, long layer25Time, long layer3Time) {
+    private void printPerformanceStats(long totalStart, long layer0Time, long layer1Time, long layer2Time, long layer25Time, long layer3Time) {
         long totalTime = System.currentTimeMillis() - totalStart;
         System.out.println("\n--- Performance Stats ---");
-        System.out.println("Layer 1: " + layer1Time + "ms");
-        System.out.println("Layer 2: " + layer2Time + "ms");
+        System.out.println("Layer 0 (Python AI): " + layer0Time + "ms");
+        System.out.println("Layer 1 (Keywords): " + layer1Time + "ms");
+        System.out.println("Layer 2 (Fuzzy): " + layer2Time + "ms");
         System.out.println("Layer 2.5 (ML): " + layer25Time + "ms");
-        System.out.println("Layer 3: " + layer3Time + "ms");
+        System.out.println("Layer 3 (LLM): " + layer3Time + "ms");
         System.out.println("Total: " + totalTime + "ms");
         System.out.println("========== CATEGORIZATION END ==========\n");
     }
@@ -489,6 +561,99 @@ public class AICategorizationService {
         ));
         
         return map;
+    }
+    
+    // ===== LAYER 0: Python AI Service Integration =====
+    
+    /**
+     * Call Python AI Service for ML-based categorization
+     * Uses 9 advanced ML libraries: XGBoost, LightGBM, Prophet, SHAP, Optuna, SMOTE, VADER, TextBlob, Word2Vec
+     * 
+     * @param description Transaction description
+     * @return CategorizationResult or null if service unavailable
+     */
+    private CategorizationResult callPythonAIService(String description) {
+        try {
+            // Prepare request
+            Map<String, String> request = new HashMap<>();
+            request.put("description", description);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
+            
+            // Call Python AI service
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                PYTHON_AI_URL, 
+                entity, 
+                Map.class
+            );
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                
+                String predictedCategory = (String) body.get("predicted_category");
+                Object confidenceObj = body.get("confidence");
+                double confidence = confidenceObj instanceof Double ? 
+                    (Double) confidenceObj : 
+                    Double.parseDouble(String.valueOf(confidenceObj));
+                
+                // Map Vietnamese category name to ID
+                Long categoryId = mapVietnameseCategoryToId(predictedCategory);
+                
+                if (categoryId != null) {
+                    return buildResult(
+                        categoryId, 
+                        confidence, 
+                        "Layer 0: Python AI Service (9 ML libraries)"
+                    );
+                }
+            }
+            
+            return null;
+            
+        } catch (Exception e) {
+            // Log error but don't crash - fallback to next layer
+            System.err.println("[LAYER 0 ERROR] Python AI Service error: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Map Vietnamese category name from Python AI to database category ID
+     */
+    private Long mapVietnameseCategoryToId(String vietnameseName) {
+        Map<String, Long> mapping = new HashMap<>();
+        // Income categories
+        mapping.put("Lương", 1L);
+        mapping.put("Thu nhập", 1L);  // Map to Lương (Income)
+        mapping.put("Thu nhập khác", 2L);
+        
+        // Investment categories
+        mapping.put("Đầu tư", 3L);
+        mapping.put("Kinh doanh", 4L);
+        
+        // Expense categories
+        mapping.put("Ăn uống", 5L);
+        mapping.put("Giao thông", 6L);
+        mapping.put("Giải trí", 7L);
+        mapping.put("Sức khỏe", 8L);
+        mapping.put("Giáo dục", 9L);
+        mapping.put("Mua sắm", 10L);
+        mapping.put("Tiện ích", 11L);
+        
+        // Debt & special categories
+        mapping.put("Vay nợ", 12L);
+        mapping.put("Quà tặng", 13L);
+        mapping.put("Gia đình", 13L);  // Map to Quà tặng (Gifts)
+        mapping.put("Từ thiện", 13L);  // Map to Quà tặng (Gifts/Charity)
+        mapping.put("Bảo hiểm", 11L);  // Map to Tiện ích (Utilities/Bills)
+        
+        // Default
+        mapping.put("Khác", 14L);
+        
+        return mapping.get(vietnameseName);
     }
     
     // ===== HELPER: Build result =====
