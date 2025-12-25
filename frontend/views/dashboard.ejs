@@ -305,6 +305,32 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Chart.js safe-wrapper: destroy any existing chart bound to a canvas before creating a new one -->
+<script>
+    (function() {
+        if (typeof Chart === 'undefined') return;
+        const OrigChart = Chart;
+        try {
+            function ChartWrapper(ctxOrEl, config) {
+                try {
+                    const canvas = ctxOrEl && (ctxOrEl.canvas || ctxOrEl);
+                    if (canvas && OrigChart.getChart) {
+                        const existing = OrigChart.getChart(canvas);
+                        if (existing) existing.destroy();
+                    }
+                } catch (e) { console.warn('Chart wrapper destroy error', e); }
+                return new OrigChart(ctxOrEl, config);
+            }
+            Object.keys(OrigChart).forEach(k => ChartWrapper[k] = OrigChart[k]);
+            ChartWrapper.prototype = OrigChart.prototype;
+            window.Chart = ChartWrapper;
+            console.log('Chart wrapper installed');
+        } catch (e) {
+            console.warn('Failed to install Chart wrapper', e);
+        }
+    })();
+</script>
+
 <!-- Dashboard Script -->
 <script src="/js/dashboard.js"></script>
 

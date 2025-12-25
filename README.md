@@ -185,7 +185,8 @@ spring.datasource.password=your_password
 spring.mail.username=your-email@gmail.com
 spring.mail.password=your-app-password
 ```
-
+chạy orc 
+python ocr_api.py 
 ### 3️⃣ Khởi Động AI Service (Bắt Buộc)
 
 ```bash

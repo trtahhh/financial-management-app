@@ -472,6 +472,10 @@ function updateCategoryDropdowns(categories) {
  
  categorySelects.forEach(select => {
  console.log('➡️ Updating select:', select.id || select.name);
+ // Remember current selected value
+ const currentValue = select.value;
+ console.log('💾 Current selected value:', currentValue);
+ 
  // Keep default option
  const defaultOption = select.querySelector('option[value=""]');
  select.innerHTML = '';
@@ -493,6 +497,12 @@ function updateCategoryDropdowns(categories) {
  select.appendChild(option);
  });
  console.log('✅ Select updated with', select.options.length, 'options');
+ 
+ // Restore selected value if it still exists in options
+ if (currentValue && Array.from(select.options).some(opt => opt.value === currentValue)) {
+ select.value = currentValue;
+ console.log('🔄 Restored selected value:', currentValue);
+ }
  });
 
  // Also update filter dropdown
@@ -746,6 +756,13 @@ function triggerOcr() {
 }
 
 async function handleOcrFile(file) {
+ // Prevent duplicate OCR runs
+ if (window._ocrInProgress) {
+     console.warn('[OCR] Duplicate call ignored - already processing');
+     return;
+ }
+ window._ocrInProgress = true;
+
  // Show loading modal
  const loadingModal = new bootstrap.Modal(document.getElementById('ocrLoadingModal'));
  loadingModal.show();
@@ -827,27 +844,32 @@ async function handleOcrFile(file) {
  console.warn('[OCR] Không parse được ngày từ:', suggestedDate, 'dateNormalized=', dateNormalized);
  }
 
- // Amount
- if (suggestedAmount) {
+ // Amount - wait for form to be fully ready
+ let amountAttempts = 0;
+ const maxAmountAttempts = 10;
+ const fillAmount = () => {
  const amountInput = document.getElementById('tx-amount');
- if (amountInput) {
- // Bỏ VND/vnđ và whitespace
- let cleanAmount = String(suggestedAmount).trim().replace(/vnd|vnđ|đ/gi, '').trim();
- // Kiểm tra nó có phải số hợp lệ không
+ if (amountInput && suggestedAmount) {
+ // Parse the amount to get raw number
  const parsed = parseVnCurrencyToNumber(suggestedAmount);
  if (parsed && parsed > 0) {
- // Nếu raw string chứa dấu thập phân, giữ nguyên
- // Nếu không có, dùng số được parse
- if (cleanAmount.includes('.') || cleanAmount.includes(',')) {
- amountInput.value = cleanAmount; // Giữ nguyên format (ví dụ: 193.00)
- } else {
+ // Use the raw parsed number, not the formatted string
  amountInput.value = parsed.toString();
+ console.log('[OCR] Auto-filled amount:', amountInput.value, 'from:', suggestedAmount);
+ return true; // Success
  }
  }
+ if (amountAttempts < maxAmountAttempts) {
+ amountAttempts++;
+ setTimeout(fillAmount, 200);
  }
- }
+ return false;
+ };
+ setTimeout(fillAmount, 300);
 
  // Category preselect (match by visible text ignoring accents simple lower compare)
+ // Lock flag to prevent later blocks from overwriting a manually-forced category
+ let categoryLocked = false;
  if (suggestedCategory) {
  const select = document.getElementById('tx-category');
  if (select) {
@@ -861,8 +883,39 @@ async function handleOcrFile(file) {
  }
  }
 
- // Auto-select category by predictedCategoryId or predictedCategoryName from OCR response
- if (predictedCategoryId || predictedCategoryName) {
+// Merchant keyword mappings: common heuristics
+// If merchant contains VINMART => Mua sắm; COFFEE/CAFE => Ăn uống
+if (merchant) {
+    try {
+        const m = merchant.toUpperCase();
+        let forcedCategory = null;
+        if (m.includes('VINMART')) forcedCategory = 'mua sắm';
+        else if (m.includes('COFFEE') || m.includes('CAFE')) forcedCategory = 'ăn uống';
+
+        if (forcedCategory) {
+            const select = document.getElementById('tx-category');
+            if (select) {
+                const wanted = forcedCategory.toLowerCase();
+                for (const opt of select.options) {
+                    const text = opt.text.trim().toLowerCase();
+                    if (text.includes(wanted) || (wanted === 'ăn uống' && (text.includes('ăn') || text.includes('uống')))) {
+                        select.value = opt.value;
+                        // Prevent subsequent auto-selection from overwriting this choice
+                        categoryLocked = true;
+                        showAlert('info', 'Đã tự động chọn danh mục: ' + (forcedCategory === 'mua sắm' ? 'Mua sắm' : 'Ăn uống'));
+                        break;
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Merchant-category mapping failed', e);
+    }
+}
+
+// Auto-select category by predictedCategoryId or predictedCategoryName from OCR response
+// Skip if a forced mapping already locked the category
+if (!categoryLocked && (predictedCategoryId || predictedCategoryName)) {
  const select = document.getElementById('tx-category');
  if (select) {
  let applied = false;
@@ -914,10 +967,10 @@ async function handleOcrFile(file) {
  const autoCategorizeTrigger = merchant || noteEl?.value || rawText;
  if (autoCategorizeTrigger) {
  console.log('[OCR] Triggering auto-categorize with:', autoCategorizeTrigger.substring(0, 50));
- // Wait a bit để form hoàn toàn render trước khi call AI
+ // Wait longer để form hoàn toàn render và categories được load
  setTimeout(() => {
  triggerAutoCategorize(autoCategorizeTrigger, suggestedAmount ? parseVnCurrencyToNumber(suggestedAmount) : null);
- }, 200);
+ }, 1000); // Tăng từ 200ms lên 1000ms
  }
 
  // Build enhanced message
@@ -930,10 +983,13 @@ async function handleOcrFile(file) {
  // Không hiển thị thông báo success nữa - người dùng thấy form đã được điền là đủ rồi
  console.log('OCR success:', parts.join(' | '));
  } catch (err) {
- console.error('OCR error:', err);
- // Close loading modal if still open
- closeOcrModal();
- showAlert('danger', 'Không thể quét hóa đơn: ' + err.message);
+     console.error('OCR error:', err);
+     // Close loading modal if still open
+     closeOcrModal();
+     showAlert('danger', 'Không thể quét hóa đơn: ' + err.message);
+ } finally {
+     // Clear processing flag so future scans can run
+     window._ocrInProgress = false;
  }
 }
 
@@ -1278,17 +1334,32 @@ function saveTransaction() {
  const modalElement = document.getElementById('txModal');
  if (modalElement) {
  try {
+ // Blur any focused element to prevent aria-hidden issues
+ document.activeElement?.blur();
+ 
  const modal = bootstrap.Modal.getInstance(modalElement);
  if (modal) {
  modal.hide();
  } else {
  new bootstrap.Modal(modalElement).hide();
  }
- // Also remove backdrop if it's stuck
+ 
+ // Force remove backdrop and modal classes after a short delay
+ setTimeout(() => {
  const backdrop = document.querySelector('.modal-backdrop');
  if (backdrop) {
  backdrop.remove();
  }
+ 
+ // Remove modal-open class from body
+ document.body.classList.remove('modal-open');
+ 
+ // Reset modal state
+ modalElement.style.display = 'none';
+ modalElement.setAttribute('aria-hidden', 'true');
+ modalElement.removeAttribute('aria-modal');
+ modalElement.removeAttribute('role');
+ }, 100);
  } catch (e) {
  console.warn('Could not close modal:', e);
  }
@@ -1299,6 +1370,16 @@ function saveTransaction() {
  editingTransaction = null;
  document.activeElement?.blur();
  
+ // Clear AI categorization hidden inputs
+ const suggestedCategoryId = document.getElementById('suggestedCategoryId');
+ const suggestedCategoryName = document.getElementById('suggestedCategoryName');
+ const categoryHint = document.getElementById('categoryHint');
+ const categoryConfidence = document.getElementById('categoryConfidence');
+ if (suggestedCategoryId) suggestedCategoryId.value = '';
+ if (suggestedCategoryName) suggestedCategoryName.value = '';
+ if (categoryHint) categoryHint.style.display = 'none';
+ if (categoryConfidence) categoryConfidence.style.display = 'none';
+ 
  // Reload transactions with error handling - wait 300ms for modal to close
  setTimeout(async () => {
  try {
@@ -1308,6 +1389,17 @@ function saveTransaction() {
  showAlert('warning', 'Giao dịch đã lưu nhưng lỗi tải lại danh sách. Vui lòng tải lại trang.');
  });
  console.log('✅ Transaction reload complete');
+
+// Ensure UI is updated after reload (apply filters / re-render table)
+if (typeof applyFilters === 'function') {
+    try {
+        applyFilters();
+        // Dispatch an event so other components can react
+        window.dispatchEvent(new Event('transactionsReloaded'));
+    } catch (e) {
+        console.warn('Could not applyFilters after reload:', e);
+    }
+}
  
  // Also reload budgets if on budgets page or globally
  if (window.reloadBudgets && typeof window.reloadBudgets === 'function') {
@@ -1606,6 +1698,22 @@ async function triggerAutoCategorize(description, amount) {
  categoryNameField.value = 'Đang phân tích...';
  categoryNameField.style.backgroundColor = '#fff3cd';
  
+ // Wait for categories to be loaded
+ let attempts = 0;
+ while ((!categories || categories.length === 0) && attempts < 50) { // Wait up to 5 seconds
+ await new Promise(resolve => setTimeout(resolve, 100));
+ attempts++;
+ }
+ 
+ if (!categories || categories.length === 0) {
+ console.error('Categories not loaded after waiting');
+ categoryNameField.value = 'Lỗi: Danh mục chưa tải';
+ categoryNameField.style.backgroundColor = '#f8d7da';
+ return;
+ }
+ 
+ console.log('Categories loaded:', categories.length, 'items');
+ 
  try {
  const token = localStorage.getItem('accessToken');
  const response = await fetch('http://localhost:8080/api/ai/auto-categorize', {
@@ -1659,25 +1767,32 @@ async function triggerAutoCategorize(description, amount) {
  
  if (categoryHint) {
  const confidence = topSuggestion.confidence || 0;
- categoryHint.innerHTML = `<i class="fas fa-check-circle text-success me-1"></i>Độ tin cậy: ${(confidence * 100).toFixed(0)}% - ${result.reasoning || ''}`;
- categoryHint.classList.add('text-success');
+ const confidencePercent = (confidence * 100).toFixed(0);
+ categoryHint.innerHTML = `<i class="fas fa-robot text-primary me-1"></i>AI gợi ý: <strong>${categoryName}</strong> (${confidencePercent}% chắc chắn)`;
+ categoryHint.classList.remove('text-muted');
+ categoryHint.classList.add('text-primary');
  }
  
  // 🎯 AUTO-SELECT DANH MỤC VÀO DROPDOWN tx-category
  const categorySelect = document.getElementById('tx-category');
- if (categorySelect && categoryId) {
+ if (categorySelect && categoryName) {
  try {
- categorySelect.value = categoryId;
- console.log('✅ Tự động chọn danh mục:', categoryName, '(ID:', categoryId, ')');
+ // Wait a bit more for dropdown to be populated
+ setTimeout(() => {
+ categorySelect.value = categoryName;
+ console.log('✅ Tự động chọn danh mục:', categoryName, '(ID:', categoryId, ') trong dropdown');
  
  // Trigger change event để update UI
  const event = new Event('change', { bubbles: true });
  categorySelect.dispatchEvent(event);
  
  showAlert('success', `✨ AI gợi ý danh mục: ${categoryName} (${(topSuggestion.confidence * 100).toFixed(0)}% tin cậy)`);
+ }, 1500); // Increased from 500ms to 1500ms
  } catch (e) {
  console.error('Lỗi khi set danh mục:', e);
  }
+ } else {
+ console.warn('Category select not found or no categoryName:', categorySelect, categoryName);
  }
  
  console.log(' Auto-categorized:', categoryName, '(ID:', categoryId, ')');

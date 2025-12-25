@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,9 @@ public class UserController {
 
  @Autowired
  private UserService userService;
+
+	@Value("${app.upload.dir:uploads}")
+	private String uploadDir;
 
  private Long extractUserId(HttpServletRequest request) {
  try {
@@ -303,12 +307,12 @@ public class UserController {
  return ResponseEntity.badRequest().body(Collections.singletonMap("error", "File must be an image"));
  }
  
- // Save file to uploads folder
- String originalFilename = file.getOriginalFilename();
- String filename = userId + "_" + System.currentTimeMillis() + "_" + originalFilename;
- java.nio.file.Path uploadPath = java.nio.file.Paths.get("backend/uploads");
- java.nio.file.Files.createDirectories(uploadPath);
- java.nio.file.Files.write(uploadPath.resolve(filename), file.getBytes());
+	// Save file to configured uploads folder
+	String originalFilename = file.getOriginalFilename();
+	String filename = userId + "_" + System.currentTimeMillis() + "_" + originalFilename;
+	java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+	java.nio.file.Files.createDirectories(uploadPath);
+	java.nio.file.Files.write(uploadPath.resolve(filename), file.getBytes());
  
  // Update user avatar URL in profile
  UserProfile profile = userProfileRepository.findByUserId(userId).orElse(null);

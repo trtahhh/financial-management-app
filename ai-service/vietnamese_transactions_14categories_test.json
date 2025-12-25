@@ -1,0 +1,3176 @@
+[
+  {
+    "description": "gia hạn tip tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng bitcoin tháng trước",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "concert",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "quán ăn tuần này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mua thẻ tín dụng",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "lương tháng 3",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn kinh doanh tháng này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán thưởng",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp thời trang quý này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nộp karaoke tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nhận revenue quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "nhận thu cho thue",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "benh vien hôm nay",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán tiền điện tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "nộp massage quý này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "chứng khoán",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "mua tiền công tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư wifi tháng trước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán tiền nước tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "do an quý này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "thưởng tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp tín phiếu hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán taxi tháng này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nhận cgv tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "phi dich vu tháng này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "chi withdrawal fee tuần này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "đóng đồ ăn",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư thu cho thuê quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "xăng xe tháng trước",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nộp tiền công tháng trước",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "mua payroll tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "qua sinh nhat",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng chứng khoán tháng trước",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "mua thu cho thuê tháng trước",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "nộp donation tháng trước",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng lì xì",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "mua mortgage",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "ủng hộ quý này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "đóng tiếng anh tháng trước",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "đóng ăn sáng",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mua bánh mì",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "interest",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "lợi nhuận hôm nay",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "trả vàng",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng payroll quý này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "nộp thời trang hôm nay",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "laptop",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "bún tháng này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mức lương",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "nộp mua áo",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "membership tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "charity tháng này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán cổ phiếu hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "mua mừng cưới tháng trước",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán quan an",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "trả ielts",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "ăn tối",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "chi gia sư",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng sửa xe",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "trả lương tháng này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đóng phí giao dịch hôm nay",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "trả debt tháng trước",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư tin phieu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "subscription tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "trả an sang",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "trả service fee",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "trả sửa xe hôm nay",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "thay nhot",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "chi cgv tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp subscription tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "tin phieu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "khám bệnh tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn ăn tối",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng tín phiếu hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "mua tra sua",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mua bán hàng tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "yoga hôm nay",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đóng gọi đồ ăn hôm nay",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "chi thu cho thuê tháng này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư bệnh viện quý này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "pho quý này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "muc luong tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư vé máy bay",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "mua taxi",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư lì xì tháng trước",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "giay tháng trước",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "cơm",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mua profit hôm nay",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "bonus tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "bệnh viện quý này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "tra gop",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn vay ngân hàng tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng buffet",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng phí quản lý tháng này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "an sang quý này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán lãi tiết kiệm hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nhận game hôm nay",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "mua salary quý này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "mua shopping tháng trước",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nhận học tập tháng này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua quan tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "loi nhuan tháng 1",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "trả interest tháng trước",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng tin phieu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nộp trả góp tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nộp đầu tư tuần này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "xăng xe tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "thu cho thue",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn khóa học tháng trước",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn bitcoin tháng trước",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "trả lãi tiết kiệm tháng trước",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "chung chi",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua mortgage tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "trả thu nhập quý này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "do dien tu hôm nay",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "trả withdrawal fee tuần này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán payroll",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "trả tra gop",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "ăn trưa tháng trước",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "banh mi",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "trả xem phim hôm nay",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp vé xe bus tháng trước",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "crypto hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "chi misc",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "mua khóa học hôm nay",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng trả góp",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "tiền điện tháng trước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "nộp chứng khoán",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn bún",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mua gojek",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nhận xem phim",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "bảo dưỡng xe",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "trả hoa hồng tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp debt quý này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "chi parking quý này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn lợi nhuận hôm nay",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "nộp passive income",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "thu cho thuê",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "mua wifi hôm nay",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư chung khoan",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "thoi trang tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nhận wage tháng này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "chi payroll tháng này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "payroll tháng 7",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "chi an sang",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "bảo dưỡng xe quý này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư tiếng anh",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "học phí",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "nhận tín phiếu tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "dau tu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nộp game hôm nay",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "đóng profit quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "hoa hong tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "quỹ tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nộp tip tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "bond tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "trả profit tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng mức lương tháng trước",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn passive income tháng này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "đóng bond quý này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "giải trí tuần này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư từ thiện hôm nay",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "chi tiền công",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng lãi tiết kiệm tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng chứng khoán tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn ăn trưa",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn xet nghiem",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đóng thưởng hôm nay",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp gọi đồ ăn tháng này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "giay",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "chi thưởng tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư tiền công hôm nay",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đóng lì xì hôm nay",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng học tập",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "trả lương",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "nộp tu thien",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "đóng ăn tối",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "nộp phí quản lý",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "tiền điện",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "payroll",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán credit tháng trước",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán concert",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "trả tiền công tháng trước",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "sua xe hôm nay",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "mua rửa xe tháng trước",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng vàng",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "trả tín phiếu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư interest",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư misc hôm nay",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "mua netflix tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "vang tháng 8",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn rent tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "mua loan tuần này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nộp xăng xe hôm nay",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng laptop",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "đóng thu nhap",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gas",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán online",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "đóng admin fee quý này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "đóng muc luong",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "nộp grab tháng này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "trả trả nợ quý này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nộp concert tuần này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "thay nhot tháng này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "mua subscription tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng shopee tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "trả thu nhap them",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng fast food quý này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng bonus",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng mừng cưới tháng trước",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "thu nhập thêm tháng 4",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "rent quý này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư tip quý này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng ielts hôm nay",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua mua thuốc tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "trả lì xì quý này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "nộp freelance tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư training tuần này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "tra sua hôm nay",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn hoa hồng quý này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "donation",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "tip tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "phi quan ly tháng 6",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "bệnh viện tháng trước",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng misc quý này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "đóng đồ điện tử tháng này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nhận ve xe bus",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư bi a",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư misc tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "trà sữa quý này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn extra income tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng xét nghiệm tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "bao duong xe tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư wifi tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "thuê nhà tháng trước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "gọi đồ ăn",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "chi bán hàng tháng trước",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "nhận salary quý này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn xem phim tuần này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "trả game tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp hoa hồng tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nhận phí quản lý hôm nay",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "phở tháng này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "cơm tháng này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn trả góp tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nhận tieng anh",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư internet",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "loi nhuan tháng trước",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "trả thẻ tín dụng hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư parking tháng trước",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nhận lợi nhuận",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán mua sách hôm nay",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "do an tháng này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán mua sách tháng này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng phí giao dịch tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "trả quà sinh nhật tuần này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "bi-a",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "mua sach hôm nay",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "thue nha",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "nhận misc",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "delivery tuần này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gia su hôm nay",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "nộp phí dịch vụ tháng này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn tiền nước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "thẻ tín dụng tháng trước",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "rent",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "chi co phieu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán nha khoa tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư nha khoa hôm nay",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán mua thuoc",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "nộp trà sữa",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gym tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "rửa xe quý này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "vé máy bay tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "mua trà sữa",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn chứng khoán",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nhận bảo hiểm hôm nay",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "chi passive income tháng này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "trả kinh doanh quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "salary tháng 5",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đóng doanh thu hôm nay",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "gym",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn shopee tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "shopping",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư bảo hiểm tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn thu nhập thêm",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp từ thiện tuần này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư stationery tuần này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua online tháng này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nộp vay ngân hàng",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán cgv quý này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "trả bowling",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp incentive tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "cổ phiếu tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "trả mung cuoi",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "co phieu tuần này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán mức lương tháng trước",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn lương tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "phí dịch vụ hôm nay",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "nộp admin fee",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "chi bond tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn training tháng trước",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán chứng chỉ quý này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "chi thu nhập",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đóng qua sinh nhat",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "loan",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "kham benh tháng trước",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đóng spotify quý này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư tiếng anh hôm nay",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "tip tháng 12",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "chi yoga",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "vay ngân hàng tuần này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "mung cuoi tháng trước",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán xem phim tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "mua sách",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng chi phí khác tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "đóng bảo hiểm",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "thoi trang hôm nay",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng gift tuần này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "xét nghiệm",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "nhận bond",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng điện thoại tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "ve may bay tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "trả training quý này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua tip tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán xăng xe",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nhận ielts quý này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "do dien tu",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nộp internet tháng này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "mua lãi tiết kiệm",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "trả thời trang tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán trả góp hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "trả lãi tiết kiệm hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "chi debt tháng trước",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "trả salary tháng này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "chi gojek hôm nay",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nộp lazada",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "mua loan tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "trả thuong",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "mua phí giao dịch tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng mua thuốc tháng này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "chi credit hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nhận interest hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng payroll hôm nay",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán doanh thu tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng đầu tư",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "thue nha quý này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "mua karaoke tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "thẻ tín dụng",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nộp misc",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "nhận mua áo quý này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "bảo hiểm hôm nay",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "trả lợi nhuận quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "mua rent tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "mua wage hôm nay",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "trả mortgage",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "đóng chứng chỉ tháng trước",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "bowling",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nhận mức lương",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng interest tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "tien cong",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng credit tháng này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "sua xe",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán từ thiện",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "đóng bowling",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp bệnh viện tháng trước",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "membership quý này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng quà sinh nhật hôm nay",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "chi incentive hôm nay",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "mua vé xe bus tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "thu nhap them tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng thưởng tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng do dien tu",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "đóng profit tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "mua membership quý này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "đóng gym tháng trước",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "chi interest",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "vàng tháng trước",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng từ thiện",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "mua thuốc",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư dental tuần này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đóng party tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp game tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn bi-a tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "trả debt quý này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "kinh doanh tháng này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "mua membership tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "thuong tháng 8",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "sử dụng mua quần tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "yoga quý này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư hoa hồng",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "muc luong tháng 10",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn bi-a tuần này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp subscription quý này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "chi game",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng delivery hôm nay",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "mua thẻ tín dụng tháng trước",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "đóng lợi nhuận tháng trước",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn tra sua",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "nhận giày hôm nay",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "mua học phí quý này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "nộp profit quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "đóng vé xe bus tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nộp đồ điện tử tháng trước",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nộp misc tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "nhận hoa hồng",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "mua mua áo tháng trước",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "khóa học",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "trả phở",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng bonus tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nhận bi-a tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nộp trả nợ quý này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nhận party hôm nay",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán xet nghiem",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng thu nhập thêm hôm nay",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp passive income tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "trả bond hôm nay",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán admin fee tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng thu cho thuê hôm nay",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "nộp bonus tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "cafe",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "thuong",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng bonus tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "chi doanh thu tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán training",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua crypto tuần này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "đóng game tuần này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn wifi tháng trước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư bao duong xe",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nộp wage tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "mua parking tuần này",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "trả chi phí khác hôm nay",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "mua doanh thu tháng này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "nhận revenue tuần này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "đóng dental",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "nộp internet quý này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "nộp stationery",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn mức lương quý này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "trả game hôm nay",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "nhận lương",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn wage tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "trả debt",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng đồ điện tử",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng service fee tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "mua gas tháng này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "stationery tháng trước",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua áo quý này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "đóng tip tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp mua quần quý này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "thuong tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "internet tháng trước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "trả thu nhập thêm",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "trả đồ điện tử tháng này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "tang qua tháng này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "chứng khoán tháng này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "đóng freelance tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán nha khoa tháng trước",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng mua áo",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "phở",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "extra income tháng này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp điện thoại",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "trả party hôm nay",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "chi incentive tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "chi bonus",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "thanh toán party tháng này",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "tiền nước tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "trả mức lương tuần này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư charity quý này",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "chi điện thoại tuần này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nhận tip tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư nha khoa tuần này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "chi vay ngân hàng tuần này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn taxi hôm nay",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn shopee",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "nhận giải trí tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "gojek tháng trước",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "nộp giày tháng này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "chi giày hôm nay",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn mức lương hôm nay",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "đóng misc tháng trước",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "thu nhap them",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "điện thoại quý này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư khoa hoc",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "mua thời trang tháng trước",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "trả benh vien",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "nộp vay ngân hàng hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán spa",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "buffet tháng trước",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng rửa xe tháng trước",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "chi từ thiện hôm nay",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "mua tiền nước tháng trước",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "trả tiền điện",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư subscription hôm nay",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng debt hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "buffet tuần này",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "trả nợ",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán lợi nhuận quý này",
+    "category": "Kinh doanh",
+    "category_id": 4,
+    "type": "income"
+  },
+  {
+    "description": "trả chi phí khác tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "co phieu",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nộp học tập tháng trước",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "chi phi khac tháng này",
+    "category": "Khác",
+    "category_id": 14,
+    "type": "expense"
+  },
+  {
+    "description": "đầu tư credit tuần này",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "nhận hoa hồng quý này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "nộp wifi tuần này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán thời trang quý này",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn giai tri",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán thay nhot",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "phi quan ly",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "chi stationery tháng này",
+    "category": "Giáo dục",
+    "category_id": 9,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn thuong",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "chi bonus tuần này",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "wage hôm nay",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "mung cuoi",
+    "category": "Quà tặng",
+    "category_id": 13,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn mua thuốc quý này",
+    "category": "Sức khỏe",
+    "category_id": 8,
+    "type": "expense"
+  },
+  {
+    "description": "gia hạn rent tháng này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "wifi quý này",
+    "category": "Tiện ích",
+    "category_id": 11,
+    "type": "expense"
+  },
+  {
+    "description": "chi cgv",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  },
+  {
+    "description": "trả mức lương tháng này",
+    "category": "Lương",
+    "category_id": 1,
+    "type": "income"
+  },
+  {
+    "description": "nộp be",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "mortgage hôm nay",
+    "category": "Vay nợ",
+    "category_id": 12,
+    "type": "expense"
+  },
+  {
+    "description": "sử dụng incentive tháng trước",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "đóng phở",
+    "category": "Ăn uống",
+    "category_id": 5,
+    "type": "expense"
+  },
+  {
+    "description": "trả đồ điện tử",
+    "category": "Mua sắm",
+    "category_id": 10,
+    "type": "expense"
+  },
+  {
+    "description": "thu nhap them hôm nay",
+    "category": "Thu nhập khác",
+    "category_id": 2,
+    "type": "income"
+  },
+  {
+    "description": "quy tháng 11",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "gia hạn quỹ",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "đầu tư quý này",
+    "category": "Đầu tư",
+    "category_id": 3,
+    "type": "income"
+  },
+  {
+    "description": "nhận bảo dưỡng xe",
+    "category": "Giao thông",
+    "category_id": 6,
+    "type": "expense"
+  },
+  {
+    "description": "thanh toán party tháng trước",
+    "category": "Giải trí",
+    "category_id": 7,
+    "type": "expense"
+  }
+]

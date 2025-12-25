@@ -392,8 +392,7 @@ function setupEventListeners() {
         searchTimeout = setTimeout(applyFilters, 500);
     });
     
-    // File input for OCR
-    document.getElementById('ocrFileInput').addEventListener('change', handleOcrUpload);
+    // File input for OCR - handled in /js/transactions.js to avoid duplicate listeners
 }
 
 // Reset Filters

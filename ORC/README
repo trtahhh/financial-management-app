@@ -1,0 +1,49 @@
+Bạn là một AI kỹ sư Computer Vision & NLP chuyên nghiệp.
+Hãy giúp tôi xây dựng một hệ thống OCR quét và trích xuất thông tin hóa đơn TIẾNG VIỆT, KHÔNG sử dụng bất kỳ API bên ngoài nào.
+
+📌 Mục tiêu dự án:
+Từ ảnh hóa đơn đầu vào, trích xuất và trả về JSON gồm các trường:
+- store_name (tên cửa hàng / công ty)
+- invoice_date (ngày in hóa đơn)
+- items: danh sách mặt hàng {name, quantity, unit_price, total_price}
+- total_amount (tổng tiền)
+- address (địa chỉ)
+
+📌 Dataset sử dụng:
+- https://www.kaggle.com/datasets/domixi1989/vietnamese-receipts-mc-ocr-2021
+- Ảnh hóa đơn tiếng Việt, nhiều định dạng, nhiều font, nhiễu nền
+
+📌 Kiến trúc hệ thống (theo sơ đồ đã thiết kế):
+1. OpenCV đọc ảnh đầu vào
+2. YOLOv8 (custom-trained) để phát hiện các vùng quan trọng:
+   - company/store_name
+   - date
+   - address
+   - items_table
+   - total_amount
+3. OpenCV cắt ảnh theo bounding box YOLO
+4. Chuẩn hóa ảnh cho OCR (resize, grayscale, threshold, denoise)
+5. EasyOCR nhận dạng văn bản tiếng Việt (lang=['vi', 'en'])
+6. Regex + rule-based parsing để trích xuất thông tin
+7. Xuất kết quả dưới dạng JSON
+
+📌 Yêu cầu kỹ thuật:
+- Python
+- Ultralytics YOLOv8
+- OpenCV
+- EasyOCR
+- Không dùng Google Vision, Azure, AWS hay API OCR nào khác
+- Code rõ ràng, có module:
+  - detector.py (YOLO detect)
+  - preprocess.py (OpenCV xử lý ảnh)
+  - ocr.py (EasyOCR)
+  - extractor.py (regex + rule-based)
+  - main.py (pipeline tổng)
+
+📌 Đặc biệt:
+- Regex phải xử lý được tiếng Việt có dấu
+- Ngày hóa đơn có thể có nhiều format (dd/mm/yyyy, dd-mm-yyyy, ...)
+- Tổng tiền có thể có dấu chấm, phẩy, VNĐ
+- Ưu tiên độ chính xác hơn tốc độ
+
+Hãy sinh code Python hoàn chỉnh, dễ mở rộng và phù hợp làm đồ án hoặc sản phẩm thực tế.

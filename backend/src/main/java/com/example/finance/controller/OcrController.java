@@ -228,17 +228,21 @@ public class OcrController {
 
  // ---- Public extractors ----
  static CurrencyCandidate extractBestCurrency(String text) {
- String[] keywords = {"tổng", "thành tiền", "tiền", "amount", "total", "cộng", "phải trả", "sum", "gross", "tiền mặt", "cash", "inclusive", "sales"};
+ String[] keywords = {"tổng", "thành tiền", "tiền", "amount", "total", "cộng", "phải trả", "sum", "gross", "tiền mặt", "cash", "inclusive", "sales", "thanh tien", "tong tien"};
  String[] lines = text.split("\r?\n");
  java.util.List<CurrencyCandidate> all = new java.util.ArrayList<>();
  for (String line : lines) {
  // Skip dòng có từ chỉ số lượng, giá, discount, etc
  String lineLower = line.toLowerCase();
- if (lineLower.contains("qty") || lineLower.contains("quantity") || lineLower.contains("số lượng") || 
+ if (lineLower.contains("qty") || lineLower.contains("quantity") || lineLower.contains("số lượng") ||
  lineLower.contains("unit") || lineLower.contains("price") || lineLower.contains("giá") ||
- (lineLower.contains("discount") && !lineLower.contains("total")) || 
- lineLower.contains("change") || lineLower.contains("thay đổi")) {
- continue; // Bỏ qua dòng này
+ (lineLower.contains("discount") && !lineLower.contains("total")) ||
+ lineLower.contains("change") || lineLower.contains("thay đổi") ||
+ lineLower.contains("đường") || lineLower.contains("duong") || lineLower.contains("phố") || lineLower.contains("pho") ||
+ lineLower.contains("số") || lineLower.contains("so") || lineLower.contains("ngõ") || lineLower.contains("ngo") ||
+ lineLower.contains("quận") || lineLower.contains("quan") || lineLower.contains("huyện") || lineLower.contains("huyen") ||
+ lineLower.contains("tỉnh") || lineLower.contains("tinh") || lineLower.contains("thành phố") || lineLower.contains("thanh pho")) {
+ continue; // Bỏ qua dòng này - có thể là địa chỉ
  }
  
  java.util.List<String> nums = findCurrencies(line);
@@ -470,17 +474,40 @@ public class OcrController {
  static String findDuplicateLargeAmount(String text, String currentSuggested) {
  java.util.Map<String, Integer> count = new java.util.HashMap<>();
  for (String line : text.split("\r?\n")) {
+ // Skip lines that look like addresses (contain street/road keywords)
+ String lineLower = line.toLowerCase();
+ if (lineLower.contains("đường") || lineLower.contains("số") || lineLower.contains("phố") ||
+     lineLower.contains("street") || lineLower.contains("road") || lineLower.contains("avenue") ||
+     lineLower.contains("p.") || lineLower.contains("q.") || lineLower.contains("tp.") ||
+     lineLower.contains("tỉnh") || lineLower.contains("huyện") || lineLower.contains("xã")) {
+ System.out.println("[DUPLICATE_FINDER] Skipping address line: " + line);
+ continue; // Skip address lines
+ }
+
+ // Only consider lines that have some indication they might contain amounts (keywords or patterns)
+ boolean hasAmountIndicator = lineLower.contains("tổng") || lineLower.contains("total") || 
+     lineLower.contains("tiền") || lineLower.contains("amount") || lineLower.contains("cộng") ||
+     lineLower.contains("thành tiền") || lineLower.contains("tong") || lineLower.contains("tien") ||
+     line.matches(".*[0-9]{3,}.*"); // At least some numbers
+ if (!hasAmountIndicator) {
+ System.out.println("[DUPLICATE_FINDER] Skipping non-amount line: " + line);
+ continue;
+ }
+
+ System.out.println("[DUPLICATE_FINDER] Processing line: " + line);
  java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?<![0-9])[0-9]{1,3}(?:[.,][0-9]{3})+").matcher(line);
  while (m.find()) {
  String num = m.group();
  String normalized = num.replaceAll("[.,]", "");
- if (normalized.length() < 5) continue; // bỏ số nhỏ
+ if (normalized.length() < 4) continue; // bỏ số quá nhỏ (< 1000)
+ if (normalized.length() > 9) continue; // bỏ số quá lớn (> 999M)
+ System.out.println("[DUPLICATE_FINDER] Found number: " + num + " -> " + normalized);
  count.put(normalized, count.getOrDefault(normalized,0)+1);
  }
  }
  String best = null;
  for (var e : count.entrySet()) {
- if (e.getValue() >= 2) {
+ if (e.getValue() >= 2) { // chỉ cần xuất hiện 2 lần
  if (best == null || e.getKey().length() > best.length() || (e.getKey().length()==best.length() && e.getKey().compareTo(best)>0)) {
  best = e.getKey();
  }
@@ -507,6 +534,14 @@ public class OcrController {
  java.util.Map<String, Stats> map = new java.util.HashMap<>();
  java.util.regex.Pattern p = java.util.regex.Pattern.compile("(?<![0-9])[0-9]{1,3}(?:[.,][0-9]{3})+");
  for (String line : rawLines) {
+ // Skip lines that look like addresses
+ String lineLower = line.toLowerCase();
+ if (lineLower.contains("đường") || lineLower.contains("số") || lineLower.contains("phố") ||
+     lineLower.contains("street") || lineLower.contains("road") || lineLower.contains("avenue") ||
+     lineLower.contains("p.") || lineLower.contains("q.") || lineLower.contains("tp.") ||
+     lineLower.contains("tỉnh") || lineLower.contains("huyện") || lineLower.contains("xã")) {
+ continue; // Skip address lines
+ }
  java.util.regex.Matcher m = p.matcher(line);
  boolean hasKeyword = hasTotalKeyword(line);
  while (m.find()) {

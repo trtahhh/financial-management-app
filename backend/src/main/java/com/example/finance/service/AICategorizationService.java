@@ -655,7 +655,7 @@ public class AICategorizationService {
         }
         
         // Category 5: Ăn uống (Food & Beverage) - EXPANDED with word boundaries
-        if (normalized.matches(".*\\b(com|an|cafe|tra|pho|bun|quan an|nha hang|buffet|mi|banh|nuong|lau|" +
+        if (normalized.matches(".*\\b(com|an|cafe|ca phe|tra|pho|bun|quan an|nha hang|buffet|mi|banh|nuong|lau|" +
                                "food|drink|restaurant|breakfast|lunch|dinner|snack|" +
                                "ship do an|grab food|shopeefood|gofood|now|baemin|" +
                                "highlands|starbucks|phuc long|kfc|lotteria|jollibee|pizza|burger)\\b.*")) {

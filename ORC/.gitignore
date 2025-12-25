@@ -1,0 +1,84 @@
+# .gitignore for Vietnamese Receipt OCR Project
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Models
+*.pt
+*.pth
+*.onnx
+*.tflite
+runs/
+weights/
+yolo_dataset/
+
+# Output
+output/
+demo_output/
+results/
+*.json
+!data.yaml
+
+# Logs
+*.log
+logs/
+
+# EasyOCR models (sẽ download tự động)
+.EasyOCR/
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary
+temp/
+tmp/
+*.tmp
+
+# CSV results
+*.csv
+!mcocr_train_df.csv
+!mcocr_val_sample_df.csv
