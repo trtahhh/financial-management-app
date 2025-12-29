@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * Service tính toán Điểm Sức khỏe Tài chính
@@ -30,7 +30,7 @@ public class FinancialHealthService {
     private final TransactionRepository transactionRepository;
     private final BudgetRepository budgetRepository;
     private final GoalRepository goalRepository;
-    private final CategoryRepository categoryRepository;
+    private final FinancialHealthHistoryRepository healthHistoryRepository;
     
     /**
      * Tính điểm sức khỏe tài chính cho user
@@ -521,27 +521,66 @@ public class FinancialHealthService {
     /**
      * Tính xu hướng so với tháng trước
      */
+    @Transactional
     private TrendInfo calculateTrend(Long userId, int currentScore) {
-        // TODO: Lưu điểm vào database để so sánh
-        // Tạm thời trả về STABLE
-        return new TrendInfo("STABLE", 0.0);
+        LocalDate now = LocalDate.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+        
+        // Lưu điểm hiện tại vào database
+        FinancialHealthHistory currentHistory = healthHistoryRepository
+            .findByUserIdAndMonthAndYear(userId, currentMonth, currentYear)
+            .orElse(new FinancialHealthHistory());
+        
+        currentHistory.setUserId(userId);
+        currentHistory.setScore(currentScore);
+        currentHistory.setRating(getRatingInfo(currentScore).getRating());
+        currentHistory.setMonth(currentMonth);
+        currentHistory.setYear(currentYear);
+        currentHistory.setRecordDate(now);
+        healthHistoryRepository.save(currentHistory);
+        
+        // Lấy điểm tháng trước để so sánh
+        LocalDate previousMonth = now.minusMonths(1);
+        int prevMonth = previousMonth.getMonthValue();
+        int prevYear = previousMonth.getYear();
+        
+        Optional<FinancialHealthHistory> previousHistory = healthHistoryRepository
+            .findByUserIdAndMonthAndYear(userId, prevMonth, prevYear);
+        
+        if (previousHistory.isEmpty()) {
+            return new TrendInfo("STABLE", 0.0);
+        }
+        
+        int previousScore = previousHistory.get().getScore();
+        int diff = currentScore - previousScore;
+        double percentage = previousScore > 0 ? (diff * 100.0 / previousScore) : 0.0;
+        
+        String trend;
+        if (diff > 5) {
+            trend = "UP";
+        } else if (diff < -5) {
+            trend = "DOWN";
+        } else {
+            trend = "STABLE";
+        }
+        
+        log.info("Trend calculated for user {}: {} ({} -> {})", userId, trend, previousScore, currentScore);
+        return new TrendInfo(trend, percentage);
     }
     
     // Helper classes
     private static class RatingInfo {
         private final String rating;
         private final String color;
-        private final String label;
         
         RatingInfo(String rating, String color, String label) {
             this.rating = rating;
             this.color = color;
-            this.label = label;
         }
         
         String getRating() { return rating; }
         String getColor() { return color; }
-        String getLabel() { return label; }
     }
     
     private static class TrendInfo {
@@ -555,5 +594,33 @@ public class FinancialHealthService {
         
         String getTrend() { return trend; }
         Double getPercentage() { return percentage; }
+    }
+    
+    /**
+     * Lấy lịch sử xu hướng điểm theo thời gian
+     */
+    public List<Map<String, Object>> getHealthScoreTrend(Long userId, Integer months) {
+        List<FinancialHealthHistory> history = healthHistoryRepository
+            .findByUserIdOrderByYearDescMonthDesc(userId);
+        
+        List<Map<String, Object>> trend = new ArrayList<>();
+        int limit = Math.min(months, history.size());
+        
+        for (int i = 0; i < limit; i++) {
+            FinancialHealthHistory h = history.get(i);
+            Map<String, Object> point = new java.util.HashMap<>();
+            point.put("month", h.getMonth());
+            point.put("year", h.getYear());
+            point.put("score", h.getScore());
+            point.put("rating", h.getRating());
+            point.put("date", h.getRecordDate());
+            trend.add(point);
+        }
+        
+        // Đảo ngược để hiển thị từ cũ đến mới
+        java.util.Collections.reverse(trend);
+        
+        log.info("Retrieved {} months of health score trend for user: {}", trend.size(), userId);
+        return trend;
     }
 }

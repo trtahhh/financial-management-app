@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * REST API Controller cho Điểm Sức khỏe Tài chính
@@ -41,8 +43,23 @@ public class FinancialHealthController {
             Authentication authentication) {
         log.info("Get health score trend for {} months from user: {}", months, authentication.getName());
         
-        // TODO: Implement trend history
-        return ResponseEntity.ok("Tính năng lịch sử xu hướng đang được phát triển");
+        try {
+            Long userId = getUserIdFromAuth(authentication);
+            List<Map<String, Object>> trend = financialHealthService.getHealthScoreTrend(userId, months);
+            
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("data", trend);
+            response.put("message", "Lấy lịch sử xu hướng thành công");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting health score trend", e);
+            Map<String, Object> error = new java.util.HashMap<>();
+            error.put("success", false);
+            error.put("message", "Lỗi khi lấy lịch sử xu hướng");
+            return ResponseEntity.internalServerError().body(error);
+        }
     }
     
     /**

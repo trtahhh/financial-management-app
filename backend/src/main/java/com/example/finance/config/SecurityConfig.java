@@ -1,7 +1,7 @@
 package com.example.finance.config;
 
 import com.example.finance.security.JwtFilter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,11 +16,16 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
  private final JwtFilter jwtFilter;
  private final CorsConfigurationSource corsConfigurationSource;
+ 
+ // Constructor injection với @Qualifier để chỉ định bean cụ thể
+ public SecurityConfig(JwtFilter jwtFilter, @Qualifier("corsConfigurationSource") CorsConfigurationSource corsConfigurationSource) {
+     this.jwtFilter = jwtFilter;
+     this.corsConfigurationSource = corsConfigurationSource;
+ }
 
  @Bean
  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

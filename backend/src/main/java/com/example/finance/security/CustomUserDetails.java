@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
+ private static final long serialVersionUID = 1L;
+ 
  private final Long id;
  private final String username;
  private final String password;

@@ -10,6 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @RestController
@@ -30,6 +34,9 @@ public class SecurityController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Setup 2FA
@@ -137,10 +144,8 @@ public class SecurityController {
             User user = getCurrentUser(request);
             List<Map<String, Object>> sessions = sessionManagementService.getActiveSessions(user.getId());
             
-            // Mark current session
-            String currentToken = extractToken(request);
+            // Mark current session (token comparison would be implemented when needed)
             sessions.forEach(session -> {
-                // This would need session token comparison logic
                 session.put("isCurrent", false);
             });
             
@@ -238,11 +243,34 @@ public class SecurityController {
             HttpServletRequest request) {
         try {
             User user = getCurrentUser(request);
-            // Parse dates and get stats
-            // Map<String, Object> stats = auditLogService.getAuditStatistics(user.getId(), start, end);
-            return ResponseEntity.ok(Map.of("message", "Feature not implemented yet"));
+            
+            // Parse dates (format: yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss)
+            LocalDateTime start = parseDateTime(startDate);
+            LocalDateTime end = parseDateTime(endDate);
+            
+            // Get statistics
+            Map<String, Object> stats = auditLogService.getAuditStatistics(user.getId(), start, end);
+            
+            return ResponseEntity.ok(stats);
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid date format. Use yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    private LocalDateTime parseDateTime(String dateStr) {
+        // Try parsing as LocalDateTime first (yyyy-MM-ddTHH:mm:ss)
+        try {
+            return LocalDateTime.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        } catch (DateTimeParseException e1) {
+            try {
+                // Try parsing as LocalDate (yyyy-MM-dd) and set to start/end of day
+                LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE);
+                return date.atStartOfDay();
+            } catch (DateTimeParseException e2) {
+                throw new DateTimeParseException("Invalid date format: " + dateStr, dateStr, 0);
+            }
         }
     }
 
@@ -263,7 +291,12 @@ public class SecurityController {
     // Helper methods
     private User getCurrentUser(HttpServletRequest request) {
         String token = extractToken(request);
-        return jwtUtil.getUserFromToken(token);
+        Long userId = jwtUtil.getUserId(token);
+        if (userId == null) {
+            throw new RuntimeException("Invalid token: userId not found");
+        }
+        return userService.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
     }
 
     private String extractToken(HttpServletRequest request) {

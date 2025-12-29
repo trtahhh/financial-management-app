@@ -1,6 +1,5 @@
 package com.example.finance.service;
 
-import com.example.finance.dto.SummaryDTO;
 import com.example.finance.entity.Transaction;
 import com.example.finance.entity.Wallet;
 import com.example.finance.repository.TransactionRepository;

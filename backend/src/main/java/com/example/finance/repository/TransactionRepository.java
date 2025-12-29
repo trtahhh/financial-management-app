@@ -55,6 +55,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
  @Param("startDate") LocalDate startDate, 
  @Param("endDate") LocalDate endDate);
  
+ // Method for GoalService - find transactions by user and date range
+ @Query("SELECT t FROM Transaction t " +
+ "LEFT JOIN FETCH t.category " +
+ "LEFT JOIN FETCH t.wallet " +
+ "WHERE t.user.id = :userId AND t.date BETWEEN :startDate AND :endDate AND t.isDeleted = false")
+ List<Transaction> findByUserIdAndDateBetween(
+ @Param("userId") Long userId, 
+ @Param("startDate") LocalDate startDate, 
+ @Param("endDate") LocalDate endDate);
+ 
  // Method for ReportService - find transactions by user, type, category and date range
  @Query("SELECT t FROM Transaction t " +
  "LEFT JOIN FETCH t.category " +

@@ -3,6 +3,7 @@ package com.example.finance.controller;
 import com.example.finance.service.DashboardService;
 import com.example.finance.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,7 +26,7 @@ public class DashboardController {
  * Lấy toàn bộ dữ liệu dashboard
  */
  @GetMapping("/user/{userId}")
- // @Cacheable(value = "dashboard", key = "#userId + '_' + #month + '_' + #year") // Disabled for testing
+ @Cacheable(value = "dashboard", key = "#userId + '_' + #month + '_' + #year")
  public ResponseEntity<Map<String, Object>> getDashboard(
  @PathVariable Long userId,
  @RequestParam(required = false) Integer month,

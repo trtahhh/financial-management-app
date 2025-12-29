@@ -75,10 +75,25 @@ public class GoalService {
  }
 
  public BigDecimal predictNextMonth(Long userId) {
- // Tạm thời trả về 0 để tránh circular dependency
- // Có thể implement sau khi đã giải quyết dependency
- log.info("Goal prediction temporarily disabled to avoid circular dependency");
+ // Dự đoán chi tiêu tháng tới dựa trên lịch sử
+ LocalDate now = LocalDate.now();
+ LocalDate startDate = now.minusMonths(3);
+ 
+ List<Transaction> recentTransactions = transactionRepository
+ .findByUserIdAndDateBetween(userId, startDate, now);
+ 
+ if (recentTransactions.isEmpty()) {
  return BigDecimal.ZERO;
+ }
+ 
+ // Tính trung bình chi tiêu 3 tháng gần nhất
+ BigDecimal totalExpense = recentTransactions.stream()
+ .filter(t -> "expense".equalsIgnoreCase(t.getType()))
+ .map(Transaction::getAmount)
+ .reduce(BigDecimal.ZERO, BigDecimal::add);
+ 
+ // Chia cho 3 để lấy trung bình tháng
+ return totalExpense.divide(BigDecimal.valueOf(3), 0, RoundingMode.HALF_UP);
  }
 
  public GoalDTO save(GoalDTO dto) {
