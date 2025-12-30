@@ -6,10 +6,20 @@
         <h2 class="mb-1">Ngân Sách</h2>
         <p class="text-secondary mb-0">Quản lý và theo dõi ngân sách chi tiêu của bạn</p>
     </div>
-    <button class="btn btn-primary" onclick="showAddBudgetModal()">
-        <i class="bi bi-plus-lg"></i>
-        Thêm Ngân Sách
-    </button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportBudgetReport()" title="Xuất báo cáo ngân sách">
+            <i class="bi bi-file-earmark-pdf"></i>
+            Xuất Báo Cáo
+        </button>
+        <button class="btn btn-outline-primary" onclick="getSuggestions()">
+            <i class="bi bi-lightbulb"></i>
+            Nhận Gợi Ý
+        </button>
+        <button class="btn btn-primary" onclick="showAddBudgetModal()">
+            <i class="bi bi-plus-lg"></i>
+            Thêm Ngân Sách
+        </button>
+    </div>
 </div>
 
 <!-- Budget Summary Cards -->

@@ -97,11 +97,11 @@ app.get('/verify-email', (req, res) => {
 // Trang cần đăng nhập (sử dụng layout có sidebar)
 app.get('/dashboard', (req, res) => res.render('dashboard', { title: 'Thống kê tài chính' }));
 app.get('/profile', (req, res) => res.render('profile', { title: 'Hồ sơ cá nhân' }));
-app.get('/wallets', (req, res) => res.render('wallets'));
-app.get('/categories', (req, res) => res.render('categories'));
-app.get('/transactions', (req, res) => res.render('transactions'));
-app.get('/budgets', (req, res) => res.render('budgets'));
-app.get('/goals', (req, res) => res.render('goals'));
+app.get('/wallets', (req, res) => res.render('wallets', { title: 'Quản lý ví' }));
+app.get('/categories', (req, res) => res.render('categories', { title: 'Danh mục' }));
+app.get('/transactions', (req, res) => res.render('transactions', { title: 'Giao dịch' }));
+app.get('/budgets', (req, res) => res.render('budgets', { title: 'Ngân sách' }));
+app.get('/goals', (req, res) => res.render('goals', { title: 'Mục tiêu' }));
 app.get('/planning', (req, res) => res.render('planning', { title: 'Kế Hoạch Tài Chính AI' }));
 app.get('/chat', (req, res) => res.render('chat'));
 app.get('/health-score', (req, res) => res.render('health-score', { title: 'Điểm Sức khỏe Tài chính' }));

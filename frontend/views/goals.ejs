@@ -6,10 +6,16 @@
         <h2 class="mb-1">Mục Tiêu Tài Chính</h2>
         <p class="text-secondary mb-0">Đặt và theo dõi các mục tiêu tiết kiệm của bạn</p>
     </div>
-    <button class="btn btn-primary" onclick="showAddGoalModal()">
-        <i class="bi bi-plus-lg"></i>
-        Thêm Mục Tiêu
-    </button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportGoalsProgress()" title="Xuất tiến độ mục tiêu">
+            <i class="bi bi-file-earmark-arrow-down"></i>
+            Xuất Tiến Độ
+        </button>
+        <button class="btn btn-primary" onclick="showAddGoalModal()">
+            <i class="bi bi-plus-lg"></i>
+            Thêm Mục Tiêu
+        </button>
+    </div>
 </div>
 
 <!-- Goals Summary Cards -->

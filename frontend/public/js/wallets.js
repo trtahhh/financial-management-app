@@ -35,6 +35,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function load() {
+    // Add loading indicator
+    if (t) {
+      t.innerHTML = '<tbody><tr><td colspan="3" class="text-center py-4"><div class="spinner-border spinner-border-sm me-2"></div>Đang tải...</td></tr></tbody>';
+    }
+    
     fetch('http://localhost:8080/api/wallets', {
       headers: getAuthHeaders()
     })
@@ -55,7 +60,12 @@ document.addEventListener('DOMContentLoaded', function () {
               </td>
             </tr>`
           ).join('') + '</tbody>';
-      }).catch(e => alert(e.message));
+      }).catch(e => {
+        console.error('Failed to load wallets:', e);
+        if (t) {
+          t.innerHTML = '<tbody><tr><td colspan="3" class="text-center py-4 text-danger">Không thể tải danh sách ví. Vui lòng thử lại.</td></tr></tbody>';
+        }
+      });
   }
 
   function formatCurrency(amount) {

@@ -1,3 +1,25 @@
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Điểm Sức Khỏe Tài Chính</h2>
+        <p class="text-secondary mb-0">Đánh giá tổng quan tình hình tài chính của bạn</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportHealthReport()" title="Xuất báo cáo sức khỏe tài chính">
+            <i class="bi bi-file-earmark-medical"></i>
+            Xuất Báo Cáo
+        </button>
+        <button class="btn btn-outline-primary" onclick="shareHealthScore()" title="Chia sẻ điểm của bạn">
+            <i class="bi bi-share"></i>
+            Chia Sẻ
+        </button>
+        <button class="btn btn-primary" onclick="refreshHealthScore()" title="Làm mới điểm">
+            <i class="bi bi-arrow-clockwise"></i>
+            Làm Mới
+        </button>
+    </div>
+</div>
+
 <style>
     .health-score-container {
         max-width: 1200px;

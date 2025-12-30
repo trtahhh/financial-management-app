@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -141,7 +142,7 @@ public class OpenRouterServiceTest {
         when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(String.class))
-            .thenReturn(Mono.error(WebClientResponseException.create(401, "Unauthorized", null, null, null)));
+            .thenReturn(Mono.error(WebClientResponseException.create(401, "Unauthorized", HttpHeaders.EMPTY, new byte[0], null)));
         
         // When
         String result = openRouterService.chat("Test prompt");
@@ -161,7 +162,7 @@ public class OpenRouterServiceTest {
         when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(String.class))
-            .thenReturn(Mono.error(WebClientResponseException.create(402, "Payment Required", null, null, null)));
+            .thenReturn(Mono.error(WebClientResponseException.create(402, "Payment Required", HttpHeaders.EMPTY, new byte[0], null)));
         
         // When
         String result = openRouterService.chat("tiết kiệm như thế nào");
@@ -182,7 +183,7 @@ public class OpenRouterServiceTest {
         when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(String.class))
-            .thenReturn(Mono.error(WebClientResponseException.create(429, "Too Many Requests", null, null, null)));
+            .thenReturn(Mono.error(WebClientResponseException.create(429, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null)));
         
         // When
         String result = openRouterService.chat("Test prompt");

@@ -1,0 +1,804 @@
+{
+  "timestamp": "2025-12-29T23:39:58.656Z",
+  "summary": {
+    "totalPages": 8,
+    "totalButtons": 112,
+    "status": "All buttons cataloged successfully"
+  },
+  "buttonsByPage": {
+    "Homepage": 8,
+    "Login": 5,
+    "Register": 4,
+    "Dashboard": 21,
+    "Transactions": 21,
+    "Budgets": 18,
+    "Goals": 20,
+    "Wallets": 15
+  },
+  "details": [
+    {
+      "page": "Homepage",
+      "button": "Finance AI",
+      "tag": "A",
+      "href": "http://localhost:3000/",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Tính năng",
+      "tag": "A",
+      "href": "http://localhost:3000/#features",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Giới thiệu",
+      "tag": "A",
+      "href": "http://localhost:3000/#about",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Đăng nhập",
+      "tag": "A",
+      "href": "http://localhost:3000/login",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Đăng ký",
+      "tag": "A",
+      "href": "http://localhost:3000/register",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Bắt đầu miễn phí",
+      "tag": "A",
+      "href": "http://localhost:3000/register",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Bắt đầu ngay",
+      "tag": "A",
+      "href": "http://localhost:3000/register",
+      "status": "found"
+    },
+    {
+      "page": "Homepage",
+      "button": "Đăng ký miễn phí",
+      "tag": "A",
+      "href": "http://localhost:3000/register",
+      "status": "found"
+    },
+    {
+      "page": "Login",
+      "button": "No text",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Login",
+      "button": "Đăng nhập",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Login",
+      "button": "Quên mật khẩu?",
+      "tag": "A",
+      "href": "http://localhost:3000/login#",
+      "status": "found"
+    },
+    {
+      "page": "Login",
+      "button": "Đăng ký ngay",
+      "tag": "A",
+      "href": "http://localhost:3000/register",
+      "status": "found"
+    },
+    {
+      "page": "Login",
+      "button": "Quay lại trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/",
+      "status": "found"
+    },
+    {
+      "page": "Register",
+      "button": "Đăng ký",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Register",
+      "button": "điều khoản sử dụng",
+      "tag": "A",
+      "href": "http://localhost:3000/register#",
+      "status": "found"
+    },
+    {
+      "page": "Register",
+      "button": "Đăng nhập ngay",
+      "tag": "A",
+      "href": "http://localhost:3000/login",
+      "status": "found"
+    },
+    {
+      "page": "Register",
+      "button": "Quay lại trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "0",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Xuất Báo Cáo",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "In",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Thêm giao dịch",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Áp dụng",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Đặt lại",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Làm mới",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Finance AI",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Dashboard",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Hồ sơ",
+      "tag": "A",
+      "href": "http://localhost:3000/profile",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Ví tiền",
+      "tag": "A",
+      "href": "http://localhost:3000/wallets",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Giao dịch",
+      "tag": "A",
+      "href": "http://localhost:3000/transactions",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Ngân sách",
+      "tag": "A",
+      "href": "http://localhost:3000/budgets",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Mục tiêu",
+      "tag": "A",
+      "href": "http://localhost:3000/goals",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Sức khỏe Tài chính",
+      "tag": "A",
+      "href": "http://localhost:3000/health-score",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Kế hoạch AI",
+      "tag": "A",
+      "href": "http://localhost:3000/planning",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "AI Chat",
+      "tag": "A",
+      "href": "http://localhost:3000/chat",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Đăng xuất",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard#",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Xem chi tiết",
+      "tag": "A",
+      "href": "http://localhost:3000/health-score",
+      "status": "found"
+    },
+    {
+      "page": "Dashboard",
+      "button": "Tạo mục tiêu",
+      "tag": "A",
+      "href": "http://localhost:3000/goals",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "0",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Xuất CSV",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Xóa Nhiều",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Quét Hóa Đơn",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Thêm Giao Dịch",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Đặt lại",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Thêm giao dịch đầu tiên",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "No text",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Trang 1",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Finance AI",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Dashboard",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Hồ sơ",
+      "tag": "A",
+      "href": "http://localhost:3000/profile",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Ví tiền",
+      "tag": "A",
+      "href": "http://localhost:3000/wallets",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Giao dịch",
+      "tag": "A",
+      "href": "http://localhost:3000/transactions",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Ngân sách",
+      "tag": "A",
+      "href": "http://localhost:3000/budgets",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Mục tiêu",
+      "tag": "A",
+      "href": "http://localhost:3000/goals",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Sức khỏe Tài chính",
+      "tag": "A",
+      "href": "http://localhost:3000/health-score",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Kế hoạch AI",
+      "tag": "A",
+      "href": "http://localhost:3000/planning",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "AI Chat",
+      "tag": "A",
+      "href": "http://localhost:3000/chat",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Đăng xuất",
+      "tag": "A",
+      "href": "http://localhost:3000/transactions#",
+      "status": "found"
+    },
+    {
+      "page": "Transactions",
+      "button": "Trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "0",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Xuất Báo Cáo",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Nhận Gợi Ý",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Thêm Ngân Sách",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Tháng này",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Tạo ngân sách",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Finance AI",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Dashboard",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Hồ sơ",
+      "tag": "A",
+      "href": "http://localhost:3000/profile",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Ví tiền",
+      "tag": "A",
+      "href": "http://localhost:3000/wallets",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Giao dịch",
+      "tag": "A",
+      "href": "http://localhost:3000/transactions",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Ngân sách",
+      "tag": "A",
+      "href": "http://localhost:3000/budgets",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Mục tiêu",
+      "tag": "A",
+      "href": "http://localhost:3000/goals",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Sức khỏe Tài chính",
+      "tag": "A",
+      "href": "http://localhost:3000/health-score",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Kế hoạch AI",
+      "tag": "A",
+      "href": "http://localhost:3000/planning",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "AI Chat",
+      "tag": "A",
+      "href": "http://localhost:3000/chat",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Đăng xuất",
+      "tag": "A",
+      "href": "http://localhost:3000/budgets#",
+      "status": "found"
+    },
+    {
+      "page": "Budgets",
+      "button": "Trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "0",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Xuất Tiến Độ",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Thêm Mục Tiêu",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Tất cả",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Đang thực hiện",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Đã hoàn thành",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Sắp đến hạn",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Tạo mục tiêu đầu tiên",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Finance AI",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Dashboard",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Hồ sơ",
+      "tag": "A",
+      "href": "http://localhost:3000/profile",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Ví tiền",
+      "tag": "A",
+      "href": "http://localhost:3000/wallets",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Giao dịch",
+      "tag": "A",
+      "href": "http://localhost:3000/transactions",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Ngân sách",
+      "tag": "A",
+      "href": "http://localhost:3000/budgets",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Mục tiêu",
+      "tag": "A",
+      "href": "http://localhost:3000/goals",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Sức khỏe Tài chính",
+      "tag": "A",
+      "href": "http://localhost:3000/health-score",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Kế hoạch AI",
+      "tag": "A",
+      "href": "http://localhost:3000/planning",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "AI Chat",
+      "tag": "A",
+      "href": "http://localhost:3000/chat",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Đăng xuất",
+      "tag": "A",
+      "href": "http://localhost:3000/goals#",
+      "status": "found"
+    },
+    {
+      "page": "Goals",
+      "button": "Trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "0",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Thêm Ví",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Tạo ví đầu tiên",
+      "tag": "BUTTON",
+      "href": null,
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Finance AI",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Dashboard",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Hồ sơ",
+      "tag": "A",
+      "href": "http://localhost:3000/profile",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Ví tiền",
+      "tag": "A",
+      "href": "http://localhost:3000/wallets",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Giao dịch",
+      "tag": "A",
+      "href": "http://localhost:3000/transactions",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Ngân sách",
+      "tag": "A",
+      "href": "http://localhost:3000/budgets",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Mục tiêu",
+      "tag": "A",
+      "href": "http://localhost:3000/goals",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Sức khỏe Tài chính",
+      "tag": "A",
+      "href": "http://localhost:3000/health-score",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Kế hoạch AI",
+      "tag": "A",
+      "href": "http://localhost:3000/planning",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "AI Chat",
+      "tag": "A",
+      "href": "http://localhost:3000/chat",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Đăng xuất",
+      "tag": "A",
+      "href": "http://localhost:3000/wallets#",
+      "status": "found"
+    },
+    {
+      "page": "Wallets",
+      "button": "Trang chủ",
+      "tag": "A",
+      "href": "http://localhost:3000/dashboard",
+      "status": "found"
+    }
+  ]
+}

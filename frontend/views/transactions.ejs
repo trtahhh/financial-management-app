@@ -7,6 +7,14 @@
         <p class="text-secondary mb-0">Quản lý tất cả giao dịch thu chi của bạn</p>
     </div>
     <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportTransactions()" title="Xuất file CSV">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            Xuất CSV
+        </button>
+        <button class="btn btn-outline-secondary" onclick="bulkDeleteTransactions()" title="Xóa nhiều giao dịch">
+            <i class="bi bi-trash"></i>
+            Xóa Nhiều
+        </button>
         <button class="btn btn-outline-primary" onclick="triggerOcr()" title="Quét hóa đơn từ ảnh">
             <i class="bi bi-camera"></i>
             Quét Hóa Đơn
@@ -170,13 +178,13 @@
             </div>
             <div>
                 <div class="btn-group" role="group" id="pagination">
-                    <button class="btn btn-sm btn-outline-secondary" onclick="previousPage()" id="prevBtn">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="previousPage()" id="prevBtn" aria-label="Trang trước" title="Trang trước">
                         <i class="bi bi-chevron-left"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-secondary disabled" id="pageInfo">
                         Trang 1
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="nextPage()" id="nextBtn">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="nextPage()" id="nextBtn" aria-label="Trang sau" title="Trang sau">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                 </div>

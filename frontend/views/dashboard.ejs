@@ -6,10 +6,20 @@
         <h2 class="mb-1" style="color: var(--text-primary);">Dashboard</h2>
         <p class="mb-0" style="color: var(--text-secondary);">Tổng quan tài chính của bạn</p>
     </div>
-    <button class="btn btn-primary" onclick="window.location.href='/transactions'">
-        <i class="bi bi-plus-lg"></i>
-        Thêm giao dịch
-    </button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportDashboard()" title="Xuất báo cáo Dashboard">
+            <i class="bi bi-download"></i>
+            Xuất Báo Cáo
+        </button>
+        <button class="btn btn-outline-secondary" onclick="printDashboard()" title="In Dashboard">
+            <i class="bi bi-printer"></i>
+            In
+        </button>
+        <button class="btn btn-primary" onclick="window.location.href='/transactions'">
+            <i class="bi bi-plus-lg"></i>
+            Thêm giao dịch
+        </button>
+    </div>
 </div>
 
 <!-- Date Filter Card -->

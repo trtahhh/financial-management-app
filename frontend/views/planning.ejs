@@ -6,10 +6,20 @@
         <h2 class="mb-1">Lập Kế Hoạch Tài Chính</h2>
         <p class="text-secondary mb-0">AI giúp bạn lập kế hoạch tài chính thông minh</p>
     </div>
-    <button class="btn btn-primary" onclick="generatePlan()">
-        <i class="bi bi-stars"></i>
-        Tạo Kế Hoạch Mới
-    </button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportPlanReport()" title="Xuất kế hoạch">
+            <i class="bi bi-file-earmark-text"></i>
+            Xuất Kế Hoạch
+        </button>
+        <button class="btn btn-outline-secondary" onclick="comparePlans()" title="So sánh các kế hoạch">
+            <i class="bi bi-bar-chart-line"></i>
+            So Sánh
+        </button>
+        <button class="btn btn-primary" onclick="generatePlan()">
+            <i class="bi bi-stars"></i>
+            Tạo Kế Hoạch Mới
+        </button>
+    </div>
 </div>
 
 <!-- Financial Overview -->
